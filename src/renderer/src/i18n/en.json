@@ -237,13 +237,13 @@
     "hideAnswer": "Hide answer",
     "showAnswer": "Show answer",
     "space": "Space",
-    "thinkFirst": "The answer is hidden. Think it through first.",
+    "thinkFirst": "Answer it in your head first",
     "prev": "Previous",
     "next": "Next",
     "finishRound": "Finish round",
     "roundCompleted": "Round {{round}} complete. Reshuffled for a new round.",
     "noSelectionDesc": "Select the banks to recite on the Home page first.",
-    "clickToReveal": "Click anywhere here to show the answer",
+    "clickToReveal": "or press",
     "filtered": "Only {{priorities}}"
   },
   "data": {
@@ -380,7 +380,13 @@
     "doneDesc": "You rated {{count}} times today. Questions will show up here again when they're due.",
     "moreNew": "Learn {{count}} more new",
     "ahead": "Review {{count}} from tomorrow early",
-    "practiceWrongBook": "Practise mistakes ({{count}})"
+    "practiceWrongBook": "Practise mistakes ({{count}})",
+    "ratePrompt": "How well did you remember this one?",
+    "revealPrompt": "then click here to see the answer",
+    "comesBack": "Back in {{interval}}",
+    "todayProgress": "Today",
+    "leftToday_one": "{{count}} left",
+    "leftToday_other": "{{count}} left"
   },
   "wrongBook": {
     "name": "Mistakes",

@@ -139,10 +139,10 @@ export default function ShuffleMode() {
         }
         actions={
           <>
-            <ModeSwitch />
             <Link to="/" className={styles.changeBanks}>
               {t('recite.changeBanks')}
             </Link>
+            <ModeSwitch />
             <div className={styles.progress}>
               <span className={styles.progressLabel}>{t('recite.roundLabel', { round })}</span>
               <div
@@ -190,10 +190,7 @@ export default function ShuffleMode() {
         {revealed ? (
           <GradeBar previews={state.previews} onGrade={grade} disabled={busy} />
         ) : (
-          <button type="button" className={`btn btn-primary ${styles.revealButton}`} onClick={() => setRevealed(true)}>
-            {t('recite.showAnswer')}
-            <kbd className={`${styles.kbd} ${styles.kbdOnAccent}`}>{t('recite.space')}</kbd>
-          </button>
+          <span className={styles.footerSpacer} aria-hidden="true" />
         )}
         <button type="button" className="btn" onClick={next} disabled={busy} title={t('study.skipHint')}>
           {index >= total ? t('recite.finishRound') : t('study.skip')}

@@ -19,22 +19,39 @@ const MORE_NEW = 10
 /** "提前复习"每次最多加的数量 */
 const MORE_AHEAD = 20
 
-function Counts({ counts }: { counts: TodayCounts }) {
+/** 卡片上方的今日进度:进度条 + 新题、复习、重学剩余数量 */
+function TodayProgress({ counts }: { counts: TodayCounts }) {
   const { t } = useTranslation()
+  const left = counts.newLeft + counts.reviewLeft + counts.learningLeft
+  const total = counts.doneToday + left
+  const percent = total === 0 ? 100 : Math.round((counts.doneToday / total) * 100)
   return (
-    <div className={styles.counts} aria-label={t('study.todayLabel')}>
-      <span className={styles.countNew} title={t('study.newHint')}>
-        {t('study.countNew', { count: counts.newLeft })}
-      </span>
-      <span className={styles.countReview} title={t('study.reviewHint')}>
-        {t('study.countReview', { count: counts.reviewLeft })}
-      </span>
-      {counts.learningLeft > 0 && (
-        <span className={styles.countLearning} title={t('study.learningHint')}>
-          {t('study.countLearning', { count: counts.learningLeft })}
+    <div className={styles.todayStrip}>
+      <span className={styles.todayLabel}>{t('study.todayProgress')}</span>
+      <div
+        className={styles.todayBar}
+        role="progressbar"
+        aria-label={t('study.todayProgress')}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={counts.doneToday}
+      >
+        <div style={{ width: `${percent}%` }} />
+      </div>
+      <span className={styles.todayLeft}>{t('study.leftToday', { count: left })}</span>
+      <span className={styles.counts}>
+        <span className={styles.countNew} title={t('study.newHint')}>
+          {t('study.countNew', { count: counts.newLeft })}
         </span>
-      )}
-      <span className={styles.countDone}>{t('study.countDone', { count: counts.doneToday })}</span>
+        <span className={styles.countReview} title={t('study.reviewHint')}>
+          {t('study.countReview', { count: counts.reviewLeft })}
+        </span>
+        {counts.learningLeft > 0 && (
+          <span className={styles.countLearning} title={t('study.learningHint')}>
+            {t('study.countLearning', { count: counts.learningLeft })}
+          </span>
+        )}
+      </span>
     </div>
   )
 }
@@ -141,11 +158,10 @@ export default function TodayMode() {
       }
       actions={
         <>
-          <ModeSwitch />
           <Link to="/" className={styles.changeBanks}>
             {t('recite.changeBanks')}
           </Link>
-          <Counts counts={state.counts} />
+          <ModeSwitch />
         </>
       }
     />
@@ -160,6 +176,7 @@ export default function TodayMode() {
     return (
       <div className={styles.page}>
         {header}
+        <TodayProgress counts={state.counts} />
         <div className={styles.empty}>
           <div className={`${styles.emptyIcon} ${styles.doneIcon}`}>
             <CheckIcon size={28} />
@@ -209,6 +226,7 @@ export default function TodayMode() {
   return (
     <div className={styles.page}>
       {header}
+      <TodayProgress counts={state.counts} />
       <QuestionCard
         question={card.question}
         bankName={card.bankName}
@@ -228,22 +246,18 @@ export default function TodayMode() {
         cardRef={cardRef}
       />
       <footer className={styles.footer}>
-        <button
-          type="button"
-          className="btn"
-          onClick={undoLast}
-          disabled={busy || !state.canUndo}
-          title={t('study.undoHint')}
-        >
-          {t('study.undo')}
-        </button>
+        {state.canUndo ? (
+          <button type="button" className={styles.undoButton} onClick={undoLast} disabled={busy} title={t('study.undoHint')}>
+            {t('study.undo')}
+            <kbd className={styles.kbd}>Ctrl Z</kbd>
+          </button>
+        ) : (
+          <span className={styles.footerSpacer} aria-hidden="true" />
+        )}
         {revealed ? (
           <GradeBar previews={card.previews} onGrade={grade} disabled={busy} />
         ) : (
-          <button type="button" className={`btn btn-primary ${styles.revealButton}`} onClick={() => setRevealed(true)}>
-            {t('recite.showAnswer')}
-            <kbd className={`${styles.kbd} ${styles.kbdOnAccent}`}>{t('recite.space')}</kbd>
-          </button>
+          <span className={styles.footerSpacer} aria-hidden="true" />
         )}
         {/* 占位,让中间的按钮居中 */}
         <span className={styles.footerSpacer} aria-hidden="true" />

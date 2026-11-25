@@ -237,13 +237,13 @@
     "hideAnswer": "隐藏答案",
     "showAnswer": "显示答案",
     "space": "空格",
-    "thinkFirst": "答案已隐藏,先自己想一想",
+    "thinkFirst": "先在心里回答一遍",
     "prev": "上一题",
     "next": "下一题",
     "finishRound": "完成本轮",
     "roundCompleted": "第 {{round}} 轮已完成,已重新洗牌开始新一轮",
     "noSelectionDesc": "先在首页勾选要背的题库。",
-    "clickToReveal": "点击此区域任意位置显示答案",
+    "clickToReveal": "也可以按",
     "filtered": "仅 {{priorities}}"
   },
   "data": {
@@ -372,7 +372,12 @@
     "doneDesc": "今天共自评 {{count}} 次。之后到期的题会自动出现在今日任务里。",
     "moreNew": "再学 {{count}} 道新题",
     "ahead": "提前复习明天的 {{count}} 道",
-    "practiceWrongBook": "刷错题本({{count}})"
+    "practiceWrongBook": "刷错题本({{count}})",
+    "ratePrompt": "这道题你记得怎么样?",
+    "revealPrompt": "然后点击这里查看参考答案",
+    "comesBack": "{{interval}}后再出现",
+    "todayProgress": "今日进度",
+    "leftToday": "还剩 {{count}} 道"
   },
   "wrongBook": {
     "name": "错题本",

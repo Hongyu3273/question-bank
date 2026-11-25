@@ -93,7 +93,7 @@ export function ReciteEmpty({ selected, filtered }: { selected: number; filtered
 interface CardProps {
   question: Question
   bankName: string
-  /** 题目上方的标签(本轮第几题、新题、错题本等) */
+  /** 左上角的状态标签(新题、复习、错题本、本轮第几题等) */
   badges?: ReactNode
   revealed: boolean
   onReveal: () => void
@@ -108,31 +108,36 @@ export function QuestionCard({ question, bankName, badges, revealed, onReveal, o
   const priorityLabel = usePriorityLabel()
   const parsed = useMemo(() => extractMeta(question.answerMd), [question.answerMd])
   const zoomStyle = useContentZoomStyle()
+  // 状态和优先级放左边;题库名和分类作为次要信息放右边
+  const source = [bankName, parsed.meta.category].filter(Boolean).join(' · ')
 
   return (
-    <div className={styles.stage} {...ZOOM_AREA}>
+    // 整个中间区域一起滚动;换题时滚回顶部
+    <div ref={cardRef as RefObject<HTMLDivElement>} className={styles.stage} {...ZOOM_AREA}>
       <article
-        ref={cardRef as RefObject<HTMLElement>}
         className={styles.card}
         style={zoomStyle}
         aria-labelledby="recite-question"
       >
         <div className={styles.cardMeta}>
-          <span className={styles.bankTag}>{bankName}</span>
-          {badges}
-          <MetaTags meta={parsed.meta} priorityLabel={priorityLabel} />
+          <div className={styles.cardBadges}>
+            {badges}
+            <MetaTags meta={{ priority: parsed.meta.priority }} priorityLabel={priorityLabel} />
+          </div>
+          <span className={styles.cardSource} title={source}>
+            {source}
+          </span>
         </div>
         <h2 id="recite-question" className={styles.question}>
           {question.title}
         </h2>
         {showEnglish && parsed.meta.english && <p className={styles.english}>{parsed.meta.english}</p>}
-        <div className={styles.divider} />
 
         {revealed ? (
           <div className={styles.answer}>
             <div className={styles.answerHeader}>
               <span className={styles.answerLabel}>{t('recite.answer')}</span>
-              <button type="button" className="btn btn-sm" onClick={onHide}>
+              <button type="button" className={styles.hideLink} onClick={onHide}>
                 {t('recite.hideAnswer')}
                 <kbd className={styles.kbd}>{t('recite.space')}</kbd>
               </button>
@@ -147,9 +152,10 @@ export function QuestionCard({ question, bankName, badges, revealed, onReveal, o
           // 整个区域都可以点击:点任意位置显示答案
           <button type="button" className={styles.hidden} onClick={onReveal}>
             <span className={styles.hiddenIcon} aria-hidden="true">
-              <EyeIcon size={26} />
+              <EyeIcon size={22} />
             </span>
             <span className={styles.hiddenText}>{t('recite.thinkFirst')}</span>
+            <span className={styles.hiddenSub}>{t('study.revealPrompt')}</span>
             <span className={styles.hiddenHint}>
               {t('recite.clickToReveal')}
               <kbd className={styles.kbd}>{t('recite.space')}</kbd>
@@ -164,7 +170,7 @@ export function QuestionCard({ question, bankName, badges, revealed, onReveal, o
 
 const GRADE_CLASS: Record<Grade, string> = { 1: styles.gradeAgain, 2: styles.gradeHard, 3: styles.gradeGood }
 
-/** 自评按钮:不会 / 模糊 / 记住,下方显示下次复习时间 */
+/** 自评按钮:不会 / 模糊 / 记住,下方说明多久后再出现 */
 export function GradeBar({
   previews,
   onGrade,
@@ -176,22 +182,27 @@ export function GradeBar({
 }) {
   const { t } = useTranslation()
   return (
-    <div className={styles.grades} role="group" aria-label={t('study.rateLabel')}>
-      {previews.map(({ grade, intervalMs }) => (
-        <button
-          key={grade}
-          type="button"
-          className={`${styles.grade} ${GRADE_CLASS[grade]}`}
-          onClick={() => onGrade(grade)}
-          disabled={disabled}
-        >
-          <span className={styles.gradeLabel}>
-            {t(`study.grade${grade}`)}
-            <kbd className={styles.kbd}>{grade}</kbd>
-          </span>
-          <span className={styles.gradeInterval}>{formatInterval(intervalMs, t)}</span>
-        </button>
-      ))}
+    <div className={styles.gradeBlock}>
+      <p className={styles.gradePrompt}>{t('study.ratePrompt')}</p>
+      <div className={styles.grades} role="group" aria-label={t('study.rateLabel')}>
+        {previews.map(({ grade, intervalMs }) => (
+          <button
+            key={grade}
+            type="button"
+            className={`${styles.grade} ${GRADE_CLASS[grade]}`}
+            onClick={() => onGrade(grade)}
+            disabled={disabled}
+          >
+            <span className={styles.gradeLabel}>
+              {t(`study.grade${grade}`)}
+              <kbd className={styles.kbd}>{grade}</kbd>
+            </span>
+            <span className={styles.gradeInterval}>
+              {t('study.comesBack', { interval: formatInterval(intervalMs, t) })}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
