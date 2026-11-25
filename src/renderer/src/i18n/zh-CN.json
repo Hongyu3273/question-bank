@@ -210,7 +210,7 @@
     "noSelectionDesc": "先在首页勾选要阅读的题库。",
     "goSelect": "去首页选择题库",
     "noQuestionsTitle": "所选题库还没有题目",
-    "noQuestionsDesc": "到题库管理里添加题目后再来阅读。",
+    "noQuestionsDesc": "回到首页选择其他题库，或在题库管理中为它添加题目。",
     "showToc": "显示目录",
     "hideToc": "收起目录",
     "resizeToc": "调整目录宽度",

@@ -388,7 +388,7 @@ export default function ReadPage() {
         </button>
       </div>
     ) : (
-      <Empty title={t('read.noQuestionsTitle')} desc={t('read.noQuestionsDesc')} to="/manage" action={t('home.manageBanks')} />
+      <Empty title={t('read.noQuestionsTitle')} desc={t('read.noQuestionsDesc')} to="/" action={t('read.goSelect')} />
     )
   }
 

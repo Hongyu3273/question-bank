@@ -128,8 +128,8 @@ export default function RecitePage() {
         <p className={styles.emptyDesc}>
           {noSelection ? t('recite.noSelectionDesc') : filtered ? t('read.noFilteredDesc') : t('read.noQuestionsDesc')}
         </p>
-        <Link to={noSelection || filtered ? '/' : '/manage'} className="btn btn-primary">
-          {noSelection || filtered ? t('read.goSelect') : t('home.manageBanks')}
+        <Link to="/" className="btn btn-primary">
+          {t('read.goSelect')}
         </Link>
       </div>
     )
