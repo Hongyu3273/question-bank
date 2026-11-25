@@ -24,17 +24,39 @@ const PRIORITY_DOT: Record<string, string> = {
   低: styles.dotLow
 }
 
+type StatusFilter = 'all' | QuestionSummary['studyStatus'] | 'wrong'
+const STATUS_FILTERS: StatusFilter[] = ['all', 'new', 'learning', 'review', 'wrong']
+
+function matchesStatus(q: QuestionSummary, f: StatusFilter): boolean {
+  if (f === 'all') return true
+  if (f === 'wrong') return q.inWrongBook
+  return q.studyStatus === f
+}
+
 export default function QuestionList({ questions, selectedId, dirty, onSelect, onNew, onReorder }: Props) {
   const { t } = useTranslation()
   const priorityLabel = usePriorityLabel()
   const [query, setQuery] = useState('')
+  const [status, setStatus] = useState<StatusFilter>('all')
   const listRef = useRef<HTMLOListElement>(null)
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<StatusFilter, number> = { all: questions.length, new: 0, learning: 0, review: 0, wrong: 0 }
+    for (const q of questions) {
+      counts[q.studyStatus]++
+      if (q.inWrongBook) counts.wrong++
+    }
+    return counts
+  }, [questions])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return questions
-    return questions.filter((x) => x.title.toLowerCase().includes(q) || x.snippet.toLowerCase().includes(q))
-  }, [questions, query])
+    return questions.filter(
+      (x) =>
+        matchesStatus(x, status) &&
+        (!q || x.title.toLowerCase().includes(q) || x.snippet.toLowerCase().includes(q))
+    )
+  }, [questions, query, status])
 
   // 选中项保持在可见范围内;用方向键切换时焦点跟随
   useEffect(() => {
@@ -54,7 +76,7 @@ export default function QuestionList({ questions, selectedId, dirty, onSelect, o
 
   // 拖动排序;搜索过滤时不能拖动
   const ids = questions.map((q) => q.id)
-  const searching = query.trim() !== ''
+  const searching = query.trim() !== '' || status !== 'all'
   const drag = useDragReorder(ids, onReorder, !searching)
 
   return (
@@ -86,6 +108,24 @@ export default function QuestionList({ questions, selectedId, dirty, onSelect, o
           <PlusIcon size={18} />
         </button>
       </div>
+
+      {statusCounts.all > statusCounts.new && (
+        <div className={styles.statusFilter} role="radiogroup" aria-label={t('manage.statusFilter')}>
+          {STATUS_FILTERS.filter((f) => f === 'all' || statusCounts[f] > 0).map((f) => (
+            <button
+              key={f}
+              type="button"
+              role="radio"
+              aria-checked={status === f}
+              className={status === f ? `${styles.statusChip} ${styles.statusChipOn}` : styles.statusChip}
+              onClick={() => setStatus(f)}
+            >
+              {t(`manage.status_${f}`)}
+              <span className={styles.statusCount}>{statusCounts[f]}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <ol
         ref={listRef}
@@ -141,6 +181,15 @@ export default function QuestionList({ questions, selectedId, dirty, onSelect, o
                   <span className={styles.questionTitle}>{q.title}</span>
                   <span className={styles.questionSnippet}>{q.snippet || t('manage.noAnswer')}</span>
                 </span>
+                {q.inWrongBook ? (
+                  <span className={`${styles.studyTag} ${styles.studyWrong}`}>{t('manage.status_wrong')}</span>
+                ) : q.studyStatus !== 'new' ? (
+                  <span
+                    className={`${styles.studyTag} ${q.studyStatus === 'review' ? styles.studyReview : styles.studyLearning}`}
+                  >
+                    {t(`manage.status_${q.studyStatus}`)}
+                  </span>
+                ) : null}
                 {selected && dirty && <span className={styles.dirtyDot} aria-label={t('manage.unsavedShort')} />}
               </button>
             </li>
@@ -162,7 +211,7 @@ export default function QuestionList({ questions, selectedId, dirty, onSelect, o
       )}
 
       <div className={styles.questionFooter}>
-        {query.trim()
+        {searching
           ? t('manage.matchCount', { count: filtered.length, total: questions.length })
           : t('manage.questionsCount', { count: questions.length })}
       </div>

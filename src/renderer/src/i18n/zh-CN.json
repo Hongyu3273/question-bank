@@ -72,7 +72,10 @@
     "homepage": "项目主页(GitHub)",
     "dataFolder": "数据文件夹",
     "dataFolderDesc": "数据库和题目图片保存在这里",
-    "openDataFolder": "打开文件夹"
+    "openDataFolder": "打开文件夹",
+    "logs": "日志",
+    "logsDesc": "软件出错时的记录。遇到问题时可以把日志文件发给开发者",
+    "openLogFolder": "打开日志文件夹"
   },
   "manage": {
     "banks": "题库列表",
@@ -170,7 +173,13 @@
     "scope": "应用到",
     "scopeMissing": "只设置还没有优先级的题目({{count}} 道)",
     "scopeAll": "全部题目({{count}} 道),已有的优先级会被覆盖",
-    "priorityUpdated": "已更新 {{count}} 道题目的优先级"
+    "priorityUpdated": "已更新 {{count}} 道题目的优先级",
+    "statusFilter": "按学习状态筛选",
+    "status_all": "全部",
+    "status_new": "新题",
+    "status_learning": "学习中",
+    "status_review": "复习",
+    "status_wrong": "错题"
   },
   "errors": {
     "UNKNOWN": "操作失败,请重试",
@@ -224,7 +233,10 @@
     "summaryFiltered": "{{banks}} 个题库 · {{count}} 题 · {{priorities}}",
     "noFilteredTitle": "没有符合筛选条件的题目",
     "noFilteredDesc": "所选题库中没有这些优先级的题目,回到首页调整优先级筛选。",
-    "clearFilter": "显示全部"
+    "clearFilter": "显示全部",
+    "coverAnswers": "遮住答案",
+    "coverHint": "只显示题目,点击才显示答案,适合自测",
+    "coverReveal": "先想一想,点击显示答案"
   },
   "recite": {
     "changeBanks": "更换题库",
@@ -260,7 +272,12 @@
     "restoreDesc": "恢复会替换当前所有数据,执行前会再次确认。",
     "chooseBackup": "选择备份文件",
     "restoreConfirmTitle": "用备份替换当前所有数据?",
-    "restoreConfirmMessage": "当前的题库、图片、复习进度和设置都会被备份文件中的内容替换,此操作无法撤销。建议先导出一份当前数据的备份。"
+    "restoreConfirmMessage": "当前的题库、图片、复习进度和设置都会被备份文件中的内容替换,此操作无法撤销。建议先导出一份当前数据的备份。",
+    "autoBackup": "每日自动备份",
+    "autoBackupDesc": "每天第一次打开软件时自动备份,保留最近 7 份。最近一次:{{date}}",
+    "autoBackupNone": "每天第一次打开软件时自动备份,保留最近 7 份。还没有自动备份。",
+    "autoRestore": "恢复",
+    "autoRestoreConfirmTitle": "恢复到 {{date}} 的自动备份?"
   },
   "import": {
     "title": "导入结果",
@@ -326,7 +343,9 @@
     "undoRate": "撤销上一次自评",
     "switchQuestionShuffle": "切换题目(全部刷一遍)",
     "zoom": "缩放题目内容",
-    "wheel": "滚轮"
+    "wheel": "滚轮",
+    "editQuestion": "编辑当前题目",
+    "editQuestionFocus": "编辑当前题目(放大视图中)"
   },
   "guide": {
     "button": "格式说明",
@@ -369,7 +388,7 @@
     "skip": "跳过",
     "skipHint": "不自评,直接看下一题",
     "doneTitle": "今日任务完成",
-    "doneDesc": "今天共自评 {{count}} 次。之后到期的题会自动出现在今日任务里。",
+    "doneDesc": "今天共自评 {{count}} 次,约 {{minutes}} 分钟。",
     "moreNew": "再学 {{count}} 道新题",
     "ahead": "提前复习明天的 {{count}} 道",
     "practiceWrongBook": "刷错题本({{count}})",
@@ -377,7 +396,8 @@
     "revealPrompt": "然后点击这里查看参考答案",
     "comesBack": "{{interval}}后再出现",
     "todayProgress": "今日进度",
-    "leftToday": "还剩 {{count}} 道"
+    "leftToday": "还剩 {{count}} 道",
+    "doneNext": "之后到期的题会自动出现在今日任务里。想多学一点可以:"
   },
   "wrongBook": {
     "name": "错题本",
@@ -413,5 +433,33 @@
     "level": "内容缩放 {{percent}}%",
     "reset": "重置",
     "hint": "按住 Ctrl 滚动鼠标滚轮可缩放题目内容;点击恢复 100%"
+  },
+  "quickEdit": {
+    "title": "编辑题目",
+    "button": "编辑",
+    "buttonHint": "编辑这道题(E)",
+    "saved": "已保存修改",
+    "hint": "Ctrl+S 保存 · Esc 关闭",
+    "discardTitle": "放弃未保存的修改?",
+    "discardMessage": "关闭后,这次的修改不会保存。",
+    "discard": "放弃修改"
+  },
+  "overview": {
+    "title": "学习概况",
+    "streak": "连续学习",
+    "days": "天",
+    "today": "今天自评 {{count}} 次 · 约 {{minutes}} 分钟",
+    "keepStreak": "今天还没学,背几道题保持连续吧",
+    "startToday": "从今天开始背题吧",
+    "again": "不会 {{count}}",
+    "hard": "模糊 {{count}}",
+    "good": "记住 {{count}}",
+    "last7": "最近 7 天自评次数",
+    "next7": "未来 7 天到期",
+    "todayShort": "今天",
+    "tomorrow": "明天",
+    "barTitle": "{{day}}:{{count}}",
+    "learned": "已学 {{learned}} / {{total}}",
+    "wrong": "错题 {{count}}"
   }
 }

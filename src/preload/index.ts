@@ -39,7 +39,9 @@ const api: Api = {
     rate: (questionId, grade) => ipcRenderer.invoke(IPC.studyRate, questionId, grade),
     undo: () => ipcRenderer.invoke(IPC.studyUndo),
     extend: (kind, count) => ipcRenderer.invoke(IPC.studyExtend, kind, count),
-    removeFromWrongBook: (questionId) => ipcRenderer.invoke(IPC.studyRemoveWrong, questionId)
+    removeFromWrongBook: (questionId) => ipcRenderer.invoke(IPC.studyRemoveWrong, questionId),
+    wrongBookIds: () => ipcRenderer.invoke(IPC.studyWrongIds),
+    stats: () => ipcRenderer.invoke(IPC.studyStats)
   },
   io: {
     import: () => ipcRenderer.invoke(IPC.ioImport),
@@ -47,7 +49,9 @@ const api: Api = {
     exportBank: (bankId) => ipcRenderer.invoke(IPC.ioExportBank, bankId),
     saveTemplate: (kind) => ipcRenderer.invoke(IPC.ioSaveTemplate, kind),
     backup: () => ipcRenderer.invoke(IPC.ioBackup),
-    restore: () => ipcRenderer.invoke(IPC.ioRestore)
+    restore: () => ipcRenderer.invoke(IPC.ioRestore),
+    autoBackups: () => ipcRenderer.invoke(IPC.ioAutoBackups),
+    restoreAuto: (name) => ipcRenderer.invoke(IPC.ioRestoreAuto, name)
   },
   settings: {
     getAll: () => ipcRenderer.invoke(IPC.settingsGetAll),
@@ -55,7 +59,9 @@ const api: Api = {
   },
   app: {
     info: () => ipcRenderer.invoke(IPC.appInfo),
-    openDataFolder: () => ipcRenderer.invoke(IPC.appOpenDataFolder)
+    openDataFolder: () => ipcRenderer.invoke(IPC.appOpenDataFolder),
+    openLogFolder: () => ipcRenderer.invoke(IPC.appOpenLogFolder),
+    logError: (message) => ipcRenderer.invoke(IPC.appLogError, message)
   }
 }
 

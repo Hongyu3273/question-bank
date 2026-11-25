@@ -25,9 +25,12 @@ import {
   resetBankProgress,
   setStudyLimits,
   studyState,
+  studyStats,
   todaySummary,
-  undo
+  undo,
+  wrongBookIds
 } from '../services/srs'
+import { log, logDirectory } from '../services/logger'
 
 /** 界面传来的参数不可信,先确认类型 */
 function str(value: unknown): string {
@@ -95,6 +98,8 @@ export function registerIpc(assets: AssetStore): void {
   ipcMain.handle(IPC.studyUndo, () => undo(getDb()))
   ipcMain.handle(IPC.studyExtend, (_e, kind: unknown, count: unknown) => extend(getDb(), kind, count))
   ipcMain.handle(IPC.studyRemoveWrong, (_e, questionId: unknown) => removeFromWrongBook(getDb(), questionId))
+  ipcMain.handle(IPC.studyWrongIds, () => wrongBookIds(getDb()))
+  ipcMain.handle(IPC.studyStats, () => studyStats(getDb()))
 
   // 设置
   ipcMain.handle(IPC.settingsGetAll, () => getAllSettings(getDb()))
@@ -107,6 +112,13 @@ export function registerIpc(assets: AssetStore): void {
 
   ipcMain.handle(IPC.appOpenDataFolder, async () => {
     await shell.openPath(app.getPath('userData'))
+  })
+  ipcMain.handle(IPC.appOpenLogFolder, async () => {
+    const dir = logDirectory()
+    if (dir) await shell.openPath(dir)
+  })
+  ipcMain.handle(IPC.appLogError, (_e, message: unknown) => {
+    if (typeof message === 'string') log('error', `[renderer] ${message.slice(0, 4000)}`)
   })
 
   ipcMain.handle(IPC.appInfo, (): AppInfo => ({

@@ -23,15 +23,30 @@ const SELECT_QUESTION = `
 
 export function listQuestions(db: Db, bankId: string): QuestionSummary[] {
   getBank(db, bankId)
-  const rows = db.all<Omit<QuestionSummary, 'snippet' | 'priority'> & { head: string }>(
-    `SELECT id, bank_id AS bankId, title, sort_order AS sortOrder, updated_at AS updatedAt,
-            substr(answer_md, 1, 400) AS head
-       FROM questions WHERE bank_id = ? ORDER BY sort_order`,
+  const rows = db.all<
+    Omit<QuestionSummary, 'snippet' | 'priority' | 'studyStatus' | 'inWrongBook'> & {
+      head: string
+      state: number | null
+      wrong: number | null
+    }
+  >(
+    `SELECT q.id, q.bank_id AS bankId, q.title, q.sort_order AS sortOrder, q.updated_at AS updatedAt,
+            substr(q.answer_md, 1, 400) AS head, c.state, c.in_wrong_book AS wrong
+       FROM questions q LEFT JOIN review_cards c ON c.question_id = q.id
+      WHERE q.bank_id = ? ORDER BY q.sort_order`,
     [bankId]
   )
-  return rows.map(({ head, ...q }) => {
+  return rows.map(({ head, state, wrong, ...q }) => {
     const { meta, body } = extractMeta(head)
-    return { ...q, snippet: markdownSnippet(body), priority: meta.priority ?? null }
+    // FSRS 状态:0 新题,1 学习中,2 复习,3 重学
+    const studyStatus = state === null || state === 0 ? 'new' : state === 2 ? 'review' : 'learning'
+    return {
+      ...q,
+      snippet: markdownSnippet(body),
+      priority: meta.priority ?? null,
+      studyStatus,
+      inWrongBook: wrong === 1
+    }
   })
 }
 

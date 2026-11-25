@@ -12,6 +12,7 @@ const GROUPS: { title: string; items: [string[], string][] }[] = [
       [['Enter'], 'nextMatch'],
       [['Shift', 'Enter'], 'prevMatch'],
       [['DoubleClick'], 'doubleClickFocus'],
+      [['E'], 'editQuestionFocus'],
       [['Ctrl', 'Wheel'], 'zoom'],
       [['←', '→'], 'focusSwitch']
     ]
@@ -22,6 +23,7 @@ const GROUPS: { title: string; items: [string[], string][] }[] = [
       [['Space'], 'toggleAnswer'],
       [['1', '2', '3'], 'rate'],
       [['Ctrl', 'Z'], 'undoRate'],
+      [['E'], 'editQuestion'],
       [['←', '→'], 'switchQuestionShuffle']
     ]
   },

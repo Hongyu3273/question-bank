@@ -11,6 +11,7 @@ import { startImport } from '../../lib/dataActions'
 import { useImportStore } from '../../stores/import'
 import { useSettingsStore } from '../../stores/settings'
 import { useToastStore } from '../../stores/toast'
+import StudyOverview from './StudyOverview'
 import styles from './HomePage.module.css'
 
 const NO_IDS: string[] = []
@@ -203,6 +204,12 @@ export default function HomePage() {
               <span className={styles.step}>2</span>
               {t('home.modes')}
             </h2>
+            {/* 考试模式还没开放,只留一个小入口 */}
+            <button type="button" className={styles.examSoon} onClick={() => showToast(t('common.notAvailable'))}>
+              <ExamIcon size={14} />
+              {t('nav.exam')}
+              <span className={styles.soonBadge}>{t('common.comingSoon')}</span>
+            </button>
           </div>
           <div className={styles.modes}>
             <Link to="/read" className={styles.mode} onClick={guard}>
@@ -255,23 +262,10 @@ export default function HomePage() {
               </div>
             </Link>
 
-            <button
-              type="button"
-              className={`${styles.mode} ${styles.modeDisabled}`}
-              onClick={() => showToast(t('common.notAvailable'))}
-            >
-              <div className={styles.modeTop}>
-                <div className={`${styles.modeIcon} ${styles.modeIconMuted}`}>
-                  <ExamIcon size={20} />
-                </div>
-                <span className={styles.soonBadge}>{t('common.comingSoon')}</span>
-              </div>
-              <div className={styles.modeTitle}>{t('nav.exam')}</div>
-              <p className={styles.modeDesc}>{t('home.examDesc')}</p>
-              <div className={styles.modeActionMuted}>{t('home.examAction')}</div>
-            </button>
           </div>
         </section>
+
+        <StudyOverview refreshKey={importVersion} />
       </div>
     </div>
   )

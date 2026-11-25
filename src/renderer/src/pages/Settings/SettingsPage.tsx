@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { FontSize, Language, Settings, ThemeMode } from '@shared/types'
+import type { AutoBackup, FontSize, Language, Settings, ThemeMode } from '@shared/types'
 import { DownloadIcon, FolderIcon, UploadIcon } from '../../components/icons'
 import ImportGuide from '../../components/ImportGuide'
 import PageHeader from '../../components/PageHeader'
@@ -53,6 +53,35 @@ export default function SettingsPage() {
     } catch (err) {
       toast(errorMessage(err, t), 3000)
     } finally {
+      setBusy(false)
+    }
+  }
+
+  const [autoBackups, setAutoBackups] = useState<AutoBackup[]>([])
+  const [autoChoice, setAutoChoice] = useState('')
+  useEffect(() => {
+    void window.api.io.autoBackups().then((list) => {
+      setAutoBackups(list)
+      setAutoChoice(list[0]?.name ?? '')
+    })
+  }, [])
+
+  const restoreAuto = async () => {
+    const chosen = autoBackups.find((b) => b.name === autoChoice)
+    if (!chosen) return
+    const ok = await confirmDialog({
+      title: t('data.autoRestoreConfirmTitle', { date: chosen.date }),
+      message: t('data.restoreConfirmMessage'),
+      confirmLabel: t('data.autoRestore'),
+      danger: true
+    })
+    if (!ok) return
+    setBusy(true)
+    try {
+      await window.api.io.restoreAuto(chosen.name)
+      window.location.reload()
+    } catch (err) {
+      toast(errorMessage(err, t), 4000)
       setBusy(false)
     }
   }
@@ -198,6 +227,37 @@ export default function SettingsPage() {
           </div>
           <div className={styles.item}>
             <div className={styles.itemText}>
+              <label htmlFor="auto-backup" className={styles.itemLabel}>
+                {t('data.autoBackup')}
+              </label>
+              <div className={styles.itemDesc}>
+                {autoBackups.length > 0
+                  ? t('data.autoBackupDesc', { date: autoBackups[0].date })
+                  : t('data.autoBackupNone')}
+              </div>
+            </div>
+            {autoBackups.length > 0 && (
+              <>
+                <select
+                  id="auto-backup"
+                  className={`input ${styles.select} ${styles.selectWide}`}
+                  value={autoChoice}
+                  onChange={(e) => setAutoChoice(e.target.value)}
+                >
+                  {autoBackups.map((b) => (
+                    <option key={b.name} value={b.name}>
+                      {b.date}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" className="btn" onClick={() => void restoreAuto()} disabled={busy}>
+                  {t('data.autoRestore')}
+                </button>
+              </>
+            )}
+          </div>
+          <div className={styles.item}>
+            <div className={styles.itemText}>
               <div className={styles.itemLabel}>{t('data.templatesTitle')}</div>
               <div className={styles.itemDesc}>{t('data.templatesDesc')}</div>
             </div>
@@ -233,6 +293,16 @@ export default function SettingsPage() {
             <button type="button" className="btn" onClick={() => void window.api.app.openDataFolder()}>
               <FolderIcon size={16} />
               {t('settings.openDataFolder')}
+            </button>
+          </div>
+          <div className={styles.item}>
+            <div className={styles.itemText}>
+              <div className={styles.itemLabel}>{t('settings.logs')}</div>
+              <div className={styles.itemDesc}>{t('settings.logsDesc')}</div>
+            </div>
+            <button type="button" className="btn" onClick={() => void window.api.app.openLogFolder()}>
+              <FolderIcon size={16} />
+              {t('settings.openLogFolder')}
             </button>
           </div>
         </section>

@@ -1,11 +1,30 @@
-import { app, BrowserWindow, dialog, nativeTheme, screen, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, screen, shell } from 'electron'
 import { join } from 'node:path'
 import { closeDb, getDb, openDb } from './db/connection'
 import { getAllSettings, readInternal, writeInternal } from './db/repositories/settings'
 import { registerIpc } from './ipc'
-import { registerIoIpc } from './ipc/io'
+import { autoBackupDir, registerIoIpc } from './ipc/io'
 import { handleAssetProtocol, registerAssetScheme } from './protocol'
+import { AppError } from '../shared/errors'
 import { AssetStore } from './services/assets'
+import { runDailyBackup } from './services/autoBackup'
+import { createBackup } from './services/backup'
+import { initLogger, log } from './services/logger'
+
+/** 所有 IPC 调用出错时写日志:预期内的错误(AppError)记为警告,其余记为错误 */
+function logIpcErrors(): void {
+  const handle = ipcMain.handle.bind(ipcMain)
+  ipcMain.handle = (channel, listener) =>
+    handle(channel, async (...args) => {
+      try {
+        return await listener(...args)
+      } catch (err) {
+        if (err instanceof AppError) log('warn', `ipc ${channel}`, err.message)
+        else log('error', `ipc ${channel}`, err)
+        throw err
+      }
+    })
+}
 
 interface WindowBounds {
   x: number
@@ -83,9 +102,14 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   void app.whenReady().then(async () => {
+    initLogger(join(app.getPath('userData'), 'logs'))
+    log('info', `start v${app.getVersion()} ${process.platform} ${process.arch}`)
+    process.on('uncaughtException', (err) => log('error', 'uncaughtException', err))
+    process.on('unhandledRejection', (err) => log('error', 'unhandledRejection', err))
     try {
       await openDb()
     } catch (err) {
+      log('error', 'failed to open database', err)
       dialog.showErrorBox('无法打开数据库', err instanceof Error ? err.message : String(err))
       app.quit()
       return
@@ -94,14 +118,29 @@ if (!app.requestSingleInstanceLock()) {
     const assetsRoot = join(app.getPath('userData'), 'assets')
     const assets = new AssetStore(assetsRoot)
     handleAssetProtocol(assets)
+    logIpcErrors()
     registerIpc(assets)
     registerIoIpc(assets, assetsRoot)
     createWindow()
+
+    // 每日自动备份:启动后稍等再做,不拖慢打开速度;之后每小时检查一次是否换了一天
+    const backupNow = () => {
+      try {
+        const created = runDailyBackup(autoBackupDir(), () => createBackup(getDb(), assets, app.getVersion()))
+        if (created) log('info', `auto backup ${created}`)
+      } catch (err) {
+        log('error', 'auto backup failed', err)
+      }
+    }
+    setTimeout(backupNow, 5000)
+    setInterval(backupNow, 60 * 60 * 1000)
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
   })
+
+  app.on('render-process-gone', (_e, _w, details) => log('error', 'render process gone', details))
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()

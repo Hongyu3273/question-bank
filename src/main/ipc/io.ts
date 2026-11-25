@@ -7,7 +7,9 @@ import type { ImportResult } from '../../shared/types'
 import { closeDb, dbFilePath, getDb, openDb } from '../db/connection'
 import { getAllSettings } from '../db/repositories/settings'
 import type { AssetStore } from '../services/assets'
+import { autoBackupPath, listAutoBackups } from '../services/autoBackup'
 import { createBackup, readBackup, replaceData } from '../services/backup'
+import { log } from '../services/logger'
 import { excelTemplate, exportBankZip, markdownTemplate } from '../services/exporter'
 import { importLoaded, loadImportFile, resolveConflict } from '../services/importer'
 
@@ -50,6 +52,11 @@ function timestamp(): string {
   const d = new Date()
   const p = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`
+}
+
+/** 自动备份所在的文件夹 */
+export function autoBackupDir(): string {
+  return join(app.getPath('userData'), 'backups')
 }
 
 export function registerIoIpc(assets: AssetStore, assetsRoot: string): void {
@@ -123,13 +130,25 @@ export function registerIoIpc(assets: AssetStore, assetsRoot: string): void {
     const { canceled, filePaths } = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options)
     if (canceled || filePaths.length === 0) return { canceled: true }
 
-    const backup = readBackup(await readFile(filePaths[0]))
+    await restoreFrom(await readFile(filePaths[0]))
+    return { canceled: false }
+  })
+
+  /** 用备份文件的内容替换全部数据 */
+  const restoreFrom = async (bytes: Uint8Array) => {
+    const backup = readBackup(bytes)
     closeDb()
     const file = dbFilePath()
     await replaceData(file, assetsRoot, backup, async () => {
       await openDb(file)
     })
     nativeTheme.themeSource = getAllSettings(getDb()).theme
-    return { canceled: false }
+    log('info', 'data restored from backup')
+  }
+
+  const backupDir = autoBackupDir()
+  ipcMain.handle(IPC.ioAutoBackups, () => listAutoBackups(backupDir))
+  ipcMain.handle(IPC.ioRestoreAuto, async (_e, name: unknown) => {
+    await restoreFrom(await readFile(autoBackupPath(backupDir, name)))
   })
 }

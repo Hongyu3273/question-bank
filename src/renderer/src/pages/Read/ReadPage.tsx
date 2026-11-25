@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { WRONG_BOOK_ID, type PriorityStats, type Question, type ReadBank } from '@shared/types'
 import { comparePriority, extractMeta, NO_PRIORITY, priorityKey } from '@shared/meta'
-import { BookIcon, ChevronRightIcon, ExpandIcon, PanelLeftIcon, SearchIcon } from '../../components/icons'
+import { BookIcon, ChevronRightIcon, ExpandIcon, EyeIcon, PanelLeftIcon, SearchIcon } from '../../components/icons'
 import MetaTags from '../../components/MetaTags'
 import PageHeader, { pageHeaderStyles } from '../../components/PageHeader'
 import PriorityFilter from '../../components/PriorityFilter'
@@ -14,8 +14,11 @@ import { useSearchHighlight } from '../../hooks/useSearchHighlight'
 import { errorMessage } from '../../lib/errors'
 import { useSettingsStore } from '../../stores/settings'
 import { useToastStore } from '../../stores/toast'
+import { useUiStore } from '../../stores/ui'
 import FocusView from './FocusView'
 import styles from './ReadPage.module.css'
+import EditQuestionDialog from '../../components/EditQuestionDialog'
+import QuestionActions from '../../components/QuestionActions'
 import ZoomBadge from '../../components/ZoomBadge'
 import { useContentZoomStyle, ZOOM_AREA } from '../../hooks/useContentZoom'
 
@@ -33,7 +36,13 @@ interface CardProps {
   expandLabel: string
   showEnglish: boolean
   priorityLabel: (p: string) => string
+  inWrongBook: boolean
+  /** 遮住答案,点击才显示 */
+  covered: boolean
   onExpand: (id: string) => void
+  onReveal: (id: string) => void
+  onEdit: (id: string) => void
+  onRemoveWrong: (id: string) => void
 }
 
 /** 链接、按钮等可点击元素上的双击不打开放大视图 */
@@ -50,8 +59,14 @@ const QuestionCard = memo(function QuestionCard({
   expandLabel,
   showEnglish,
   priorityLabel,
-  onExpand
+  inWrongBook,
+  covered,
+  onExpand,
+  onReveal,
+  onEdit,
+  onRemoveWrong
 }: CardProps) {
+  const { t } = useTranslation()
   const { meta, body } = useMemo(() => extractMeta(q.answerMd), [q.answerMd])
   const cls = [styles.card, matched && styles.cardMatched].filter(Boolean).join(' ')
   return (
@@ -76,6 +91,11 @@ const QuestionCard = memo(function QuestionCard({
         </span>
         <MetaTags meta={meta} priorityLabel={priorityLabel} />
         <span className={styles.cardTopSpacer} />
+        <QuestionActions
+          inWrongBook={inWrongBook}
+          onEdit={() => onEdit(q.id)}
+          onRemoveWrong={() => onRemoveWrong(q.id)}
+        />
         <button
           type="button"
           className={styles.expand}
@@ -91,7 +111,12 @@ const QuestionCard = memo(function QuestionCard({
       </h3>
       {showEnglish && meta.english && <p className={styles.english}>{meta.english}</p>}
       <div className={styles.answer}>
-        {!rendered ? (
+        {covered ? (
+          <button type="button" className={styles.cover} onClick={() => onReveal(q.id)} data-search-skip>
+            <EyeIcon size={16} />
+            {t('read.coverReveal')}
+          </button>
+        ) : !rendered ? (
           <div className={styles.answerPlaceholder} style={{ height: estimateHeight(q) }} aria-hidden="true" />
         ) : body.trim() ? (
           <MarkdownView markdown={body} bankId={q.bankId} />
@@ -124,6 +149,14 @@ export default function ReadPage() {
   const [matchIndex, setMatchIndex] = useState(0)
   /** 放大查看的题目 */
   const [focusId, setFocusId] = useState<string | null>(null)
+  /** 错题本中的题目 */
+  const [wrongIds, setWrongIds] = useState<Set<string>>(new Set())
+  /** 正在快速编辑的题目 */
+  const [editingId, setEditingId] = useState<string | null>(null)
+  /** 遮住答案时,已经点开的题目 */
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set())
+  const coverAnswers = useUiStore((s) => s.coverAnswers)
+  const setCoverAnswers = useUiStore((s) => s.setCoverAnswers)
   const listRef = useRef<HTMLDivElement>(null)
   const tocRef = useRef<HTMLElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -152,6 +185,42 @@ export default function ReadPage() {
       cancelled = true
     }
   }, [selectedIds, toast, t])
+
+  useEffect(() => {
+    void window.api.study.wrongBookIds().then((ids) => setWrongIds(new Set(ids)))
+  }, [selectedIds])
+
+  const revealOne = useCallback((id: string) => setRevealedIds((s) => new Set(s).add(id)), [])
+  const toggleCover = () => {
+    setRevealedIds(new Set())
+    setCoverAnswers(!coverAnswers)
+  }
+
+  const removeWrong = useCallback(
+    async (id: string) => {
+      try {
+        await window.api.study.removeFromWrongBook(id)
+        setWrongIds((s) => {
+          const next = new Set(s)
+          next.delete(id)
+          return next
+        })
+        toast(t('wrongBook.removed'))
+      } catch (err) {
+        toast(errorMessage(err, t), 3000)
+      }
+    },
+    [toast, t]
+  )
+
+  /** 快速编辑保存后,更新列表中的这道题 */
+  const replaceQuestion = useCallback((updated: Question) => {
+    setLoaded((list) =>
+      list
+        ? list.map((b) => ({ ...b, questions: b.questions.map((q) => (q.id === updated.id ? updated : q)) }))
+        : list
+    )
+  }, [])
 
   /** 按首页的优先级筛选后的题库和题目 */
   const banks = useMemo(() => {
@@ -426,7 +495,18 @@ export default function ReadPage() {
             : t('read.summary', { banks: banks.length, count: all.length })
         }
         actions={
-          <div className={styles.searchBox}>
+          <>
+            <button
+              type="button"
+              className={coverAnswers ? `${styles.coverToggle} ${styles.coverToggleOn}` : styles.coverToggle}
+              aria-pressed={coverAnswers}
+              title={t('read.coverHint')}
+              onClick={toggleCover}
+            >
+              <EyeIcon size={15} />
+              {t('read.coverAnswers')}
+            </button>
+            <div className={styles.searchBox}>
             <label className={styles.search}>
               <SearchIcon size={15} />
               <span className="sr-only">{t('read.search')}</span>
@@ -477,7 +557,8 @@ export default function ReadPage() {
                 </button>
               </>
             )}
-          </div>
+            </div>
+          </>
         }
       />
 
@@ -577,7 +658,12 @@ export default function ReadPage() {
                     expandLabel={t('read.expand')}
                     showEnglish={showEnglish}
                     priorityLabel={priorityLabel}
+                    inWrongBook={wrongIds.has(q.id)}
+                    covered={coverAnswers && !revealedIds.has(q.id)}
                     onExpand={openFocus}
+                    onReveal={revealOne}
+                    onEdit={setEditingId}
+                    onRemoveWrong={removeWrong}
                   />
                 ))}
               </section>
@@ -600,11 +686,21 @@ export default function ReadPage() {
           query={query}
           showEnglish={showEnglish}
           priorityLabel={priorityLabel}
+          inWrongBook={wrongIds.has(focusId)}
+          onEdit={() => setEditingId(focusId)}
+          onRemoveWrong={() => void removeWrong(focusId)}
           onPrev={() => stepFocus(-1)}
           onNext={() => stepFocus(1)}
           onClose={closeFocus}
         />
       )}
+
+      <EditQuestionDialog
+        question={editingId ? (all.find((q) => q.id === editingId) ?? null) : null}
+        bankName={editingId ? (positions.get(editingId)?.bankName ?? '') : ''}
+        onSaved={replaceQuestion}
+        onClose={() => setEditingId(null)}
+      />
     </div>
   )
 }

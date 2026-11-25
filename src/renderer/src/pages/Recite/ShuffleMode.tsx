@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Grade, ReciteState } from '@shared/types'
 import { ArrowLeftIcon, ShuffleIcon } from '../../components/icons'
+import EditQuestionDialog from '../../components/EditQuestionDialog'
 import PageHeader from '../../components/PageHeader'
+import QuestionActions from '../../components/QuestionActions'
 import { usePriorityLabel } from '../../hooks/usePriorityLabel'
 import { errorMessage } from '../../lib/errors'
 import { useSettingsStore } from '../../stores/settings'
@@ -26,6 +28,7 @@ export default function ShuffleMode() {
   const [state, setState] = useState<ReciteState | null | undefined>(undefined)
   const [revealed, setRevealed] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [editing, setEditing] = useState(false)
   const cardRef = useRef<HTMLElement>(null)
 
   const fail = useCallback((err: unknown) => toast(errorMessage(err, t), 3000), [toast, t])
@@ -97,6 +100,17 @@ export default function ShuffleMode() {
       }),
     [run, state, toast, t]
   )
+  const removeWrong = async () => {
+    if (!state) return
+    try {
+      await window.api.study.removeFromWrongBook(state.question.id)
+      toast(t('wrongBook.removed'))
+      setState({ ...state, inWrongBook: false })
+    } catch (err) {
+      fail(err)
+    }
+  }
+
   const reshuffle = () =>
     void run(async () => {
       const s = await window.api.recite.reshuffle()
@@ -108,7 +122,9 @@ export default function ShuffleMode() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!state) return
-      if (handleStudyKeys(e, { revealed, setRevealed, onGrade: grade, onUndo: undoLast })) return
+      if (handleStudyKeys(e, { revealed, setRevealed, onGrade: grade, onUndo: undoLast, onEdit: () => setEditing(true) })) {
+        return
+      }
       if (e.ctrlKey || e.metaKey || e.altKey) return
       if (e.key === 'ArrowRight') {
         e.preventDefault()
@@ -173,8 +189,14 @@ export default function ShuffleMode() {
         badges={
           <>
             <span>{t('recite.questionIndex', { index })}</span>
-            {state.inWrongBook && <span className={styles.wrongTag}>{t('study.inWrongBook')}</span>}
           </>
+        }
+        actions={
+          <QuestionActions
+            inWrongBook={state.inWrongBook}
+            onEdit={() => setEditing(true)}
+            onRemoveWrong={() => void removeWrong()}
+          />
         }
         revealed={revealed}
         onReveal={() => setRevealed(true)}
@@ -199,6 +221,12 @@ export default function ShuffleMode() {
           </span>
         </button>
       </footer>
+      <EditQuestionDialog
+        question={editing ? question : null}
+        bankName={bankName}
+        onSaved={(q) => setState((s) => (s && s.question.id === q.id ? { ...s, question: q } : s))}
+        onClose={() => setEditing(false)}
+      />
     </div>
   )
 }

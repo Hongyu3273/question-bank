@@ -96,3 +96,7 @@
   width: 120px;
   flex-shrink: 0;
 }
+
+.selectWide {
+  width: 150px;
+}

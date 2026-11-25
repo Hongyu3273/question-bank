@@ -7,6 +7,7 @@ import MarkdownView from '../../components/MarkdownView'
 import MetaTags from '../../components/MetaTags'
 import { useSearchHighlight } from '../../hooks/useSearchHighlight'
 import styles from './FocusView.module.css'
+import QuestionActions from '../../components/QuestionActions'
 import ZoomBadge from '../../components/ZoomBadge'
 import { useContentZoomStyle, ZOOM_AREA } from '../../hooks/useContentZoom'
 
@@ -21,6 +22,9 @@ interface Props {
   query: string
   showEnglish: boolean
   priorityLabel: (p: string) => string
+  inWrongBook: boolean
+  onEdit: () => void
+  onRemoveWrong: () => void
   onPrev: () => void
   onNext: () => void
   onClose: () => void
@@ -36,6 +40,9 @@ export default function FocusView({
   query,
   showEnglish,
   priorityLabel,
+  inWrongBook,
+  onEdit,
+  onRemoveWrong,
   onPrev,
   onNext,
   onClose
@@ -69,6 +76,12 @@ export default function FocusView({
         e.preventDefault()
         onClose()
       }}
+      onMouseDown={(e) => {
+        // 双击标题打开放大视图时,第二下会落在这里;不让它选中文字(拖动选择不受影响)
+        if (e.detail >= 2 && !(e.target instanceof Element && e.target.closest('a, button, input, textarea'))) {
+          e.preventDefault()
+        }
+      }}
       onKeyDown={(e) => {
         if (e.ctrlKey || e.metaKey || e.altKey) return
         if (e.key === 'ArrowLeft' && hasPrev) {
@@ -77,6 +90,9 @@ export default function FocusView({
         } else if (e.key === 'ArrowRight' && hasNext) {
           e.preventDefault()
           onNext()
+        } else if (e.key.toLowerCase() === 'e') {
+          e.preventDefault()
+          onEdit()
         }
       }}
     >
@@ -86,6 +102,7 @@ export default function FocusView({
           {t('manage.questionNumber', { number })}
           <span className={styles.positionTotal}>{t('read.focusPosition', { index, total })}</span>
         </span>
+        <QuestionActions inWrongBook={inWrongBook} onEdit={onEdit} onRemoveWrong={onRemoveWrong} />
         <button type="button" className={styles.close} aria-label={t('read.closeFocus')} title={t('read.closeFocus')} onClick={onClose}>
           <CloseIcon size={20} />
         </button>

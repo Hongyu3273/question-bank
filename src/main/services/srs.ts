@@ -18,7 +18,9 @@ import {
   STUDY_LIMITS,
   WRONG_BOOK_ID,
   type Grade,
+  type GradeCounts,
   type GradePreview,
+  type StudyStats,
   type StudyCard,
   type StudyLimits,
   type StudyState,
@@ -370,7 +372,8 @@ export function studyState(db: Db, rawIds: unknown, rawPriorities: unknown, now 
         canUndo: canUndo(db, now),
         moreNew: p.moreNew,
         ahead: p.aheadPool.length,
-        wrongBook: wrongBookCount(db)
+        wrongBook: wrongBookCount(db),
+        ...todayEffort(db, studyDay(now, getAllSettings(db).dayStartHour))
       }
     }
     if (saved?.questionId !== next.id || saved.key !== key) writeInternal(db, 'srs.current', { key, questionId: next.id })
@@ -601,4 +604,79 @@ export function keepProgressByTitle(db: Db, bankId: string): () => void {
       )
     }
   }
+}
+
+// ---------- 学习统计 ----------
+
+/** 两次自评之间超过这个时间不算学习时长(可能离开了) */
+const IDLE_CAP = 3 * 60_000
+/** 第一次自评前大约花的时间 */
+const FIRST_CARD = 30_000
+
+/** 某个学习日的自评分布和大约用时 */
+function todayEffort(db: Db, day: string): { grades: GradeCounts; minutes: number } {
+  const logs = db.all<{ grade: number; reviewed_at: number }>(
+    'SELECT grade, reviewed_at FROM review_logs WHERE day = ? ORDER BY reviewed_at',
+    [day]
+  )
+  const grades = { again: 0, hard: 0, good: 0 }
+  let ms = 0
+  logs.forEach((l, i) => {
+    if (l.grade === 1) grades.again++
+    else if (l.grade === 2) grades.hard++
+    else grades.good++
+    ms += i === 0 ? FIRST_CARD : Math.min(IDLE_CAP, l.reviewed_at - logs[i - 1].reviewed_at)
+  })
+  return { grades, minutes: Math.round(ms / 60_000) }
+}
+
+/** 往前或往后第 offset 个学习日 */
+function shiftDay(now: number, dayStartHour: number, offset: number): string {
+  const d = new Date(now - dayStartHour * HOUR)
+  return studyDay(new Date(d.getFullYear(), d.getMonth(), d.getDate() + offset, 12 + dayStartHour).getTime(), dayStartHour)
+}
+
+/** 首页的学习概况 */
+export function studyStats(db: Db, now = Date.now()): StudyStats {
+  const { dayStartHour } = getAllSettings(db)
+  const today = studyDay(now, dayStartHour)
+
+  const perDay = new Map(
+    db
+      .all<{ day: string; n: number }>('SELECT day, COUNT(*) AS n FROM review_logs GROUP BY day')
+      .map((r) => [r.day, r.n])
+  )
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const day = shiftDay(now, dayStartHour, i - 6)
+    return { day, count: perDay.get(day) ?? 0 }
+  })
+  const studiedToday = (perDay.get(today) ?? 0) > 0
+  let streak = 0
+  for (let offset = studiedToday ? 0 : -1; perDay.has(shiftDay(now, dayStartHour, offset)); offset--) streak++
+
+  // 未来 7 天到期:今天这一项包含已经过期的
+  const horizon = studyDayEnd(now, dayStartHour) + 6 * DAY
+  const next7 = Array.from({ length: 7 }, (_, i) => ({ day: shiftDay(now, dayStartHour, i), count: 0 }))
+  const index = new Map(next7.map((d, i) => [d.day, i]))
+  for (const { due } of db.all<{ due: number }>('SELECT due FROM review_cards WHERE state != 0 AND due < ?', [horizon])) {
+    const i = due < now ? 0 : index.get(studyDay(due, dayStartHour))
+    if (i !== undefined) next7[i].count++
+  }
+
+  const banks = db.all<{ id: string; name: string; total: number; learned: number; wrongBook: number }>(
+    `SELECT b.id, b.name, COUNT(q.id) AS total,
+            COALESCE(SUM(CASE WHEN c.state IS NOT NULL AND c.state != 0 THEN 1 ELSE 0 END), 0) AS learned,
+            COALESCE(SUM(CASE WHEN c.in_wrong_book = 1 THEN 1 ELSE 0 END), 0) AS wrongBook
+       FROM banks b
+       LEFT JOIN questions q ON q.bank_id = b.id
+       LEFT JOIN review_cards c ON c.question_id = q.id
+      GROUP BY b.id ORDER BY b.sort_order, b.created_at`
+  )
+
+  return { streak, studiedToday, ...todayEffort(db, today), last7, next7, banks }
+}
+
+/** 错题本中所有题目的 id */
+export function wrongBookIds(db: Db): string[] {
+  return db.all<{ id: string }>('SELECT question_id AS id FROM review_cards WHERE in_wrong_book = 1').map((r) => r.id)
 }

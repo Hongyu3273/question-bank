@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { Db } from '../../src/main/db/database'
 import { createBank, getBank } from '../../src/main/db/repositories/banks'
-import { createQuestion, listQuestionsForBanks } from '../../src/main/db/repositories/questions'
+import { createQuestion, listQuestions, listQuestionsForBanks } from '../../src/main/db/repositories/questions'
 import { setSetting } from '../../src/main/db/repositories/settings'
 import { commitCandidate } from '../../src/main/services/importer'
 import { startRecite } from '../../src/main/services/recite'
@@ -15,8 +15,10 @@ import {
   studyDay,
   studyDayEnd,
   studyState,
+  studyStats,
   todaySummary,
-  undo
+  undo,
+  wrongBookIds
 } from '../../src/main/services/srs'
 import { WRONG_BOOK_ID, type StudyState } from '../../src/shared/types'
 import { openTestDb } from '../helpers'
@@ -217,5 +219,44 @@ describe('进度保留与重置', () => {
     drain([a], 3, new Date(2026, 2, 10, 23, 0).getTime())
     // 0 点后是新的一天,新题配额重新计算(题目都学过了,所以没有新题)
     expect(todaySummary(db, [a], [], new Date(2026, 2, 11, 0, 30).getTime()).counts.doneToday).toBe(0)
+  })
+})
+
+describe('学习统计', () => {
+  it('连续天数、最近 7 天、未来 7 天、题库掌握情况', () => {
+    setStudyLimits(db, [a], { newPerDay: 1, reviewPerDay: 100 })
+    // 前天、昨天各学一道,今天还没学
+    rate(db, card(studyState(db, [a], [], T0 - 2 * DAY)).question.id, 3, T0 - 2 * DAY)
+    rate(db, card(studyState(db, [a], [], T0 - DAY)).question.id, 1, T0 - DAY)
+    let s = studyStats(db, T0)
+    expect(s.studiedToday).toBe(false)
+    expect(s.streak).toBe(2)
+    expect(s.last7.map((d) => d.count)).toEqual([0, 0, 0, 0, 1, 1, 0])
+    // 昨天答"不会"的题已过期,算在今天;前天答"记住"的两天后到期,也是今天
+    expect(s.next7[0].count).toBe(2)
+    expect(s.banks.find((x) => x.id === a)).toMatchObject({ total: 3, learned: 2, wrongBook: 1 })
+    rate(db, card(studyState(db, [a], [], T0)).question.id, 2, T0)
+    rate(db, card(studyState(db, [a], [], T0 + MIN)).question.id, 3, T0 + MIN)
+    s = studyStats(db, T0 + 2 * MIN)
+    expect(s.streak).toBe(3)
+    expect(s.grades).toEqual({ again: 0, hard: 1, good: 1 })
+    expect(s.minutes).toBe(2)
+  })
+
+  it('完成页显示自评分布', () => {
+    setStudyLimits(db, [a], { newPerDay: 1, reviewPerDay: 100 })
+    drain([a], 3, T0)
+    const s = studyState(db, [a], [], T0)
+    expect(s.status === 'done' && s.grades).toEqual({ again: 0, hard: 0, good: 1 })
+  })
+
+  it('题目列表带学习状态', () => {
+    const c = card(studyState(db, [a], [], T0))
+    rate(db, c.question.id, 1, T0)
+    const list = listQuestions(db, a)
+    const item = list.find((q) => q.id === c.question.id)!
+    expect(item).toMatchObject({ studyStatus: 'learning', inWrongBook: true })
+    expect(list.filter((q) => q.studyStatus === 'new')).toHaveLength(2)
+    expect(wrongBookIds(db)).toEqual([c.question.id])
   })
 })

@@ -76,9 +76,12 @@ interface Props {
   onChange: (draft: QuestionInput) => void
   onSave: () => void
   onCancel: () => void
-  onDelete: () => void
+  /** 不传时不显示"更多"菜单(例如在看题、背题中快速编辑) */
+  onDelete?: () => void
   /** 保存图片,返回相对路径;失败时返回 null(调用方负责提示) */
   onImage: (file: File) => Promise<string | null>
+  /** 底部的快捷键提示;不传时用题库管理中的提示 */
+  shortcutHint?: string
 }
 
 const IMAGE_ACCEPT = 'image/png,image/jpeg,image/gif,image/webp'
@@ -97,7 +100,8 @@ export default function QuestionEditor({
   onSave,
   onCancel,
   onDelete,
-  onImage
+  onImage,
+  shortcutHint
 }: Props) {
   const { t, i18n } = useTranslation()
   const editorRef = useRef<MarkdownEditorHandle>(null)
@@ -195,7 +199,11 @@ export default function QuestionEditor({
       <header className={styles.editorHeader}>
         <div className={styles.editorMeta}>
           <span className={styles.metaChip}>{bankName}</span>
-          <span>{number ? t('manage.questionNumber', { number }) : t('manage.untitled')}</span>
+          {number ? (
+            <span>{t('manage.questionNumber', { number })}</span>
+          ) : (
+            isNew && <span>{t('manage.untitled')}</span>
+          )}
         </div>
         <div className={styles.segmented} role="radiogroup" aria-label={t('manage.viewMode')}>
           {(['edit', 'preview'] as const).map((mode) => (
@@ -211,7 +219,7 @@ export default function QuestionEditor({
             </button>
           ))}
         </div>
-        {!isNew && (
+        {!isNew && onDelete && (
           <button
             type="button"
             className={styles.iconButton}
@@ -361,7 +369,7 @@ export default function QuestionEditor({
           {dirty ? <span className={styles.dirtyDot} aria-hidden="true" /> : !isNew && <CheckIcon size={14} />}
           {status}
         </span>
-        <span className={styles.shortcutHint}>{t('manage.shortcutHint')}</span>
+        <span className={styles.shortcutHint}>{shortcutHint ?? t('manage.shortcutHint')}</span>
         {(dirty || isNew) && (
           <button type="button" className="btn btn-sm" onClick={onCancel} disabled={saving}>
             {isNew ? t('common.cancel') : t('manage.revert')}
@@ -376,7 +384,11 @@ export default function QuestionEditor({
         anchor={menu}
         label={t('manage.moreActions')}
         onClose={() => setMenu(null)}
-        items={[{ label: t('manage.deleteQuestion'), icon: <TrashIcon size={15} />, danger: true, onSelect: onDelete }]}
+        items={
+          onDelete
+            ? [{ label: t('manage.deleteQuestion'), icon: <TrashIcon size={15} />, danger: true, onSelect: onDelete }]
+            : []
+        }
       />
     </section>
   )

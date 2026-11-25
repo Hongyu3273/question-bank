@@ -11,7 +11,9 @@ import type {
   Grade,
   StudyLimits,
   StudyState,
+  StudyStats,
   TodaySummary,
+  AutoBackup,
   ReciteState,
   ReciteStatus,
   ImportResult,
@@ -49,6 +51,12 @@ export const IPC = {
   studyUndo: 'study:undo',
   studyExtend: 'study:extend',
   studyRemoveWrong: 'study:removeWrong',
+  studyWrongIds: 'study:wrongIds',
+  studyStats: 'study:stats',
+  ioAutoBackups: 'io:autoBackups',
+  ioRestoreAuto: 'io:restoreAuto',
+  appOpenLogFolder: 'app:openLogFolder',
+  appLogError: 'app:logError',
   ioImport: 'io:import',
   ioResolveConflict: 'io:resolveConflict',
   ioExportBank: 'io:exportBank',
@@ -114,6 +122,10 @@ export interface Api {
     /** 再学几道新题,或提前复习几道明天的题 */
     extend(kind: 'new' | 'ahead', count: number): Promise<void>
     removeFromWrongBook(questionId: string): Promise<void>
+    /** 错题本中所有题目的 id */
+    wrongBookIds(): Promise<string[]>
+    /** 首页的学习概况 */
+    stats(): Promise<StudyStats>
   }
   io: {
     /** 选择一个或多个题库文件(.zip / .md / .xlsx)并导入;每个题库一条结果 */
@@ -125,6 +137,10 @@ export interface Api {
     backup(): Promise<SaveResult>
     /** 选择备份文件并替换全部数据;成功后界面需要重新加载 */
     restore(): Promise<{ canceled: true } | { canceled: false }>
+    /** 自动备份列表,最新的在前 */
+    autoBackups(): Promise<AutoBackup[]>
+    /** 用某一份自动备份替换全部数据;成功后界面需要重新加载 */
+    restoreAuto(name: string): Promise<void>
   }
   settings: {
     getAll(): Promise<Settings>
@@ -134,6 +150,10 @@ export interface Api {
     info(): Promise<AppInfo>
     /** 在系统文件管理器中打开数据文件夹 */
     openDataFolder(): Promise<void>
+    /** 在系统文件管理器中打开日志文件夹 */
+    openLogFolder(): Promise<void>
+    /** 记录界面中发生的错误 */
+    logError(message: string): Promise<void>
   }
 }
 

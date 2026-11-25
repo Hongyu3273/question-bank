@@ -507,3 +507,53 @@
     width: 200px;
   }
 }
+
+/* ---------- 遮住答案 ---------- */
+
+.coverToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.coverToggle:hover {
+  border-color: var(--border-strong);
+}
+
+.coverToggleOn {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.cover {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 22px 16px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.cover:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

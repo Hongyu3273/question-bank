@@ -72,7 +72,10 @@
     "homepage": "Project page (GitHub)",
     "dataFolder": "Data folder",
     "dataFolderDesc": "Where the database and question images are stored",
-    "openDataFolder": "Open folder"
+    "openDataFolder": "Open folder",
+    "logs": "Logs",
+    "logsDesc": "Records of errors. Send the log file to the developer when something goes wrong",
+    "openLogFolder": "Open log folder"
   },
   "manage": {
     "banks": "Question banks",
@@ -170,7 +173,13 @@
     "scope": "Apply to",
     "scopeMissing": "Only questions without a priority ({{count}})",
     "scopeAll": "All questions ({{count}}); existing priorities are replaced",
-    "priorityUpdated": "Updated the priority of {{count}} questions"
+    "priorityUpdated": "Updated the priority of {{count}} questions",
+    "statusFilter": "Filter by study status",
+    "status_all": "All",
+    "status_new": "New",
+    "status_learning": "Learning",
+    "status_review": "Review",
+    "status_wrong": "Mistakes"
   },
   "errors": {
     "UNKNOWN": "Something went wrong. Please try again.",
@@ -224,7 +233,10 @@
     "summaryFiltered": "{{banks}} banks · {{count}} questions · {{priorities}}",
     "noFilteredTitle": "No questions match the filter",
     "noFilteredDesc": "None of the selected banks have questions with these priorities. Adjust the filter on Home.",
-    "clearFilter": "Show all"
+    "clearFilter": "Show all",
+    "coverAnswers": "Hide answers",
+    "coverHint": "Show only the questions and reveal answers on click, good for testing yourself",
+    "coverReveal": "Think first, then click to show the answer"
   },
   "recite": {
     "changeBanks": "Change banks",
@@ -260,7 +272,12 @@
     "restoreDesc": "Restoring replaces all current data. You'll be asked to confirm first.",
     "chooseBackup": "Choose backup file",
     "restoreConfirmTitle": "Replace all current data with a backup?",
-    "restoreConfirmMessage": "Your current banks, images, progress and settings will be replaced by the backup. This cannot be undone. Consider exporting a backup of the current data first."
+    "restoreConfirmMessage": "Your current banks, images, progress and settings will be replaced by the backup. This cannot be undone. Consider exporting a backup of the current data first.",
+    "autoBackup": "Daily automatic backup",
+    "autoBackupDesc": "A backup is made the first time you open the app each day; the last 7 are kept. Latest: {{date}}",
+    "autoBackupNone": "A backup is made the first time you open the app each day; the last 7 are kept. No automatic backups yet.",
+    "autoRestore": "Restore",
+    "autoRestoreConfirmTitle": "Restore the automatic backup from {{date}}?"
   },
   "import": {
     "title": "Import results",
@@ -329,7 +346,9 @@
     "undoRate": "Undo the last rating",
     "switchQuestionShuffle": "Previous / next question (Go through all)",
     "zoom": "Zoom question content",
-    "wheel": "Scroll"
+    "wheel": "Scroll",
+    "editQuestion": "Edit the current question",
+    "editQuestionFocus": "Edit the current question (enlarged view)"
   },
   "guide": {
     "button": "Format guide",
@@ -377,7 +396,7 @@
     "skip": "Skip",
     "skipHint": "Go to the next question without rating",
     "doneTitle": "Today's task is done",
-    "doneDesc": "You rated {{count}} times today. Questions will show up here again when they're due.",
+    "doneDesc": "You rated {{count}} times today, about {{minutes}} min.",
     "moreNew": "Learn {{count}} more new",
     "ahead": "Review {{count}} from tomorrow early",
     "practiceWrongBook": "Practise mistakes ({{count}})",
@@ -386,7 +405,8 @@
     "comesBack": "Back in {{interval}}",
     "todayProgress": "Today",
     "leftToday_one": "{{count}} left",
-    "leftToday_other": "{{count}} left"
+    "leftToday_other": "{{count}} left",
+    "doneNext": "Questions will come back here when they're due. Want to do more?"
   },
   "wrongBook": {
     "name": "Mistakes",
@@ -422,5 +442,34 @@
     "level": "Content zoom {{percent}}%",
     "reset": "Reset",
     "hint": "Hold Ctrl and scroll to zoom the question content; click to reset to 100%"
+  },
+  "quickEdit": {
+    "title": "Edit question",
+    "button": "Edit",
+    "buttonHint": "Edit this question (E)",
+    "saved": "Changes saved",
+    "hint": "Ctrl+S to save · Esc to close",
+    "discardTitle": "Discard unsaved changes?",
+    "discardMessage": "Your changes won't be saved if you close now.",
+    "discard": "Discard"
+  },
+  "overview": {
+    "title": "Study overview",
+    "streak": "Study streak",
+    "days_one": "day",
+    "days_other": "days",
+    "today": "Rated {{count}} today · about {{minutes}} min",
+    "keepStreak": "You haven't studied today yet. Do a few to keep the streak going",
+    "startToday": "Start studying today",
+    "again": "Forgot {{count}}",
+    "hard": "Unsure {{count}}",
+    "good": "Got it {{count}}",
+    "last7": "Ratings, last 7 days",
+    "next7": "Due in the next 7 days",
+    "todayShort": "Today",
+    "tomorrow": "Tmrw",
+    "barTitle": "{{day}}: {{count}}",
+    "learned": "Learned {{learned}} / {{total}}",
+    "wrong": "Mistakes {{count}}"
   }
 }

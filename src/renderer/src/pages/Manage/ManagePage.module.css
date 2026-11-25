@@ -775,3 +775,73 @@
 .dotNone {
   border: 1.5px dashed var(--border-strong);
 }
+
+/* ---------- 学习状态 ---------- */
+
+.statusFilter {
+  display: flex;
+  gap: 1px;
+  padding: 0 8px 8px;
+  /* 栏宽不够时横向滚动,不换行 */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.statusFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.statusChip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.statusChip:hover {
+  background: var(--hover);
+}
+
+.statusChipOn {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.statusCount {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.studyTag {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 1px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  white-space: nowrap;
+}
+
+.studyReview {
+  background: var(--success-soft);
+  color: var(--success-text);
+}
+
+.studyLearning {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}
+
+.studyWrong {
+  background: var(--danger-soft);
+  color: var(--danger);
+}

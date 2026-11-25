@@ -99,10 +99,12 @@ interface CardProps {
   onReveal: () => void
   onHide: () => void
   cardRef: RefObject<HTMLElement | null>
+  /** 右上角的操作(编辑、移出错题本) */
+  actions?: ReactNode
 }
 
 /** 题目卡片:答案隐藏时整个区域可点击显示 */
-export function QuestionCard({ question, bankName, badges, revealed, onReveal, onHide, cardRef }: CardProps) {
+export function QuestionCard({ question, bankName, badges, revealed, onReveal, onHide, cardRef, actions }: CardProps) {
   const { t } = useTranslation()
   const showEnglish = useSettingsStore((s) => s.settings?.showEnglish ?? true)
   const priorityLabel = usePriorityLabel()
@@ -127,6 +129,7 @@ export function QuestionCard({ question, bankName, badges, revealed, onReveal, o
           <span className={styles.cardSource} title={source}>
             {source}
           </span>
+          {actions}
         </div>
         <h2 id="recite-question" className={styles.question}>
           {question.title}
@@ -210,7 +213,13 @@ export function GradeBar({
 /** 键盘:空格显示/隐藏答案;答案显示后 1/2/3 自评;Ctrl+Z 撤销 */
 export function handleStudyKeys(
   e: KeyboardEvent,
-  opts: { revealed: boolean; setRevealed: (fn: (r: boolean) => boolean) => void; onGrade: (g: Grade) => void; onUndo?: () => void }
+  opts: {
+    revealed: boolean
+    setRevealed: (fn: (r: boolean) => boolean) => void
+    onGrade: (g: Grade) => void
+    onUndo?: () => void
+    onEdit?: () => void
+  }
 ): boolean {
   if (shortcutsBlocked()) return false
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'z') {
@@ -220,6 +229,11 @@ export function handleStudyKeys(
     return true
   }
   if (e.ctrlKey || e.metaKey || e.altKey) return false
+  if (e.key.toLowerCase() === 'e' && opts.onEdit) {
+    e.preventDefault()
+    opts.onEdit()
+    return true
+  }
   if (e.key === ' ') {
     e.preventDefault()
     opts.setRevealed((r) => !r)

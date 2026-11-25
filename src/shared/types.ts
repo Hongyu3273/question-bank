@@ -60,7 +60,12 @@ export interface QuestionSummary {
   /** 优先级;未设置时为 null */
   priority: string | null
   updatedAt: number
+  /** 学习状态:没学过 / 学习中(今天答错或刚学) / 按天复习中 */
+  studyStatus: StudyStatus
+  inWrongBook: boolean
 }
+
+export type StudyStatus = 'new' | 'learning' | 'review'
 
 export interface Question {
   id: string
@@ -215,6 +220,10 @@ export type StudyState =
       ahead: number
       /** 错题本中的题目数量 */
       wrongBook: number
+      /** 今天各档自评的次数 */
+      grades: GradeCounts
+      /** 今天大约学习了几分钟 */
+      minutes: number
     }
   | { status: 'empty' }
 
@@ -231,3 +240,34 @@ export interface StudyLimits {
 }
 
 export const STUDY_LIMITS = { newPerDay: 999, reviewPerDay: 9999 } as const
+
+export interface GradeCounts {
+  again: number
+  hard: number
+  good: number
+}
+
+/** 首页的学习概况 */
+export interface StudyStats {
+  /** 连续学习天数(今天还没学时从昨天往前算) */
+  streak: number
+  studiedToday: boolean
+  /** 今天各档自评次数和学习时长 */
+  grades: GradeCounts
+  minutes: number
+  /** 最近 7 天每天的自评次数,最后一项是今天 */
+  last7: { day: string; count: number }[]
+  /** 未来 7 天每天到期的题数,第一项是今天(含已过期的) */
+  next7: { day: string; count: number }[]
+  /** 每个题库的掌握情况 */
+  banks: { id: string; name: string; total: number; learned: number; wrongBook: number }[]
+}
+
+/** 自动备份 */
+export interface AutoBackup {
+  /** 文件名,如 auto-2026-11-26.qbak */
+  name: string
+  /** 备份日期 YYYY-MM-DD */
+  date: string
+  size: number
+}

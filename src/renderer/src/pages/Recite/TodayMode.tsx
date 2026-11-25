@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { WRONG_BOOK_ID, type Grade, type StudyState, type TodayCounts } from '@shared/types'
 import { CheckIcon } from '../../components/icons'
+import EditQuestionDialog from '../../components/EditQuestionDialog'
 import PageHeader from '../../components/PageHeader'
+import QuestionActions from '../../components/QuestionActions'
 import { usePriorityLabel } from '../../hooks/usePriorityLabel'
 import { errorMessage } from '../../lib/errors'
 import { useSettingsStore } from '../../stores/settings'
@@ -67,6 +69,7 @@ export default function TodayMode() {
   const [state, setState] = useState<StudyState | undefined>(undefined)
   const [revealed, setRevealed] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [editing, setEditing] = useState(false)
   const cardRef = useRef<HTMLElement>(null)
 
   const fail = useCallback((err: unknown) => toast(errorMessage(err, t), 3000), [toast, t])
@@ -126,6 +129,22 @@ export default function TodayMode() {
     [run, toast, t]
   )
 
+  const removeWrong = useCallback(
+    async (id: string) => {
+      try {
+        await window.api.study.removeFromWrongBook(id)
+        toast(t('wrongBook.removed'))
+        // 只更新标记,不换题
+        setState((s) =>
+          s?.status === 'card' && s.card.question.id === id ? { ...s, card: { ...s.card, inWrongBook: false } } : s
+        )
+      } catch (err) {
+        fail(err)
+      }
+    },
+    [toast, t, fail]
+  )
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!state || state.status === 'empty') return
@@ -137,7 +156,13 @@ export default function TodayMode() {
         }
         return
       }
-      handleStudyKeys(e, { revealed, setRevealed, onGrade: grade, onUndo: state.canUndo ? undoLast : undefined })
+      handleStudyKeys(e, {
+        revealed,
+        setRevealed,
+        onGrade: grade,
+        onUndo: state.canUndo ? undoLast : undefined,
+        onEdit: () => setEditing(true)
+      })
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -182,7 +207,15 @@ export default function TodayMode() {
             <CheckIcon size={28} />
           </div>
           <div className={styles.emptyTitle}>{t('study.doneTitle')}</div>
-          <p className={styles.emptyDesc}>{t('study.doneDesc', { count: state.counts.doneToday })}</p>
+          <p className={styles.emptyDesc}>
+            {t('study.doneDesc', { count: state.counts.doneToday, minutes: Math.max(1, state.minutes) })}
+          </p>
+          <div className={styles.doneGrades}>
+            <span className={styles.gradeChipAgain}>{t('overview.again', { count: state.grades.again })}</span>
+            <span className={styles.gradeChipHard}>{t('overview.hard', { count: state.grades.hard })}</span>
+            <span className={styles.gradeChipGood}>{t('overview.good', { count: state.grades.good })}</span>
+          </div>
+          <p className={styles.doneNext}>{t('study.doneNext')}</p>
           <div className={styles.doneActions}>
             {state.moreNew > 0 && (
               <button
@@ -237,8 +270,14 @@ export default function TodayMode() {
             ) : (
               <span className={styles.reviewTag}>{t('study.reviewCard')}</span>
             )}
-            {card.inWrongBook && <span className={styles.wrongTag}>{t('study.inWrongBook')}</span>}
           </>
+        }
+        actions={
+          <QuestionActions
+            inWrongBook={card.inWrongBook}
+            onEdit={() => setEditing(true)}
+            onRemoveWrong={() => void removeWrong(card.question.id)}
+          />
         }
         revealed={revealed}
         onReveal={() => setRevealed(true)}
@@ -262,6 +301,14 @@ export default function TodayMode() {
         {/* 占位,让中间的按钮居中 */}
         <span className={styles.footerSpacer} aria-hidden="true" />
       </footer>
+      <EditQuestionDialog
+        question={editing ? card.question : null}
+        bankName={card.bankName}
+        onSaved={(q) =>
+          setState((s) => (s?.status === 'card' && s.card.question.id === q.id ? { ...s, card: { ...s.card, question: q } } : s))
+        }
+        onClose={() => setEditing(false)}
+      />
     </div>
   )
 }
