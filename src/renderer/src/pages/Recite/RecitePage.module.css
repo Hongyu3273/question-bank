@@ -11,6 +11,12 @@
 
 .changeBanks {
   font-size: 0.8125rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.changeBanks:hover {
+  color: var(--accent);
 }
 
 .progress {
@@ -81,10 +87,10 @@
 }
 
 .bankTag {
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 6px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--hover);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -234,13 +240,14 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 8px 18px;
-  border: 1px solid;
+  padding: 9px 20px;
+  border: 1px solid transparent;
   border-radius: var(--radius-control);
-  background: var(--surface);
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.12s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .grade:disabled {
@@ -258,40 +265,32 @@
 
 .gradeInterval {
   font-size: 0.75rem;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
 .gradeAgain {
-  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: var(--danger-soft);
   color: var(--danger);
 }
 
-.gradeAgain:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
-}
-
 .gradeHard {
-  border-color: color-mix(in srgb, var(--warning-text) 45%, transparent);
+  background: var(--warning-soft);
   color: var(--warning-text);
 }
 
-.gradeHard:hover:not(:disabled) {
-  background: var(--warning-soft);
-}
-
 .gradeGood {
-  border-color: color-mix(in srgb, var(--success-text) 45%, transparent);
+  background: var(--success-soft);
   color: var(--success-text);
 }
 
-.gradeGood:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--success-text) 10%, var(--surface));
+.grade:hover:not(:disabled) {
+  border-color: currentColor;
 }
 
 .grade .kbd {
   color: inherit;
   border-color: currentColor;
-  opacity: 0.6;
+  opacity: 0.45;
 }
 
 /* ---------- 方式切换和今日数量 ---------- */
@@ -324,28 +323,45 @@
 .counts {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   font-size: 0.8125rem;
+  color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.countNew {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.countReview {
-  color: var(--success-text);
-  font-weight: 600;
-}
-
+.countNew,
+.countReview,
 .countLearning {
-  color: var(--danger);
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.countNew::before,
+.countReview::before,
+.countLearning::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.countNew::before {
+  background: var(--accent);
+}
+
+.countReview::before {
+  background: var(--success-text);
+}
+
+.countLearning::before {
+  background: var(--danger);
 }
 
 .countDone {
+  padding-left: 14px;
+  border-left: 1px solid var(--border);
   color: var(--text-muted);
 }
 
@@ -364,19 +380,19 @@
 }
 
 .reviewTag {
-  background: color-mix(in srgb, var(--success-text) 12%, transparent);
+  background: var(--success-soft);
   color: var(--success-text);
 }
 
 .wrongTag {
-  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  background: var(--danger-soft);
   color: var(--danger);
 }
 
 /* ---------- 今日任务完成 ---------- */
 
-.doneIcon {
-  background: color-mix(in srgb, var(--success-text) 14%, transparent);
+.emptyIcon.doneIcon {
+  background: var(--success-soft);
   color: var(--success-text);
 }
 

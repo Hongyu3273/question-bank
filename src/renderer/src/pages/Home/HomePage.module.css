@@ -158,8 +158,15 @@
   border-style: dashed;
 }
 
-.wrongChip .bankName {
-  color: var(--danger);
+.wrongChip .bankName::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 8px 2px 0;
+  border-radius: 50%;
+  background: var(--danger);
+  vertical-align: middle;
 }
 
 /* 背题卡片上的今日任务数量 */
@@ -170,14 +177,25 @@
   font-variant-numeric: tabular-nums;
 }
 
-.todayNew {
-  color: var(--accent);
-  font-weight: 600;
+.todayNew,
+.todayReview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
 }
 
-.todayReview {
-  color: var(--success-text);
-  font-weight: 600;
+.todayNew::before,
+.todayReview::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.todayReview::before {
+  background: var(--success-text);
 }
 
 .todayDone {

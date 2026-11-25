@@ -15,7 +15,7 @@
 }
 
 .dialog::backdrop {
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--backdrop);
 }
 
 .title {
@@ -80,7 +80,7 @@
 }
 
 .ok {
-  background: color-mix(in srgb, var(--success-text) 15%, transparent);
+  background: var(--success-soft);
   color: var(--success-text);
 }
 
@@ -90,7 +90,7 @@
 }
 
 .bad {
-  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  background: var(--danger-soft);
   color: var(--danger);
 }
 

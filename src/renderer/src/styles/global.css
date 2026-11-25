@@ -145,8 +145,8 @@ button {
 }
 
 ::highlight(qb-search-current) {
-  background-color: #f59e0b;
-  color: #1c1c1e;
+  background-color: #f4b860;
+  color: #1f2430;
 }
 
 /* 滚动条:始终显示,可拖动。

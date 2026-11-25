@@ -21,7 +21,7 @@
 }
 
 .high {
-  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  background: var(--danger-soft);
   color: var(--danger);
 }
 
@@ -36,8 +36,8 @@
 }
 
 .category {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--hover);
+  color: var(--text-secondary);
 }
 
 .source {
