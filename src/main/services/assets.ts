@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { join, resolve, sep } from 'node:path'
+import { randomUUID } from 'node:crypto'
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 import { AppError } from '../../shared/errors'
 import { LIMITS } from '../../shared/types'
 
@@ -42,6 +43,57 @@ export class AssetStore {
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, name), data)
     return `images/${name}`
+  }
+
+  /**
+   * 把导入的图片先写到临时目录,数据库写入成功后再换成正式目录。
+   * images 的键是相对路径(images/xxx.png)。没有图片时返回 null。
+   */
+  stageImages(images: Map<string, Uint8Array>): string | null {
+    if (images.size === 0) return null
+    const staged = join(this.root, `.staging-${randomUUID()}`)
+    try {
+      for (const [path, data] of images) {
+        const file = resolve(staged, path)
+        if (!file.startsWith(staged + sep)) throw new AppError('ARCHIVE_UNSAFE')
+        mkdirSync(dirname(file), { recursive: true })
+        writeFileSync(file, data)
+      }
+    } catch (err) {
+      rmSync(staged, { recursive: true, force: true })
+      throw err
+    }
+    return staged
+  }
+
+  discardStaged(staged: string | null): void {
+    if (staged) rmSync(staged, { recursive: true, force: true })
+  }
+
+  /** 用暂存目录替换题库的图片目录;staged 为 null 时清空 */
+  replaceBankImages(bankId: string, staged: string | null): void {
+    const dir = this.bankDir(bankId)
+    rmSync(dir, { recursive: true, force: true })
+    if (staged) {
+      mkdirSync(this.root, { recursive: true })
+      renameSync(staged, dir)
+    }
+  }
+
+  /** 题库目录下的全部文件:相对路径(images/xxx.png)→ 内容 */
+  readBankFiles(bankId: string): Map<string, Uint8Array> {
+    const dir = this.bankDir(bankId)
+    const files = new Map<string, Uint8Array>()
+    const walk = (d: string) => {
+      if (!existsSync(d)) return
+      for (const entry of readdirSync(d, { withFileTypes: true })) {
+        const full = join(d, entry.name)
+        if (entry.isDirectory()) walk(full)
+        else if (entry.isFile()) files.set(relative(dir, full).split(sep).join('/'), readFileSync(full))
+      }
+    }
+    walk(dir)
+    return files
   }
 
   deleteBank(bankId: string): void {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { BankSummary } from '@shared/types'
-import { MoreIcon, PencilIcon, PlusIcon, TrashIcon } from '../../components/icons'
+import { DownloadIcon, MoreIcon, PencilIcon, PlusIcon, TrashIcon } from '../../components/icons'
 import Menu, { anchorBelow, type MenuAnchor } from '../../components/Menu'
 import styles from './ManagePage.module.css'
 
@@ -11,11 +11,12 @@ interface Props {
   onSelect: (id: string) => void
   onNew: () => void
   onRename: (bank: BankSummary) => void
+  onExport: (bank: BankSummary) => void
   onDelete: (bank: BankSummary) => void
 }
 
 /** 左侧题库列表:类似备忘录的文件夹栏。更多操作在"⋯"按钮和右键菜单里 */
-export default function BankList({ banks, selectedId, onSelect, onNew, onRename, onDelete }: Props) {
+export default function BankList({ banks, selectedId, onSelect, onNew, onRename, onExport, onDelete }: Props) {
   const { t } = useTranslation()
   const [menu, setMenu] = useState<{ bank: BankSummary; anchor: MenuAnchor } | null>(null)
 
@@ -84,6 +85,7 @@ export default function BankList({ banks, selectedId, onSelect, onNew, onRename,
           menu
             ? [
                 { label: t('manage.renameBank'), icon: <PencilIcon size={15} />, onSelect: () => onRename(menu.bank) },
+                { label: t('manage.exportBank'), icon: <DownloadIcon size={15} />, onSelect: () => onExport(menu.bank) },
                 { label: t('manage.deleteBank'), icon: <TrashIcon size={15} />, danger: true, onSelect: () => onDelete(menu.bank) }
               ]
             : []

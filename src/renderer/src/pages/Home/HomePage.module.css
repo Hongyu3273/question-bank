@@ -244,3 +244,8 @@
   font-size: 0.875rem;
   color: var(--text-muted);
 }
+
+.emptyActions {
+  display: flex;
+  gap: 10px;
+}

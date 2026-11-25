@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { closeDb, getDb, openDb } from './db/connection'
 import { getAllSettings, readInternal, writeInternal } from './db/repositories/settings'
 import { registerIpc } from './ipc'
+import { registerIoIpc } from './ipc/io'
 import { handleAssetProtocol, registerAssetScheme } from './protocol'
 import { AssetStore } from './services/assets'
 
@@ -90,9 +91,11 @@ if (!app.requestSingleInstanceLock()) {
       return
     }
     nativeTheme.themeSource = getAllSettings(getDb()).theme
-    const assets = new AssetStore(join(app.getPath('userData'), 'assets'))
+    const assetsRoot = join(app.getPath('userData'), 'assets')
+    const assets = new AssetStore(assetsRoot)
     handleAssetProtocol(assets)
     registerIpc(assets)
+    registerIoIpc(assets, assetsRoot)
     createWindow()
 
     app.on('activate', () => {

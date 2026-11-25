@@ -27,6 +27,14 @@ const api: Api = {
     reshuffle: () => ipcRenderer.invoke(IPC.reciteReshuffle),
     status: () => ipcRenderer.invoke(IPC.reciteStatus)
   },
+  io: {
+    import: () => ipcRenderer.invoke(IPC.ioImport),
+    resolveConflict: (token, choice) => ipcRenderer.invoke(IPC.ioResolveConflict, token, choice),
+    exportBank: (bankId) => ipcRenderer.invoke(IPC.ioExportBank, bankId),
+    saveTemplate: (kind) => ipcRenderer.invoke(IPC.ioSaveTemplate, kind),
+    backup: () => ipcRenderer.invoke(IPC.ioBackup),
+    restore: () => ipcRenderer.invoke(IPC.ioRestore)
+  },
   settings: {
     getAll: () => ipcRenderer.invoke(IPC.settingsGetAll),
     set: (key, value) => ipcRenderer.invoke(IPC.settingsSet, key, value)

@@ -245,6 +245,10 @@
   text-align: right;
 }
 
+.tocItemDim {
+  opacity: 0.4;
+}
+
 .tocItemActive .tocNumber {
   color: var(--accent);
 }
@@ -353,6 +357,9 @@
 }
 
 .card {
+  /* 不在可视区域的卡片跳过绘制,题目多时滚动更流畅 */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 260px;
   padding: 22px 28px 24px;
   margin-bottom: 16px;
   background: var(--surface);
@@ -363,6 +370,21 @@
 
 .cardActive {
   border-color: var(--accent);
+}
+
+/* 当前搜索结果所在的题目 */
+.cardMatched {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* 答案渲染前的占位 */
+.answerPlaceholder {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(var(--hover), var(--hover)) 0 0 / 100% 14px no-repeat,
+    linear-gradient(var(--hover), var(--hover)) 0 26px / 86% 14px no-repeat,
+    linear-gradient(var(--hover), var(--hover)) 0 52px / 92% 14px no-repeat;
+  opacity: 0.6;
 }
 
 .cardNumber {

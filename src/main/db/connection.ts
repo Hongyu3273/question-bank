@@ -6,8 +6,13 @@ import { runMigrations } from './migrations'
 
 let db: Db | null = null
 
-/** 打开数据库并执行迁移。应用启动时调用一次。 */
-export async function openDb(file = join(app.getPath('userData'), 'app.db')): Promise<Db> {
+/** 数据库文件路径 */
+export function dbFilePath(): string {
+  return join(app.getPath('userData'), 'app.db')
+}
+
+/** 打开数据库并执行迁移。应用启动时、恢复备份后调用。 */
+export async function openDb(file = dbFilePath()): Promise<Db> {
   const require = createRequire(__filename)
   const wasmPath = require.resolve('sql.js/dist/sql-wasm.wasm')
   db = await Db.open(file, wasmPath)

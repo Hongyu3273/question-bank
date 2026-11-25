@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { createHashRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom'
 import ConfirmHost from './components/ConfirmHost'
+import ImportHost from './components/ImportHost'
 import Sidebar from './components/Sidebar'
 import ToastHost from './components/ToastHost'
 import { useApplyAppearance } from './hooks/useApplyAppearance'
@@ -20,6 +21,7 @@ function Layout() {
         <Outlet />
       </main>
       <ToastHost />
+      <ImportHost />
       <ConfirmHost />
     </div>
   )

@@ -98,6 +98,14 @@ export class Db {
     this.dirty = false
   }
 
+  /** 导出整个数据库文件的内容(用于备份) */
+  exportBytes(): Uint8Array {
+    if (this.txDepth > 0) throw new Error('事务进行中不能导出')
+    const data = this.sql.export()
+    this.applyPragmas()
+    return data
+  }
+
   close(): void {
     this.flush()
     this.sql.close()

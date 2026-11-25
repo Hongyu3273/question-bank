@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LIMITS, type BankSummary, type QuestionInput, type QuestionSummary } from '@shared/types'
-import { ArrowLeftIcon, ChevronRightIcon, FolderIcon, PencilIcon, PlusIcon } from '../../components/icons'
+import { ArrowLeftIcon, ChevronRightIcon, FolderIcon, PencilIcon, PlusIcon, UploadIcon } from '../../components/icons'
 import NameDialog from '../../components/NameDialog'
+import { exportBank, saveTemplate, startImport } from '../../lib/dataActions'
 import { errorMessage } from '../../lib/errors'
 import { confirmDialog } from '../../stores/confirm'
+import { useImportStore } from '../../stores/import'
 import { useToastStore } from '../../stores/toast'
 import BankList from './BankList'
 import QuestionEditor from './QuestionEditor'
@@ -97,6 +99,21 @@ export default function ManagePage() {
       .then((list) => openBank(list[0]?.id ?? null))
       .catch(fail)
   }, [refreshBanks, openBank, fail])
+
+  // 导入了新题库或覆盖了题库后刷新
+  const importVersion = useImportStore((s) => s.version)
+  const lastImportVersion = useRef(importVersion)
+  useEffect(() => {
+    if (importVersion === lastImportVersion.current) return
+    lastImportVersion.current = importVersion
+    void refreshBanks()
+      .then(async (list) => {
+        const keep = list.find((b) => b.id === bankId)
+        if (keep && !dirty) await openBank(keep.id)
+        else if (!keep) await openBank(list[0]?.id ?? null)
+      })
+      .catch(fail)
+  }, [importVersion, refreshBanks, openBank, bankId, dirty, fail])
 
   // ---------- 题库 ----------
 
@@ -252,6 +269,10 @@ export default function ManagePage() {
             </>
           )}
         </nav>
+        <button type="button" className="btn" onClick={() => void startImport(t)}>
+          <UploadIcon size={16} />
+          {t('data.import')}
+        </button>
         <button type="button" className="btn btn-primary" onClick={() => setNameDialog({ mode: 'create' })}>
           <PlusIcon size={16} />
           {t('manage.newBank')}
@@ -265,10 +286,17 @@ export default function ManagePage() {
           </div>
           <div className={styles.emptyTitle}>{t('home.emptyTitle')}</div>
           <p className={styles.emptyDesc}>{t('manage.emptyDesc')}</p>
-          <button type="button" className="btn btn-primary" onClick={() => setNameDialog({ mode: 'create' })}>
-            <PlusIcon size={16} />
-            {t('manage.newBank')}
-          </button>
+          <div className={styles.emptyActions}>
+            <button type="button" className="btn" onClick={() => void startImport(t)}>
+              <UploadIcon size={16} />
+              {t('data.import')}
+            </button>
+            <button type="button" className="btn btn-primary" onClick={() => setNameDialog({ mode: 'create' })}>
+              <PlusIcon size={16} />
+              {t('manage.newBank')}
+            </button>
+          </div>
+          <TemplateLinks />
         </div>
       ) : (
         <div className={styles.body}>
@@ -278,6 +306,7 @@ export default function ManagePage() {
             onSelect={(id) => void selectBank(id)}
             onNew={() => setNameDialog({ mode: 'create' })}
             onRename={(bank) => setNameDialog({ mode: 'rename', bank })}
+            onExport={(bank) => void exportBank(bank.id, t)}
             onDelete={(bank) => void deleteBank(bank)}
           />
 
@@ -294,6 +323,7 @@ export default function ManagePage() {
                 {t('manage.addFirstQuestion')}
               </button>
               <p className={styles.emptyTip}>{t('manage.bankEmptyTip')}</p>
+              <TemplateLinks />
             </div>
           ) : (
             <>
@@ -354,5 +384,22 @@ export default function ManagePage() {
         errorText={(err) => errorMessage(err, t)}
       />
     </div>
+  )
+}
+
+/** 下载导入模板的链接 */
+function TemplateLinks() {
+  const { t } = useTranslation()
+  return (
+    <p className={styles.templateLinks}>
+      {t('data.templates')}
+      <button type="button" onClick={() => void saveTemplate('markdown', t)}>
+        Markdown
+      </button>
+      ·
+      <button type="button" onClick={() => void saveTemplate('excel', t)}>
+        Excel
+      </button>
+    </p>
   )
 }

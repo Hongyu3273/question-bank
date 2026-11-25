@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import type { BankSummary, ReciteStatus } from '@shared/types'
 import { BookIcon, ExamIcon, ShuffleIcon } from '../../components/icons'
 import { useSettingsStore } from '../../stores/settings'
+import { startImport } from '../../lib/dataActions'
+import { useImportStore } from '../../stores/import'
 import { useToastStore } from '../../stores/toast'
 import styles from './HomePage.module.css'
 
@@ -19,8 +21,13 @@ export default function HomePage() {
   const [lastRead, setLastRead] = useState<string | null>(null)
   const [recite, setRecite] = useState<ReciteStatus | null>(null)
 
+  const importVersion = useImportStore((s) => s.version)
+
   useEffect(() => {
     void window.api.banks.list().then(setBanks)
+  }, [importVersion])
+
+  useEffect(() => {
     void window.api.recite.status().then(setRecite)
   }, [])
 
@@ -134,9 +141,14 @@ export default function HomePage() {
           <div className={styles.empty}>
             <div className={styles.emptyTitle}>{t('home.emptyTitle')}</div>
             <p className={styles.emptyDesc}>{t('home.emptyDesc')}</p>
-            <Link to="/manage" className="btn btn-primary">
-              {t('home.emptyAction')}
-            </Link>
+            <div className={styles.emptyActions}>
+              <button type="button" className="btn" onClick={() => void startImport(t)}>
+                {t('data.import')}
+              </button>
+              <Link to="/manage" className="btn btn-primary">
+                {t('home.emptyAction')}
+              </Link>
+            </div>
           </div>
         )}
 

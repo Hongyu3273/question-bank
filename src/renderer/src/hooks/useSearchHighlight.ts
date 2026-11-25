@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useState, type RefObject } from 'react'
+import { useEffect, type RefObject } from 'react'
 
-const ALL = 'qb-search'
-const CURRENT = 'qb-search-current'
+const NAME = 'qb-search'
 
-/** 不参与搜索的区域:KaTeX 的隐藏文本,以及显式标记的元素 */
+/** 不参与高亮的区域:KaTeX 的隐藏文本,以及显式标记的元素 */
 const SKIP_SELECTOR = '.katex-mathml, [data-search-skip]'
 
 function findRanges(root: HTMLElement, query: string): Range[] {
@@ -26,49 +25,22 @@ function findRanges(root: HTMLElement, query: string): Range[] {
 }
 
 /**
- * 在容器内搜索文字并高亮。
+ * 高亮容器内所有匹配的文字。
  * 使用 CSS Custom Highlight API:不改动页面结构,Markdown 渲染结果保持不变。
- * contentKey 变化(题目重新加载)时重新搜索。
+ * 页面内容变化(例如更多答案渲染出来)时传入新的 version 重新计算。
  */
-export function useSearchHighlight(container: RefObject<HTMLElement | null>, query: string, contentKey: unknown) {
-  const [ranges, setRanges] = useState<Range[]>([])
-  const [current, setCurrent] = useState(0)
-
+export function useSearchHighlight(container: RefObject<HTMLElement | null>, query: string, version: unknown): void {
   useEffect(() => {
     const root = container.current
     const q = query.trim()
-    const found = root && q ? findRanges(root, q) : []
-    setRanges(found)
-    setCurrent(0)
-    if (found.length > 0) CSS.highlights.set(ALL, new Highlight(...found))
-    else CSS.highlights.delete(ALL)
-  }, [container, query, contentKey])
+    // 等这一帧渲染完成后再计算
+    const frame = requestAnimationFrame(() => {
+      const ranges = root && q ? findRanges(root, q) : []
+      if (ranges.length > 0) CSS.highlights.set(NAME, new Highlight(...ranges))
+      else CSS.highlights.delete(NAME)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [container, query, version])
 
-  // 当前匹配项单独高亮,并滚动到可见位置
-  useEffect(() => {
-    const range = ranges[current]
-    if (!range) {
-      CSS.highlights.delete(CURRENT)
-      return
-    }
-    CSS.highlights.set(CURRENT, new Highlight(range))
-    range.startContainer.parentElement?.scrollIntoView({ block: 'center' })
-  }, [ranges, current])
-
-  // 离开页面时清除高亮
-  useEffect(
-    () => () => {
-      CSS.highlights.delete(ALL)
-      CSS.highlights.delete(CURRENT)
-    },
-    []
-  )
-
-  const next = useCallback(() => setCurrent((i) => (ranges.length ? (i + 1) % ranges.length : 0)), [ranges])
-  const prev = useCallback(
-    () => setCurrent((i) => (ranges.length ? (i - 1 + ranges.length) % ranges.length : 0)),
-    [ranges]
-  )
-
-  return { count: ranges.length, current, next, prev }
+  useEffect(() => () => void CSS.highlights.delete(NAME), [])
 }

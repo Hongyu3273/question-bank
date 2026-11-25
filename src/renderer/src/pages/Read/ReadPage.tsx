@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import type { ReadBank } from '@shared/types'
+import type { Question, ReadBank } from '@shared/types'
 import { BookIcon, ChevronRightIcon, PanelLeftIcon, SearchIcon } from '../../components/icons'
 import MarkdownView from '../../components/MarkdownView'
 import { useResizablePanel } from '../../hooks/useResizablePanel'
@@ -13,6 +13,49 @@ import styles from './ReadPage.module.css'
 
 const NO_IDS: string[] = []
 
+/** 答案渲染前占位的估计高度,减少答案渲染出来时页面的跳动 */
+const estimateHeight = (q: Question) => Math.min(900, 48 + Math.ceil(q.answerMd.length / 40) * 26)
+
+interface CardProps {
+  question: Question
+  rendered: boolean
+  active: boolean
+  matched: boolean
+  noAnswer: string
+  numberLabel: string
+}
+
+/** 一道题。答案在接近可视区域时才渲染(题目多时保持流畅) */
+const QuestionCard = memo(function QuestionCard({
+  question: q,
+  rendered,
+  active,
+  matched,
+  noAnswer,
+  numberLabel
+}: CardProps) {
+  const cls = [styles.card, active && styles.cardActive, matched && styles.cardMatched].filter(Boolean).join(' ')
+  return (
+    <article id={`q-${q.id}`} data-question={q.id} className={cls} aria-labelledby={`title-${q.id}`}>
+      <div className={styles.cardNumber} data-search-skip>
+        {numberLabel}
+      </div>
+      <h3 id={`title-${q.id}`} className={styles.cardTitle}>
+        {q.title}
+      </h3>
+      <div className={styles.answer}>
+        {!rendered ? (
+          <div className={styles.answerPlaceholder} style={{ height: estimateHeight(q) }} aria-hidden="true" />
+        ) : q.answerMd.trim() ? (
+          <MarkdownView markdown={q.answerMd} bankId={q.bankId} />
+        ) : (
+          <p className={styles.noAnswer}>{noAnswer}</p>
+        )}
+      </div>
+    </article>
+  )
+})
+
 export default function ReadPage() {
   const { t } = useTranslation()
   const toast = useToastStore((s) => s.show)
@@ -22,13 +65,17 @@ export default function ReadPage() {
 
   const [banks, setBanks] = useState<ReadBank[] | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [rendered, setRendered] = useState<Set<string>>(new Set())
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [input, setInput] = useState('')
   const [query, setQuery] = useState('')
+  const [matchIndex, setMatchIndex] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
   const tocRef = useRef<HTMLElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const restored = useRef(false)
+  /** 渲染完成后要滚动到的题目 */
+  const pendingScroll = useRef<{ id: string; smooth: boolean } | null>(null)
   const toc = useResizablePanel({
     storageKey: 'qb.read.toc',
     defaultWidth: 260,
@@ -42,35 +89,94 @@ export default function ReadPage() {
     let cancelled = false
     window.api.read
       .list(selectedIds)
-      .then((list) => !cancelled && setBanks(list))
+      .then((list) => {
+        if (cancelled) return
+        setBanks(list)
+        // 先渲染开头几道题的答案,其余随滚动渲染
+        setRendered(new Set(list.flatMap((b) => b.questions).slice(0, 8).map((q) => q.id)))
+      })
       .catch((err) => toast(errorMessage(err, t), 3000))
     return () => {
       cancelled = true
     }
   }, [selectedIds, toast, t])
 
-  const total = useMemo(() => banks?.reduce((n, b) => n + b.questions.length, 0) ?? 0, [banks])
+  const all = useMemo(() => banks?.flatMap((b) => b.questions) ?? [], [banks])
 
   // 输入停顿后再搜索
   useEffect(() => {
-    const timer = setTimeout(() => setQuery(input), 200)
+    const timer = setTimeout(() => setQuery(input.trim()), 200)
     return () => clearTimeout(timer)
   }, [input])
 
-  const search = useSearchHighlight(listRef, query, banks)
+  /** 在题目数据中搜索(不依赖答案是否已渲染),结果按题目顺序 */
+  const matches = useMemo(() => {
+    const q = query.toLowerCase()
+    if (!q) return []
+    return all.filter((x) => x.title.toLowerCase().includes(q) || x.answerMd.toLowerCase().includes(q)).map((x) => x.id)
+  }, [all, query])
+  const matchSet = useMemo(() => new Set(matches), [matches])
+
+  /** 跳到某道题:先确保答案已渲染,渲染完成后再滚动 */
+  const goTo = useCallback((id: string, smooth = true) => {
+    pendingScroll.current = { id, smooth }
+    setRendered((prev) => new Set(prev).add(id))
+    setActiveId(id)
+  }, [])
+
+  useLayoutEffect(() => {
+    const target = pendingScroll.current
+    if (!target) return
+    pendingScroll.current = null
+    document
+      .getElementById(`q-${target.id}`)
+      ?.scrollIntoView({ block: 'start', behavior: target.smooth ? 'smooth' : 'auto' })
+  }, [rendered])
+
+  // 搜索词变化时跳到第一个匹配的题目
+  useEffect(() => {
+    setMatchIndex(0)
+    if (matches.length > 0) goTo(matches[0])
+  }, [matches, goTo])
+
+  const stepMatch = (delta: number) => {
+    if (matches.length === 0) return
+    const i = (matchIndex + delta + matches.length) % matches.length
+    setMatchIndex(i)
+    goTo(matches[i])
+  }
+
+  useSearchHighlight(listRef, query, rendered)
 
   // 回到上次阅读的位置(只在首次加载时)
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!banks || restored.current) return
     restored.current = true
-    if (!savedPosition) return
-    const el = document.getElementById(`q-${savedPosition}`)
-    if (el && el !== listRef.current?.querySelector('[data-question]')) {
-      el.scrollIntoView({ block: 'start' })
-      setActiveId(savedPosition)
-      toast(t('read.resumed'))
-    }
-  }, [banks, savedPosition, toast, t])
+    if (!savedPosition || all[0]?.id === savedPosition || !all.some((q) => q.id === savedPosition)) return
+    goTo(savedPosition, false)
+    toast(t('read.resumed'))
+  }, [banks, all, savedPosition, goTo, toast, t])
+
+  // 接近可视区域的题目渲染答案
+  useEffect(() => {
+    const root = listRef.current
+    if (!root || !banks) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const ids = entries.filter((e) => e.isIntersecting).map((e) => (e.target as HTMLElement).dataset.question!)
+        if (ids.length === 0) return
+        setRendered((prev) => {
+          if (ids.every((id) => prev.has(id))) return prev
+          const next = new Set(prev)
+          ids.forEach((id) => next.add(id))
+          return next
+        })
+      },
+      { root, rootMargin: '1200px 0px' }
+    )
+    root.querySelectorAll('[data-question]').forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [banks])
 
   // 跟踪当前阅读的题目:视口上部的题目视为"正在读"
   useEffect(() => {
@@ -125,11 +231,6 @@ export default function ReadPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const jumpTo = (id: string) => {
-    document.getElementById(`q-${id}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-    setActiveId(id)
-  }
-
   const toggleBank = (id: string) =>
     setCollapsed((prev) => {
       const next = new Set(prev)
@@ -146,11 +247,15 @@ export default function ReadPage() {
     )
   }
   if (!banks) return null
-  if (total === 0) {
-    return <Empty title={t('read.noQuestionsTitle')} desc={t('read.noQuestionsDesc')} to="/manage" action={t('home.manageBanks')} />
+  if (all.length === 0) {
+    return (
+      <Empty title={t('read.noQuestionsTitle')} desc={t('read.noQuestionsDesc')} to="/manage" action={t('home.manageBanks')} />
+    )
   }
 
   // ---------- 页面 ----------
+
+  const currentMatch = matches[matchIndex] ?? null
 
   return (
     <div className={styles.page}>
@@ -167,7 +272,7 @@ export default function ReadPage() {
         </button>
         <div className={styles.heading}>
           <h1 className={styles.title}>{t('nav.read')}</h1>
-          <span className={styles.subtitle}>{t('read.summary', { banks: banks.length, count: total })}</span>
+          <span className={styles.subtitle}>{t('read.summary', { banks: banks.length, count: all.length })}</span>
         </div>
 
         <div className={styles.searchBox}>
@@ -183,11 +288,8 @@ export default function ReadPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault()
-                  setQuery(input)
-                  if (query === input) {
-                    if (e.shiftKey) search.prev()
-                    else search.next()
-                  }
+                  if (input.trim() !== query) setQuery(input.trim())
+                  else stepMatch(e.shiftKey ? -1 : 1)
                 } else if (e.key === 'Escape') {
                   setInput('')
                   setQuery('')
@@ -195,11 +297,11 @@ export default function ReadPage() {
               }}
             />
           </label>
-          {query.trim() && (
+          {query && (
             <>
               <span className={styles.matchCount} aria-live="polite">
-                {search.count > 0
-                  ? t('read.matchPosition', { current: search.current + 1, count: search.count })
+                {matches.length > 0
+                  ? t('read.matchPosition', { current: matchIndex + 1, count: matches.length })
                   : t('read.noMatch')}
               </span>
               <button
@@ -207,8 +309,8 @@ export default function ReadPage() {
                 className={styles.iconButton}
                 aria-label={t('read.prevMatch')}
                 title={`${t('read.prevMatch')} (Shift+Enter)`}
-                disabled={search.count === 0}
-                onClick={search.prev}
+                disabled={matches.length === 0}
+                onClick={() => stepMatch(-1)}
               >
                 <ChevronRightIcon size={16} />
               </button>
@@ -217,8 +319,8 @@ export default function ReadPage() {
                 className={`${styles.iconButton} ${styles.down}`}
                 aria-label={t('read.nextMatch')}
                 title={`${t('read.nextMatch')} (Enter)`}
-                disabled={search.count === 0}
-                onClick={search.next}
+                disabled={matches.length === 0}
+                onClick={() => stepMatch(1)}
               >
                 <ChevronRightIcon size={16} />
               </button>
@@ -260,20 +362,27 @@ export default function ReadPage() {
                   </button>
                   {!isCollapsed && (
                     <ol className={styles.tocList}>
-                      {bank.questions.map((q, i) => (
-                        <li key={q.id}>
-                          <button
-                            type="button"
-                            className={q.id === activeId ? `${styles.tocItem} ${styles.tocItemActive}` : styles.tocItem}
-                            aria-current={q.id === activeId ? 'true' : undefined}
-                            onClick={() => jumpTo(q.id)}
-                            title={q.title}
-                          >
-                            <span className={styles.tocNumber}>{i + 1}</span>
-                            <span className={styles.tocTitle}>{q.title}</span>
-                          </button>
-                        </li>
-                      ))}
+                      {bank.questions.map((q, i) => {
+                        const cls = [
+                          styles.tocItem,
+                          q.id === activeId && styles.tocItemActive,
+                          query && !matchSet.has(q.id) && styles.tocItemDim
+                        ]
+                        return (
+                          <li key={q.id}>
+                            <button
+                              type="button"
+                              className={cls.filter(Boolean).join(' ')}
+                              aria-current={q.id === activeId ? 'true' : undefined}
+                              onClick={() => goTo(q.id)}
+                              title={q.title}
+                            >
+                              <span className={styles.tocNumber}>{i + 1}</span>
+                              <span className={styles.tocTitle}>{q.title}</span>
+                            </button>
+                          </li>
+                        )
+                      })}
                     </ol>
                   )}
                 </div>
@@ -295,30 +404,20 @@ export default function ReadPage() {
               <section key={bank.id} className={styles.bankSection} aria-labelledby={`bank-${bank.id}`}>
                 <h2 id={`bank-${bank.id}`} className={styles.bankHeading} data-search-skip>
                   {bank.name}
-                  <span className={styles.bankHeadingCount}>{t('common.questionCount', { count: bank.questions.length })}</span>
+                  <span className={styles.bankHeadingCount}>
+                    {t('common.questionCount', { count: bank.questions.length })}
+                  </span>
                 </h2>
                 {bank.questions.map((q, i) => (
-                  <article
+                  <QuestionCard
                     key={q.id}
-                    id={`q-${q.id}`}
-                    data-question={q.id}
-                    className={q.id === activeId ? `${styles.card} ${styles.cardActive}` : styles.card}
-                    aria-labelledby={`title-${q.id}`}
-                  >
-                    <div className={styles.cardNumber} data-search-skip>
-                      {t('manage.questionNumber', { number: i + 1 })}
-                    </div>
-                    <h3 id={`title-${q.id}`} className={styles.cardTitle}>
-                      {q.title}
-                    </h3>
-                    <div className={styles.answer}>
-                      {q.answerMd.trim() ? (
-                        <MarkdownView markdown={q.answerMd} bankId={q.bankId} />
-                      ) : (
-                        <p className={styles.noAnswer}>{t('read.noAnswer')}</p>
-                      )}
-                    </div>
-                  </article>
+                    question={q}
+                    numberLabel={t('manage.questionNumber', { number: i + 1 })}
+                    rendered={rendered.has(q.id)}
+                    active={q.id === activeId}
+                    matched={q.id === currentMatch}
+                    noAnswer={t('read.noAnswer')}
+                  />
                 ))}
               </section>
             ))}

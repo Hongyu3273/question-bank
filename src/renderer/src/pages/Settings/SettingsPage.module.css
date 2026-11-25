@@ -71,3 +71,22 @@
   font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
+
+.itemText {
+  flex: 1 1 300px;
+}
+
+.itemText .itemLabel {
+  display: block;
+}
+
+.itemDesc {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.warning {
+  color: var(--warning-text);
+}

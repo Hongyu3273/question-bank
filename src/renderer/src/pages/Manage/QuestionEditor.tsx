@@ -111,7 +111,7 @@ export default function QuestionEditor({
   const ed = () => editorRef.current
   const tools: { label: string; icon: ReactNode; run: () => void }[][] = [
     [
-      { label: t('manage.fmtHeading'), icon: <b className={styles.glyph}>H</b>, run: () => ed()?.prefixLines('## ') },
+      { label: t('manage.fmtHeading'), icon: <b className={styles.glyph}>H</b>, run: () => ed()?.prefixLines('### ') },
       { label: t('manage.fmtBold'), icon: <b className={styles.glyph}>B</b>, run: () => ed()?.wrap('**', '**', t('manage.fmtBold')) },
       { label: t('manage.fmtItalic'), icon: <i className={styles.glyph}>I</i>, run: () => ed()?.wrap('*', '*', t('manage.fmtItalic')) },
       { label: t('manage.fmtStrike'), icon: <s className={styles.glyph}>S</s>, run: () => ed()?.wrap('~~', '~~', t('manage.fmtStrike')) }

@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { FontSize, Language, Settings, ThemeMode } from '@shared/types'
+import { DownloadIcon, UploadIcon } from '../../components/icons'
+import { saveTemplate } from '../../lib/dataActions'
+import { errorMessage } from '../../lib/errors'
+import { confirmDialog } from '../../stores/confirm'
 import { useSettingsStore } from '../../stores/settings'
+import { useToastStore } from '../../stores/toast'
 import styles from './SettingsPage.module.css'
 
 interface SegmentedProps<T extends string> {
@@ -35,6 +40,40 @@ export default function SettingsPage() {
   const settings = useSettingsStore((s) => s.settings) as Settings
   const update = useSettingsStore((s) => s.update)
   const [version, setVersion] = useState('')
+  const toast = useToastStore((s) => s.show)
+  const [busy, setBusy] = useState(false)
+
+  const backup = async () => {
+    setBusy(true)
+    try {
+      const r = await window.api.io.backup()
+      if (!r.canceled) toast(t('data.savedTo', { path: r.path }), 3500)
+    } catch (err) {
+      toast(errorMessage(err, t), 3000)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const restore = async () => {
+    const ok = await confirmDialog({
+      title: t('data.restoreConfirmTitle'),
+      message: t('data.restoreConfirmMessage'),
+      confirmLabel: t('data.chooseBackup'),
+      danger: true
+    })
+    if (!ok) return
+    setBusy(true)
+    try {
+      const r = await window.api.io.restore()
+      // 数据已全部替换,重新加载界面
+      if (!r.canceled) window.location.reload()
+    } catch (err) {
+      toast(errorMessage(err, t), 4000)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   useEffect(() => {
     void window.api.app.info().then((info) => setVersion(info.version))
@@ -86,6 +125,44 @@ export default function SettingsPage() {
                 { value: 'en', label: 'English' }
               ]}
             />
+          </div>
+        </section>
+
+        <section className={styles.section} aria-labelledby="settings-data">
+          <h2 id="settings-data" className={styles.sectionTitle}>
+            {t('data.title')}
+          </h2>
+          <div className={styles.item}>
+            <div className={styles.itemText}>
+              <div className={styles.itemLabel}>{t('data.backup')}</div>
+              <div className={styles.itemDesc}>{t('data.backupDesc')}</div>
+            </div>
+            <button type="button" className="btn" onClick={() => void backup()} disabled={busy}>
+              <DownloadIcon size={16} />
+              {t('data.exportBackup')}
+            </button>
+          </div>
+          <div className={styles.item}>
+            <div className={styles.itemText}>
+              <div className={styles.itemLabel}>{t('data.restore')}</div>
+              <div className={`${styles.itemDesc} ${styles.warning}`}>{t('data.restoreDesc')}</div>
+            </div>
+            <button type="button" className="btn" onClick={() => void restore()} disabled={busy}>
+              <UploadIcon size={16} />
+              {t('data.chooseBackup')}
+            </button>
+          </div>
+          <div className={styles.item}>
+            <div className={styles.itemText}>
+              <div className={styles.itemLabel}>{t('data.templatesTitle')}</div>
+              <div className={styles.itemDesc}>{t('data.templatesDesc')}</div>
+            </div>
+            <button type="button" className="btn" onClick={() => void saveTemplate('markdown', t)}>
+              Markdown
+            </button>
+            <button type="button" className="btn" onClick={() => void saveTemplate('excel', t)}>
+              Excel
+            </button>
           </div>
         </section>
 

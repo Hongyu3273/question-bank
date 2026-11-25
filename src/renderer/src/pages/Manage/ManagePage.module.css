@@ -635,3 +635,30 @@
     flex-basis: 240px;
   }
 }
+
+.emptyActions {
+  display: flex;
+  gap: 10px;
+}
+
+.templateLinks {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.templateLinks button {
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.templateLinks button:hover {
+  text-decoration: underline;
+}

@@ -93,6 +93,34 @@ export interface AppInfo {
   platform: string
 }
 
+/** 导入文件中发现的问题 */
+export interface ImportIssue {
+  code:
+    | 'NO_QUESTIONS'
+    | 'TITLE_EMPTY'
+    | 'TITLE_TOO_LONG'
+    | 'SEPARATOR_MISSING'
+    | 'TEXT_BEFORE_SEPARATOR'
+    | 'ANSWER_TOO_LONG'
+    | 'IMAGE_MISSING'
+    | 'EXCEL_HEADER_MISSING'
+  /** 第几题(Markdown) */
+  question?: number
+  /** 第几行(Markdown 为文件行号) */
+  line?: number
+  /** 第几行(Excel) */
+  row?: number
+  detail?: string
+}
+
+/** 导入一个文件的结果 */
+export type ImportResult =
+  | { file: string; status: 'imported'; bankId: string; name: string; questionCount: number; replaced: boolean }
+  | { file: string; status: 'conflict'; token: string; name: string; questionCount: number }
+  | { file: string; status: 'invalid'; issues: ImportIssue[] }
+  | { file: string; status: 'failed'; error: string }
+  | { file: string; status: 'skipped'; name: string }
+
 /** 字段长度限制,主进程校验与界面提示共用 */
 export const LIMITS = {
   bankName: 50,

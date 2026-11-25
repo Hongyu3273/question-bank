@@ -99,3 +99,22 @@ export function listQuestionsForBanks(db: Db, bankIds: unknown): ReadBank[] {
   )
   return banks.map((b) => ({ ...b, questions: questions.filter((q) => q.bankId === b.id) }))
 }
+
+/** 批量追加题目(导入用);在调用方的事务中执行 */
+export function insertQuestions(db: Db, bankId: string, items: QuestionInput[]): void {
+  const inputs = items.map((item) => normalizeInput(item))
+  db.transaction(() => {
+    let next =
+      db.get<{ n: number }>('SELECT COALESCE(MAX(sort_order), -1) + 1 AS n FROM questions WHERE bank_id = ?', [bankId])
+        ?.n ?? 0
+    const now = Date.now()
+    for (const input of inputs) {
+      db.run(
+        `INSERT INTO questions (id, bank_id, title, answer_md, sort_order, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [randomUUID(), bankId, input.title, input.answerMd, next++, now, now]
+      )
+    }
+    touchBank(db, bankId)
+  })
+}

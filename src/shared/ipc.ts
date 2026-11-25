@@ -10,6 +10,7 @@ import type {
   ReadBank,
   ReciteState,
   ReciteStatus,
+  ImportResult,
   Settings
 } from './types'
 
@@ -30,6 +31,12 @@ export const IPC = {
   recitePrev: 'recite:prev',
   reciteReshuffle: 'recite:reshuffle',
   reciteStatus: 'recite:status',
+  ioImport: 'io:import',
+  ioResolveConflict: 'io:resolveConflict',
+  ioExportBank: 'io:exportBank',
+  ioSaveTemplate: 'io:saveTemplate',
+  ioBackup: 'io:backup',
+  ioRestore: 'io:restore',
   settingsGetAll: 'settings:getAll',
   settingsSet: 'settings:set',
   appInfo: 'app:info'
@@ -65,6 +72,17 @@ export interface Api {
     /** 当前进度(不改变会话),首页使用 */
     status(): Promise<ReciteStatus | null>
   }
+  io: {
+    /** 选择一个或多个题库文件(.zip / .md / .xlsx)并导入;每个题库一条结果 */
+    import(): Promise<{ canceled: true } | { canceled: false; results: ImportResult[] }>
+    /** 处理同名冲突 */
+    resolveConflict(token: string, choice: 'overwrite' | 'saveAsNew' | 'skip'): Promise<ImportResult>
+    exportBank(bankId: string): Promise<SaveResult>
+    saveTemplate(kind: 'markdown' | 'excel'): Promise<SaveResult>
+    backup(): Promise<SaveResult>
+    /** 选择备份文件并替换全部数据;成功后界面需要重新加载 */
+    restore(): Promise<{ canceled: true } | { canceled: false }>
+  }
   settings: {
     getAll(): Promise<Settings>
     set<K extends keyof Settings>(key: K, value: Settings[K]): Promise<void>
@@ -73,6 +91,8 @@ export interface Api {
     info(): Promise<AppInfo>
   }
 }
+
+export type SaveResult = { canceled: true } | { canceled: false; path: string }
 
 /** 图片在界面中的访问地址:qb-asset://<题库 id>/images/xxx.png */
 export const ASSET_SCHEME = 'qb-asset'

@@ -23,7 +23,10 @@
     "dist:mac": "npm run build && electron-builder --mac"
   },
   "dependencies": {
-    "sql.js": "^1.17.0"
+    "fflate": "^0.8.3",
+    "read-excel-file": "^9.3.20",
+    "sql.js": "^1.17.0",
+    "write-excel-file": "^4.1.1"
   },
   "devDependencies": {
     "@codemirror/lang-markdown": "^6.5.2",

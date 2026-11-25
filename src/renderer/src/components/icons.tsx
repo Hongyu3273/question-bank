@@ -168,3 +168,15 @@ export const PanelLeftIcon = (p: IconProps) => (
     <path d="M9 4v16" />
   </Svg>
 )
+
+export const DownloadIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3v12M7 10l5 5 5-5M4 17v3h16v-3" />
+  </Svg>
+)
+
+export const UploadIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 15V3M7 8l5-5 5 5M4 17v3h16v-3" />
+  </Svg>
+)
