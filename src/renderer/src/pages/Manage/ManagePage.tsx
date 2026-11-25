@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useBlocker } from 'react-router-dom'
+import { useBlocker, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { BankSummary, QuestionInput, QuestionSummary } from '@shared/types'
-import { PlusIcon } from '../../components/icons'
+import { ArrowLeftIcon, PlusIcon } from '../../components/icons'
 import { errorMessage } from '../../lib/errors'
 import { confirmDialog } from '../../stores/confirm'
 import { useToastStore } from '../../stores/toast'
@@ -19,6 +19,7 @@ const NONE: Selection = { kind: 'none' }
 export default function ManagePage() {
   const { t } = useTranslation()
   const toast = useToastStore((s) => s.show)
+  const navigate = useNavigate()
 
   const [banks, setBanks] = useState<BankSummary[] | null>(null)
   const [bankId, setBankId] = useState<string | null>(null)
@@ -209,6 +210,13 @@ export default function ManagePage() {
     }
   }
 
+  /** 返回上一页;没有上一页时回到首页。有未保存修改时由 useBlocker 确认 */
+  const goBack = () => {
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0
+    if (idx > 0) navigate(-1)
+    else navigate('/')
+  }
+
   // ---------- 渲染 ----------
 
   const selectedQuestionId = selection.kind === 'existing' ? selection.id : selection.kind === 'new' ? 'new' : null
@@ -217,6 +225,10 @@ export default function ManagePage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.title}>{t('nav.manage')}</h1>
+        <button type="button" className="btn" onClick={goBack}>
+          <ArrowLeftIcon size={16} />
+          {t('common.back')}
+        </button>
         <button type="button" className="btn btn-primary" onClick={() => setCreatingBank(true)}>
           <PlusIcon size={16} />
           {t('manage.newBank')}

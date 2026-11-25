@@ -18,7 +18,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "confirm": "OK"
+    "confirm": "OK",
+    "back": "Back"
   },
   "home": {
     "title": "Start reviewing",

@@ -92,3 +92,9 @@ export const TableIcon = (p: IconProps) => (
     <path d="M3 10h18M3 15h18M10 4v16" />
   </Svg>
 )
+
+export const ArrowLeftIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M19 12H5M11 6l-6 6 6 6" />
+  </Svg>
+)

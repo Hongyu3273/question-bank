@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LIMITS } from '@shared/types'
+import styles from './ManagePage.module.css'
 
 interface Props {
   initialValue?: string
@@ -11,15 +13,17 @@ interface Props {
   errorText: (err: unknown) => string
 }
 
-/** 新建或重命名题库时的行内输入框:回车保存,Esc 取消,失去焦点时有改动则保存 */
+/** 新建或重命名题库时的行内输入框:点保存或按回车保存,点取消或按 Esc 取消 */
 export default function NameInput({ initialValue = '', placeholder, ariaLabel, onSubmit, onCancel, errorText }: Props) {
+  const { t } = useTranslation()
   const [value, setValue] = useState(initialValue)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   const submit = async () => {
     if (busy) return
-    if (!value.trim() || value.trim() === initialValue.trim()) {
+    // 重命名时名称没变,直接结束编辑
+    if (initialValue && value.trim() === initialValue.trim()) {
       onCancel()
       return
     }
@@ -33,7 +37,7 @@ export default function NameInput({ initialValue = '', placeholder, ariaLabel, o
   }
 
   return (
-    <div>
+    <div className={styles.nameInput}>
       <input
         className="input"
         style={{ height: 36, fontSize: '0.875rem' }}
@@ -57,15 +61,20 @@ export default function NameInput({ initialValue = '', placeholder, ariaLabel, o
             onCancel()
           }
         }}
-        onBlur={() => {
-          if (!error) void submit()
-        }}
       />
       {error && (
-        <div role="alert" style={{ marginTop: 4, fontSize: '0.75rem', color: 'var(--danger)' }}>
+        <div role="alert" className={styles.nameInputError}>
           {error}
         </div>
       )}
+      <div className={styles.nameInputActions}>
+        <button type="button" className="btn btn-sm" onClick={onCancel} disabled={busy}>
+          {t('common.cancel')}
+        </button>
+        <button type="button" className="btn btn-sm btn-primary" onClick={() => void submit()} disabled={busy}>
+          {t('common.save')}
+        </button>
+      </div>
     </div>
   )
 }
