@@ -1,7 +1,17 @@
 // IPC 通道名与 window.api 的接口定义。
 // 新增接口时三处同步修改:这里的 IPC 和 Api、preload/index.ts、main/ipc/index.ts。
 
-import type { AppInfo, BankSummary, Question, QuestionInput, QuestionSummary, ReadBank, Settings } from './types'
+import type {
+  AppInfo,
+  BankSummary,
+  Question,
+  QuestionInput,
+  QuestionSummary,
+  ReadBank,
+  ReciteState,
+  ReciteStatus,
+  Settings
+} from './types'
 
 export const IPC = {
   banksList: 'banks:list',
@@ -15,6 +25,11 @@ export const IPC = {
   questionsDelete: 'questions:delete',
   questionsSaveImage: 'questions:saveImage',
   readList: 'read:list',
+  reciteStart: 'recite:start',
+  reciteNext: 'recite:next',
+  recitePrev: 'recite:prev',
+  reciteReshuffle: 'recite:reshuffle',
+  reciteStatus: 'recite:status',
   settingsGetAll: 'settings:getAll',
   settingsSet: 'settings:set',
   appInfo: 'app:info'
@@ -40,6 +55,15 @@ export interface Api {
   read: {
     /** 按题库顺序返回所选题库的全部题目(含答案) */
     list(bankIds: string[]): Promise<ReadBank[]>
+  }
+  recite: {
+    /** 进入背题:勾选与上次相同则继续,否则重新洗牌;没有题目时返回 null */
+    start(bankIds: string[]): Promise<ReciteState | null>
+    next(): Promise<ReciteState | null>
+    prev(): Promise<ReciteState | null>
+    reshuffle(): Promise<ReciteState | null>
+    /** 当前进度(不改变会话),首页使用 */
+    status(): Promise<ReciteStatus | null>
   }
   settings: {
     getAll(): Promise<Settings>

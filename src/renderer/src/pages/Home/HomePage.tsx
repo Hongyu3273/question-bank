@@ -1,7 +1,7 @@
 import { useEffect, useState, type MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import type { BankSummary } from '@shared/types'
+import type { BankSummary, ReciteStatus } from '@shared/types'
 import { BookIcon, ExamIcon, ShuffleIcon } from '../../components/icons'
 import { useSettingsStore } from '../../stores/settings'
 import { useToastStore } from '../../stores/toast'
@@ -17,9 +17,11 @@ export default function HomePage() {
   const updateSetting = useSettingsStore((s) => s.update)
   const [banks, setBanks] = useState<BankSummary[] | null>(null)
   const [lastRead, setLastRead] = useState<string | null>(null)
+  const [recite, setRecite] = useState<ReciteStatus | null>(null)
 
   useEffect(() => {
     void window.api.banks.list().then(setBanks)
+    void window.api.recite.status().then(setRecite)
   }, [])
 
   // 看题模式上次读到的题目(题目已删除时不显示)
@@ -34,6 +36,10 @@ export default function HomePage() {
   // 已删除的题库不计入勾选
   const selected = (banks ?? []).filter((b) => selectedIds.includes(b.id))
   const totalQuestions = selected.reduce((sum, b) => sum + b.questionCount, 0)
+
+  // 背题进度只在勾选的题库与上次背题时相同时显示
+  const sameSelection =
+    recite !== null && JSON.stringify([...selected.map((b) => b.id)].sort()) === JSON.stringify(recite.bankIds)
 
   const setSelection = (ids: string[]) => void updateSetting('selectedBankIds', ids)
   const toggle = (id: string) =>
@@ -76,7 +82,22 @@ export default function HomePage() {
           </div>
           <div className={styles.modeTitle}>{t('nav.recite')}</div>
           <p className={styles.modeDesc}>{t('home.reciteDesc')}</p>
-          <div className={styles.modeAction}>{t('home.reciteAction')}</div>
+          {recite && sameSelection && (
+            <div className={styles.modeProgress}>
+              <div className={styles.modeProgressText}>
+                <span>{t('recite.roundLabel', { round: recite.round })}</span>
+                <span>
+                  {recite.index} / {recite.total}
+                </span>
+              </div>
+              <div className={styles.modeProgressBar}>
+                <div style={{ width: `${Math.round((recite.index / recite.total) * 100)}%` }} />
+              </div>
+            </div>
+          )}
+          <div className={styles.modeAction}>
+            {recite && sameSelection ? t('home.continueReciting') : t('home.reciteAction')}
+          </div>
         </Link>
 
         <button

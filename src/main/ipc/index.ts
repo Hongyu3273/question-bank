@@ -14,6 +14,7 @@ import {
 } from '../db/repositories/questions'
 import { getAllSettings, isSettingKey, isValidSettingValue, setSetting } from '../db/repositories/settings'
 import type { AssetStore } from '../services/assets'
+import { nextQuestion, prevQuestion, reciteStatus, reshuffle, startRecite } from '../services/recite'
 
 /** 界面传来的参数不可信,先确认类型 */
 function str(value: unknown): string {
@@ -50,6 +51,13 @@ export function registerIpc(assets: AssetStore): void {
 
   // 看题
   ipcMain.handle(IPC.readList, (_e, bankIds: unknown) => listQuestionsForBanks(getDb(), bankIds))
+
+  // 背题
+  ipcMain.handle(IPC.reciteStart, (_e, bankIds: unknown) => startRecite(getDb(), bankIds))
+  ipcMain.handle(IPC.reciteNext, () => nextQuestion(getDb()))
+  ipcMain.handle(IPC.recitePrev, () => prevQuestion(getDb()))
+  ipcMain.handle(IPC.reciteReshuffle, () => reshuffle(getDb()))
+  ipcMain.handle(IPC.reciteStatus, () => reciteStatus(getDb()))
 
   // 设置
   ipcMain.handle(IPC.settingsGetAll, () => getAllSettings(getDb()))

@@ -1,7 +1,210 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import Placeholder from '../../components/Placeholder'
+import type { ReciteState } from '@shared/types'
+import { ArrowLeftIcon, ShuffleIcon } from '../../components/icons'
+import MarkdownView from '../../components/MarkdownView'
+import { errorMessage } from '../../lib/errors'
+import { useSettingsStore } from '../../stores/settings'
+import { useToastStore } from '../../stores/toast'
+import styles from './RecitePage.module.css'
+
+const NO_IDS: string[] = []
+
+/** 焦点在输入框或有弹窗打开时,不响应快捷键 */
+function shortcutsBlocked(): boolean {
+  const el = document.activeElement
+  if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || (el as HTMLElement)?.isContentEditable) {
+    return true
+  }
+  return document.querySelector('dialog[open]') !== null
+}
 
 export default function RecitePage() {
   const { t } = useTranslation()
-  return <Placeholder title={t('nav.recite')} description={t('placeholder.recite')} />
+  const toast = useToastStore((s) => s.show)
+  const selectedIds = useSettingsStore((s) => s.settings?.selectedBankIds ?? NO_IDS)
+
+  // undefined:加载中;null:没有可背的题目
+  const [state, setState] = useState<ReciteState | null | undefined>(undefined)
+  const [revealed, setRevealed] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const fail = useCallback((err: unknown) => toast(errorMessage(err, t), 3000), [toast, t])
+
+  /** 切换到新状态:答案恢复隐藏,滚动回顶部 */
+  const apply = useCallback(
+    (next: ReciteState | null) => {
+      setState(next)
+      setRevealed(false)
+      cardRef.current?.scrollTo({ top: 0 })
+      if (next?.roundCompleted) toast(t('recite.roundCompleted', { round: next.round - 1 }), 2600)
+    },
+    [toast, t]
+  )
+
+  useEffect(() => {
+    if (selectedIds.length === 0) {
+      setState(null)
+      return
+    }
+    let cancelled = false
+    window.api.recite
+      .start(selectedIds)
+      .then((s) => !cancelled && apply(s))
+      .catch(fail)
+    return () => {
+      cancelled = true
+    }
+  }, [selectedIds, apply, fail])
+
+  const run = useCallback(
+    async (action: () => Promise<ReciteState | null>) => {
+      if (busy) return
+      setBusy(true)
+      try {
+        apply(await action())
+      } catch (err) {
+        fail(err)
+      } finally {
+        setBusy(false)
+      }
+    },
+    [busy, apply, fail]
+  )
+
+  const next = useCallback(() => void run(() => window.api.recite.next()), [run])
+  const prev = useCallback(() => void run(() => window.api.recite.prev()), [run])
+  const reshuffle = () =>
+    void run(async () => {
+      const s = await window.api.recite.reshuffle()
+      toast(t('recite.reshuffled'))
+      return s
+    })
+
+  // 快捷键:空格显示/隐藏答案,← → 切换题目
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!state || e.ctrlKey || e.metaKey || e.altKey || shortcutsBlocked()) return
+      if (e.key === ' ') {
+        e.preventDefault()
+        setRevealed((r) => !r)
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        next()
+      } else if (e.key === 'ArrowLeft' && state.index > 1) {
+        e.preventDefault()
+        prev()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [state, next, prev])
+
+  // ---------- 空状态 ----------
+
+  if (state === undefined) return null
+  if (state === null) {
+    const noSelection = selectedIds.length === 0
+    return (
+      <div className={styles.empty}>
+        <div className={styles.emptyIcon}>
+          <ShuffleIcon size={28} />
+        </div>
+        <div className={styles.emptyTitle}>{noSelection ? t('read.noSelectionTitle') : t('read.noQuestionsTitle')}</div>
+        <p className={styles.emptyDesc}>{noSelection ? t('recite.noSelectionDesc') : t('read.noQuestionsDesc')}</p>
+        <Link to={noSelection ? '/' : '/manage'} className="btn btn-primary">
+          {noSelection ? t('read.goSelect') : t('home.manageBanks')}
+        </Link>
+      </div>
+    )
+  }
+
+  // ---------- 页面 ----------
+
+  const { question, index, total, round, bankName } = state
+  const percent = Math.round((index / total) * 100)
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>{t('nav.recite')}</h1>
+        <Link to="/" className={styles.changeBanks}>
+          {t('recite.changeBanks')}
+        </Link>
+        <div className={styles.progress}>
+          <span className={styles.progressLabel}>{t('recite.roundLabel', { round })}</span>
+          <div
+            className={styles.progressBar}
+            role="progressbar"
+            aria-label={t('recite.progress')}
+            aria-valuemin={1}
+            aria-valuemax={total}
+            aria-valuenow={index}
+          >
+            <div className={styles.progressFill} style={{ width: `${percent}%` }} />
+          </div>
+          <span className={styles.progressCount}>
+            {index} / {total}
+          </span>
+        </div>
+        <button type="button" className="btn btn-sm" onClick={reshuffle} disabled={busy}>
+          <ShuffleIcon size={15} />
+          {t('recite.reshuffle')}
+        </button>
+      </header>
+
+      <div className={styles.stage}>
+        <article ref={cardRef} className={styles.card} aria-labelledby="recite-question">
+          <div className={styles.cardMeta}>
+            <span className={styles.bankTag}>{bankName}</span>
+            <span>{t('recite.questionIndex', { index })}</span>
+          </div>
+          <h2 id="recite-question" className={styles.question}>
+            {question.title}
+          </h2>
+          <div className={styles.divider} />
+
+          {revealed ? (
+            <div className={styles.answer}>
+              <div className={styles.answerHeader}>
+                <span className={styles.answerLabel}>{t('recite.answer')}</span>
+                <button type="button" className="btn btn-sm" onClick={() => setRevealed(false)}>
+                  {t('recite.hideAnswer')}
+                  <kbd className={styles.kbd}>{t('recite.space')}</kbd>
+                </button>
+              </div>
+              {question.answerMd.trim() ? (
+                <MarkdownView markdown={question.answerMd} bankId={question.bankId} />
+              ) : (
+                <p className={styles.noAnswer}>{t('read.noAnswer')}</p>
+              )}
+            </div>
+          ) : (
+            <div className={styles.hidden}>
+              <p className={styles.hiddenText}>{t('recite.thinkFirst')}</p>
+              <button type="button" className="btn btn-primary" onClick={() => setRevealed(true)}>
+                {t('recite.showAnswer')}
+                <kbd className={`${styles.kbd} ${styles.kbdOnAccent}`}>{t('recite.space')}</kbd>
+              </button>
+            </div>
+          )}
+        </article>
+      </div>
+
+      <footer className={styles.footer}>
+        <button type="button" className={`btn ${styles.navButton}`} onClick={prev} disabled={busy || index <= 1}>
+          <ArrowLeftIcon size={16} />
+          {t('recite.prev')}
+        </button>
+        <button type="button" className={`btn btn-primary ${styles.navButton}`} onClick={next} disabled={busy}>
+          {index >= total ? t('recite.finishRound') : t('recite.next')}
+          <span className={styles.arrowRight}>
+            <ArrowLeftIcon size={16} />
+          </span>
+        </button>
+      </footer>
+    </div>
+  )
 }

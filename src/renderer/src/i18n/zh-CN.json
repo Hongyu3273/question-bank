@@ -40,11 +40,8 @@
     "emptyAction": "前往题库管理",
     "needSelection": "请先勾选至少一个题库",
     "continueReading": "继续阅读 →",
-    "lastRead": "上次读到:{{title}}"
-  },
-  "placeholder": {
-    "inProgress": "开发中",
-    "recite": "背题模式将在 M4 阶段实现:随机洗牌、显示/隐藏答案、快捷键和进度保存。"
+    "lastRead": "上次读到:{{title}}",
+    "continueReciting": "继续背题 →"
   },
   "settings": {
     "title": "设置",
@@ -152,7 +149,8 @@
     "ANSWER_TOO_LONG": "答案太长了",
     "QUESTION_NOT_FOUND": "题目不存在,可能已被删除",
     "IMAGE_TYPE_UNSUPPORTED": "只支持 PNG、JPG、GIF、WebP 图片",
-    "IMAGE_TOO_LARGE": "图片不能超过 10MB"
+    "IMAGE_TOO_LARGE": "图片不能超过 10MB",
+    "RECITE_NO_SESSION": "背题进度已失效,请重新进入背题模式"
   },
   "read": {
     "summary": "{{banks}} 个题库 · 共 {{count}} 题",
@@ -175,5 +173,23 @@
     "hideToc": "收起目录",
     "resizeToc": "调整目录宽度",
     "resizeTocHint": "拖动调整宽度,双击收起或展开"
+  },
+  "recite": {
+    "changeBanks": "更换题库",
+    "roundLabel": "第 {{round}} 轮",
+    "progress": "本轮进度",
+    "reshuffle": "重新洗牌",
+    "reshuffled": "已重新洗牌,从第一题开始",
+    "questionIndex": "本轮第 {{index}} 题",
+    "answer": "参考答案",
+    "hideAnswer": "隐藏答案",
+    "showAnswer": "显示答案",
+    "space": "空格",
+    "thinkFirst": "答案已隐藏,先自己想一想",
+    "prev": "上一题",
+    "next": "下一题",
+    "finishRound": "完成本轮",
+    "roundCompleted": "第 {{round}} 轮已完成,已重新洗牌开始新一轮",
+    "noSelectionDesc": "先在首页勾选要背的题库。"
   }
 }

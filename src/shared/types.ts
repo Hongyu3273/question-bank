@@ -61,6 +61,28 @@ export interface ReadBank {
   questions: Question[]
 }
 
+/** 背题模式当前状态 */
+export interface ReciteState {
+  question: Question
+  bankName: string
+  /** 本轮第几题(从 1 开始) */
+  index: number
+  /** 本轮题目总数 */
+  total: number
+  /** 第几轮 */
+  round: number
+  /** 刚刚完成一轮并重新洗牌 */
+  roundCompleted: boolean
+}
+
+/** 首页显示的背题进度 */
+export interface ReciteStatus {
+  bankIds: string[]
+  index: number
+  total: number
+  round: number
+}
+
 export interface QuestionInput {
   title: string
   answerMd: string

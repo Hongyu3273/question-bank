@@ -40,11 +40,8 @@
     "emptyAction": "Go to Banks",
     "needSelection": "Select at least one question bank first",
     "continueReading": "Continue reading →",
-    "lastRead": "Last read: {{title}}"
-  },
-  "placeholder": {
-    "inProgress": "In development",
-    "recite": "Recite mode arrives in M4: shuffling, show/hide answers, keyboard shortcuts and saved progress."
+    "lastRead": "Last read: {{title}}",
+    "continueReciting": "Continue reciting →"
   },
   "settings": {
     "title": "Settings",
@@ -152,7 +149,8 @@
     "ANSWER_TOO_LONG": "The answer is too long",
     "QUESTION_NOT_FOUND": "This question no longer exists",
     "IMAGE_TYPE_UNSUPPORTED": "Only PNG, JPG, GIF and WebP images are supported",
-    "IMAGE_TOO_LARGE": "Images must be 10 MB or smaller"
+    "IMAGE_TOO_LARGE": "Images must be 10 MB or smaller",
+    "RECITE_NO_SESSION": "The recite session has expired. Please open Recite again."
   },
   "read": {
     "summary": "{{banks}} banks · {{count}} questions",
@@ -175,5 +173,23 @@
     "hideToc": "Hide contents",
     "resizeToc": "Resize contents",
     "resizeTocHint": "Drag to resize, double-click to hide or show"
+  },
+  "recite": {
+    "changeBanks": "Change banks",
+    "roundLabel": "Round {{round}}",
+    "progress": "Progress this round",
+    "reshuffle": "Reshuffle",
+    "reshuffled": "Reshuffled, starting from the first question",
+    "questionIndex": "Question {{index}} this round",
+    "answer": "Answer",
+    "hideAnswer": "Hide answer",
+    "showAnswer": "Show answer",
+    "space": "Space",
+    "thinkFirst": "The answer is hidden. Think it through first.",
+    "prev": "Previous",
+    "next": "Next",
+    "finishRound": "Finish round",
+    "roundCompleted": "Round {{round}} complete. Reshuffled for a new round.",
+    "noSelectionDesc": "Select the banks to recite on the Home page first."
   }
 }

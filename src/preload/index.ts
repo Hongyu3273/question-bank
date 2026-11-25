@@ -20,6 +20,13 @@ const api: Api = {
   read: {
     list: (bankIds) => ipcRenderer.invoke(IPC.readList, bankIds)
   },
+  recite: {
+    start: (bankIds) => ipcRenderer.invoke(IPC.reciteStart, bankIds),
+    next: () => ipcRenderer.invoke(IPC.reciteNext),
+    prev: () => ipcRenderer.invoke(IPC.recitePrev),
+    reshuffle: () => ipcRenderer.invoke(IPC.reciteReshuffle),
+    status: () => ipcRenderer.invoke(IPC.reciteStatus)
+  },
   settings: {
     getAll: () => ipcRenderer.invoke(IPC.settingsGetAll),
     set: (key, value) => ipcRenderer.invoke(IPC.settingsSet, key, value)

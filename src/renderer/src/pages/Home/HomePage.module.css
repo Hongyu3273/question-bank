@@ -106,7 +106,36 @@
   color: var(--text-muted);
 }
 
-.modeMeta + .modeAction {
+.modeProgress {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modeProgressText {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.modeProgressBar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--hover);
+  overflow: hidden;
+}
+
+.modeProgressBar > div {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+.modeMeta + .modeAction,
+.modeProgress + .modeAction {
   margin-top: 0;
 }
 

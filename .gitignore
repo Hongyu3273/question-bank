@@ -7,3 +7,7 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# 本地题库文件(不上传到公开仓库)
+题库导入/
+*.zip

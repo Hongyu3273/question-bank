@@ -12,6 +12,7 @@ export type ErrorCode =
   | 'QUESTION_NOT_FOUND'
   | 'IMAGE_TYPE_UNSUPPORTED'
   | 'IMAGE_TOO_LARGE'
+  | 'RECITE_NO_SESSION'
   | 'INVALID_ARGUMENT'
 
 export class AppError extends Error {
