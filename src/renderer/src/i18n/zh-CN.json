@@ -9,7 +9,9 @@
     "recite": "背题模式",
     "exam": "考试模式",
     "manage": "题库管理",
-    "settings": "设置"
+    "settings": "设置",
+    "collapse": "收起侧栏",
+    "expand": "展开侧栏"
   },
   "common": {
     "comingSoon": "即将开放",
@@ -23,9 +25,9 @@
   },
   "home": {
     "title": "开始复习",
-    "subtitle": "先勾选要复习的题库,再选择一种模式。",
+    "subtitle": "先选择题库,再选择一种模式",
     "selectedSummary": "已选 {{banks}} 个题库 · 共 {{questions}} 题",
-    "modes": "模式",
+    "modes": "选择模式",
     "readDesc": "按顺序展示所选题库的全部题目和答案,支持目录跳转和关键词搜索。",
     "readAction": "开始阅读 →",
     "reciteDesc": "所选题库合并后随机洗牌,每次一题,答案默认隐藏。",
@@ -41,7 +43,11 @@
     "needSelection": "请先勾选至少一个题库",
     "continueReading": "继续阅读 →",
     "lastRead": "上次读到:{{title}}",
-    "continueReciting": "继续背题 →"
+    "continueReciting": "继续背题 →",
+    "selectNone": "全不选",
+    "priorityFilter": "优先级",
+    "allPriorities": "全部",
+    "noFilteredQuestions": "所选题库中没有符合优先级筛选的题目"
   },
   "settings": {
     "title": "设置",
@@ -56,7 +62,15 @@
     "fontLarge": "大",
     "language": "界面语言",
     "about": "关于",
-    "version": "版本 {{version}}"
+    "version": "版本 {{version}}",
+    "showEnglish": "英文题干",
+    "showEnglishDesc": "题目带有英文题干时,显示在中文题干下方",
+    "show": "显示",
+    "hide": "隐藏",
+    "homepage": "项目主页(GitHub)",
+    "dataFolder": "数据文件夹",
+    "dataFolderDesc": "数据库和题目图片保存在这里",
+    "openDataFolder": "打开文件夹"
   },
   "manage": {
     "banks": "题库列表",
@@ -128,7 +142,7 @@
     "savedAt": "已保存 · {{time}}",
     "justNow": "刚刚",
     "revert": "撤销修改",
-    "shortcutHint": "Ctrl+S 保存 · ↑↓ 切换题目",
+    "shortcutHint": "Ctrl+S 保存 · ↑↓ 切换题目 · 拖动或 Alt+↑↓ 调整顺序",
     "bankCreated": "题库已创建",
     "bankEmptyTitle": "「{{name}}」还没有题目",
     "bankEmptyDesc": "添加第一道题目,开始建立这个题库。每道题包含题干和答案,答案支持 Markdown、代码和图片。",
@@ -136,7 +150,10 @@
     "bankEmptyTip": "也可以点右上角“导入题库”,导入整理好的 Markdown 或 Excel 文件。",
     "newBankDesc": "题库用来归类题目,例如按科目或面试方向划分。",
     "create": "创建",
-    "exportBank": "导出题库"
+    "exportBank": "导出题库",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "dragHint": "拖动可调整顺序"
   },
   "errors": {
     "UNKNOWN": "操作失败,请重试",
@@ -186,7 +203,10 @@
     "expand": "放大查看",
     "closeFocus": "关闭(Esc)",
     "focusPosition": "共 {{total}} 题中的第 {{index}} 题",
-    "focusHint": "← → 切换题目 · Esc 关闭"
+    "focusHint": "← → 切换题目 · Esc 关闭",
+    "summaryFiltered": "{{banks}} 个题库 · {{count}} 题 · {{priorities}}",
+    "noFilteredTitle": "没有符合筛选条件的题目",
+    "noFilteredDesc": "所选题库中没有这些优先级的题目,回到首页调整优先级筛选。"
   },
   "recite": {
     "changeBanks": "更换题库",
@@ -205,7 +225,8 @@
     "finishRound": "完成本轮",
     "roundCompleted": "第 {{round}} 轮已完成,已重新洗牌开始新一轮",
     "noSelectionDesc": "先在首页勾选要背的题库。",
-    "clickToReveal": "点击此区域任意位置显示答案"
+    "clickToReveal": "点击此区域任意位置显示答案",
+    "filtered": "仅 {{priorities}}"
   },
   "data": {
     "title": "数据",
@@ -255,5 +276,30 @@
       "IMAGE_MISSING": "找不到图片 {{detail}}",
       "EXCEL_HEADER_MISSING": "第一行需要有“题干”和“答案”两列"
     }
+  },
+  "meta": {
+    "priority": {
+      "高": "高优先级",
+      "中": "中优先级",
+      "低": "低优先级"
+    },
+    "priorityOther": "优先级:{{p}}"
+  },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "group_global": "通用",
+    "group_read": "看题模式",
+    "group_recite": "背题模式",
+    "group_manage": "题库管理",
+    "help": "打开快捷键说明",
+    "close": "关闭弹窗",
+    "search": "搜索",
+    "nextMatch": "下一个结果",
+    "prevMatch": "上一个结果",
+    "focusSwitch": "放大视图中切换题目",
+    "toggleAnswer": "显示 / 隐藏答案",
+    "switchQuestion": "切换题目",
+    "save": "保存题目",
+    "reorder": "移动题目或题库位置"
   }
 }

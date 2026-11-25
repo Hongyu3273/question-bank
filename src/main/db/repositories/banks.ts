@@ -60,3 +60,15 @@ export function deleteBank(db: Db, id: string): void {
 export function touchBank(db: Db, id: string): void {
   db.run('UPDATE banks SET updated_at = ? WHERE id = ?', [Date.now(), id])
 }
+
+/** 按给定顺序重排全部题库;ids 必须恰好包含所有题库 */
+export function reorderBanks(db: Db, ids: unknown): void {
+  if (!Array.isArray(ids) || !ids.every((x) => typeof x === 'string')) throw new AppError('INVALID_ARGUMENT')
+  const existing = db.all<{ id: string }>('SELECT id FROM banks').map((r) => r.id)
+  if (ids.length !== existing.length || new Set(ids).size !== ids.length || !existing.every((id) => ids.includes(id))) {
+    throw new AppError('INVALID_ARGUMENT')
+  }
+  db.transaction(() => {
+    ids.forEach((id, i) => db.run('UPDATE banks SET sort_order = ? WHERE id = ?', [i, id]))
+  })
+}

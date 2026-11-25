@@ -1,6 +1,6 @@
 .region {
   position: fixed;
-  top: 24px;
+  bottom: 28px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -20,6 +20,6 @@
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(6px);
   }
 }

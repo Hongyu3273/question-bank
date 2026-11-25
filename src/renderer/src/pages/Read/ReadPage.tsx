@@ -2,8 +2,12 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Question, ReadBank } from '@shared/types'
+import { extractMeta, priorityOf } from '@shared/meta'
 import { BookIcon, ChevronRightIcon, ExpandIcon, PanelLeftIcon, SearchIcon } from '../../components/icons'
+import MetaTags from '../../components/MetaTags'
+import PageHeader, { pageHeaderStyles } from '../../components/PageHeader'
 import MarkdownView from '../../components/MarkdownView'
+import { usePriorityLabel } from '../../hooks/usePriorityLabel'
 import { useResizablePanel } from '../../hooks/useResizablePanel'
 import { useSearchHighlight } from '../../hooks/useSearchHighlight'
 import { errorMessage } from '../../lib/errors'
@@ -25,6 +29,8 @@ interface CardProps {
   noAnswer: string
   numberLabel: string
   expandLabel: string
+  showEnglish: boolean
+  priorityLabel: (p: string) => string
   onExpand: (id: string) => void
 }
 
@@ -37,8 +43,11 @@ const QuestionCard = memo(function QuestionCard({
   noAnswer,
   numberLabel,
   expandLabel,
+  showEnglish,
+  priorityLabel,
   onExpand
 }: CardProps) {
+  const { meta, body } = useMemo(() => extractMeta(q.answerMd), [q.answerMd])
   const cls = [styles.card, active && styles.cardActive, matched && styles.cardMatched].filter(Boolean).join(' ')
   return (
     <article id={`q-${q.id}`} data-question={q.id} className={cls} aria-labelledby={`title-${q.id}`}>
@@ -46,6 +55,8 @@ const QuestionCard = memo(function QuestionCard({
         <span className={styles.cardNumber} data-search-skip>
           {numberLabel}
         </span>
+        <MetaTags meta={meta} priorityLabel={priorityLabel} />
+        <span className={styles.cardTopSpacer} />
         <button
           type="button"
           className={styles.expand}
@@ -59,11 +70,12 @@ const QuestionCard = memo(function QuestionCard({
       <h3 id={`title-${q.id}`} className={styles.cardTitle} onClick={() => onExpand(q.id)}>
         {q.title}
       </h3>
+      {showEnglish && meta.english && <p className={styles.english}>{meta.english}</p>}
       <div className={styles.answer}>
         {!rendered ? (
           <div className={styles.answerPlaceholder} style={{ height: estimateHeight(q) }} aria-hidden="true" />
-        ) : q.answerMd.trim() ? (
-          <MarkdownView markdown={q.answerMd} bankId={q.bankId} />
+        ) : body.trim() ? (
+          <MarkdownView markdown={body} bankId={q.bankId} />
         ) : (
           <p className={styles.noAnswer}>{noAnswer}</p>
         )}
@@ -77,12 +89,16 @@ export default function ReadPage() {
   const toast = useToastStore((s) => s.show)
   const selectedIds = useSettingsStore((s) => s.settings?.selectedBankIds ?? NO_IDS)
   const savedPosition = useSettingsStore((s) => s.settings?.readPosition ?? null)
+  const priorityFilter = useSettingsStore((s) => s.settings?.priorityFilter ?? NO_IDS)
+  const showEnglish = useSettingsStore((s) => s.settings?.showEnglish ?? true)
   const updateSetting = useSettingsStore((s) => s.update)
+  const priorityLabel = usePriorityLabel()
 
-  const [banks, setBanks] = useState<ReadBank[] | null>(null)
+  const [loaded, setLoaded] = useState<ReadBank[] | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [rendered, setRendered] = useState<Set<string>>(new Set())
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+  /** 目录中展开的题库;默认只展开正在读的题库 */
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [input, setInput] = useState('')
   const [query, setQuery] = useState('')
   const [matchIndex, setMatchIndex] = useState(0)
@@ -108,10 +124,7 @@ export default function ReadPage() {
     window.api.read
       .list(selectedIds)
       .then((list) => {
-        if (cancelled) return
-        setBanks(list)
-        // 先渲染开头几道题的答案,其余随滚动渲染
-        setRendered(new Set(list.flatMap((b) => b.questions).slice(0, 8).map((q) => q.id)))
+        if (!cancelled) setLoaded(list)
       })
       .catch((err) => toast(errorMessage(err, t), 3000))
     return () => {
@@ -119,14 +132,31 @@ export default function ReadPage() {
     }
   }, [selectedIds, toast, t])
 
+  /** 按首页的优先级筛选后的题库和题目 */
+  const banks = useMemo(() => {
+    if (!loaded) return null
+    if (priorityFilter.length === 0) return loaded
+    const wanted = new Set(priorityFilter)
+    return loaded
+      .map((b) => ({ ...b, questions: b.questions.filter((q) => wanted.has(priorityOf(q.answerMd) ?? '')) }))
+      .filter((b) => b.questions.length > 0)
+  }, [loaded, priorityFilter])
+
   const all = useMemo(() => banks?.flatMap((b) => b.questions) ?? [], [banks])
+
+  // 题目变化时:先渲染开头几道题的答案,其余随滚动渲染
+  useEffect(() => {
+    setRendered(new Set(all.slice(0, 8).map((q) => q.id)))
+  }, [all])
 
   /** 每道题的位置信息:全局序号、所属题库名、题库内题号 */
   const positions = useMemo(() => {
-    const map = new Map<string, { index: number; bankName: string; number: number }>()
+    const map = new Map<string, { index: number; bankId: string; bankName: string; number: number }>()
     let index = 0
     for (const bank of banks ?? []) {
-      bank.questions.forEach((q, i) => map.set(q.id, { index: ++index, bankName: bank.name, number: i + 1 }))
+      bank.questions.forEach((q, i) =>
+        map.set(q.id, { index: ++index, bankId: bank.id, bankName: bank.name, number: i + 1 })
+      )
     }
     return map
   }, [banks])
@@ -263,6 +293,14 @@ export default function ReadPage() {
     return () => clearTimeout(timer)
   }, [activeId, savedPosition, updateSetting])
 
+  // 目录:展开正在读的题目所在的题库
+  useEffect(() => {
+    if (!banks || banks.length === 0) return
+    const id = activeId ?? savedPosition
+    const bankId = (id && positions.get(id)?.bankId) || banks[0].id
+    setExpanded((prev) => (prev.has(bankId) ? prev : new Set(prev).add(bankId)))
+  }, [activeId, savedPosition, banks, positions])
+
   // 目录跟随当前题目
   useEffect(() => {
     tocRef.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' })
@@ -283,7 +321,7 @@ export default function ReadPage() {
   }, [focusId])
 
   const toggleBank = (id: string) =>
-    setCollapsed((prev) => {
+    setExpanded((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
@@ -292,14 +330,17 @@ export default function ReadPage() {
 
   // ---------- 空状态 ----------
 
-  if (selectedIds.length === 0 || (banks && banks.length === 0)) {
+  if (selectedIds.length === 0 || (loaded && loaded.length === 0)) {
     return (
       <Empty title={t('read.noSelectionTitle')} desc={t('read.noSelectionDesc')} to="/" action={t('read.goSelect')} />
     )
   }
-  if (!banks) return null
+  if (!banks || !loaded) return null
   if (all.length === 0) {
-    return (
+    const filteredOut = loaded.some((b) => b.questions.length > 0)
+    return filteredOut ? (
+      <Empty title={t('read.noFilteredTitle')} desc={t('read.noFilteredDesc')} to="/" action={t('read.goSelect')} />
+    ) : (
       <Empty title={t('read.noQuestionsTitle')} desc={t('read.noQuestionsDesc')} to="/manage" action={t('home.manageBanks')} />
     )
   }
@@ -310,75 +351,84 @@ export default function ReadPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button
-          type="button"
-          className={toc.collapsed ? styles.iconButtonPlain : `${styles.iconButtonPlain} ${styles.iconButtonOn}`}
-          aria-label={toc.collapsed ? t('read.showToc') : t('read.hideToc')}
-          aria-pressed={!toc.collapsed}
-          title={toc.collapsed ? t('read.showToc') : t('read.hideToc')}
-          onClick={() => toc.setCollapsed(!toc.collapsed)}
-        >
-          <PanelLeftIcon size={18} />
-        </button>
-        <div className={styles.heading}>
-          <h1 className={styles.title}>{t('nav.read')}</h1>
-          <span className={styles.subtitle}>{t('read.summary', { banks: banks.length, count: all.length })}</span>
-        </div>
-
-        <div className={styles.searchBox}>
-          <label className={styles.search}>
-            <SearchIcon size={15} />
-            <span className="sr-only">{t('read.search')}</span>
-            <input
-              ref={searchRef}
-              type="search"
-              value={input}
-              placeholder={t('read.searchPlaceholder')}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  if (input.trim() !== query) setQuery(input.trim())
-                  else stepMatch(e.shiftKey ? -1 : 1)
-                } else if (e.key === 'Escape') {
-                  setInput('')
-                  setQuery('')
-                }
-              }}
-            />
-          </label>
-          {query && (
-            <>
-              <span className={styles.matchCount} aria-live="polite">
-                {matches.length > 0
-                  ? t('read.matchPosition', { current: matchIndex + 1, count: matches.length })
-                  : t('read.noMatch')}
-              </span>
-              <button
-                type="button"
-                className={styles.iconButton}
-                aria-label={t('read.prevMatch')}
-                title={`${t('read.prevMatch')} (Shift+Enter)`}
-                disabled={matches.length === 0}
-                onClick={() => stepMatch(-1)}
-              >
-                <ChevronRightIcon size={16} />
-              </button>
-              <button
-                type="button"
-                className={`${styles.iconButton} ${styles.down}`}
-                aria-label={t('read.nextMatch')}
-                title={`${t('read.nextMatch')} (Enter)`}
-                disabled={matches.length === 0}
-                onClick={() => stepMatch(1)}
-              >
-                <ChevronRightIcon size={16} />
-              </button>
-            </>
-          )}
-        </div>
-      </header>
+      <PageHeader
+        leading={
+          <button
+            type="button"
+            className={toc.collapsed ? pageHeaderStyles.iconButton : `${pageHeaderStyles.iconButton} ${styles.iconButtonOn}`}
+            aria-label={toc.collapsed ? t('read.showToc') : t('read.hideToc')}
+            aria-pressed={!toc.collapsed}
+            title={toc.collapsed ? t('read.showToc') : t('read.hideToc')}
+            onClick={() => toc.setCollapsed(!toc.collapsed)}
+          >
+            <PanelLeftIcon size={18} />
+          </button>
+        }
+        title={t('nav.read')}
+        subtitle={
+          priorityFilter.length > 0
+            ? t('read.summaryFiltered', {
+                banks: banks.length,
+                count: all.length,
+                priorities: priorityFilter.map(priorityLabel).join('、')
+              })
+            : t('read.summary', { banks: banks.length, count: all.length })
+        }
+        actions={
+          <div className={styles.searchBox}>
+            <label className={styles.search}>
+              <SearchIcon size={15} />
+              <span className="sr-only">{t('read.search')}</span>
+              <input
+                ref={searchRef}
+                type="search"
+                value={input}
+                placeholder={t('read.searchPlaceholder')}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    if (input.trim() !== query) setQuery(input.trim())
+                    else stepMatch(e.shiftKey ? -1 : 1)
+                  } else if (e.key === 'Escape') {
+                    setInput('')
+                    setQuery('')
+                  }
+                }}
+              />
+            </label>
+            {query && (
+              <>
+                <span className={styles.matchCount} aria-live="polite">
+                  {matches.length > 0
+                    ? t('read.matchPosition', { current: matchIndex + 1, count: matches.length })
+                    : t('read.noMatch')}
+                </span>
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  aria-label={t('read.prevMatch')}
+                  title={`${t('read.prevMatch')} (Shift+Enter)`}
+                  disabled={matches.length === 0}
+                  onClick={() => stepMatch(-1)}
+                >
+                  <ChevronRightIcon size={16} />
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.iconButton} ${styles.down}`}
+                  aria-label={t('read.nextMatch')}
+                  title={`${t('read.nextMatch')} (Enter)`}
+                  disabled={matches.length === 0}
+                  onClick={() => stepMatch(1)}
+                >
+                  <ChevronRightIcon size={16} />
+                </button>
+              </>
+            )}
+          </div>
+        }
+      />
 
       <div className={toc.dragging ? `${styles.body} ${styles.resizing}` : styles.body}>
         {!toc.collapsed && (
@@ -396,7 +446,7 @@ export default function ReadPage() {
               </button>
             </div>
             {banks.map((bank) => {
-              const isCollapsed = collapsed.has(bank.id)
+              const isCollapsed = !expanded.has(bank.id)
               return (
                 <div key={bank.id} className={styles.tocBank}>
                   <button
@@ -469,6 +519,8 @@ export default function ReadPage() {
                     matched={q.id === currentMatch}
                     noAnswer={t('read.noAnswer')}
                     expandLabel={t('read.expand')}
+                    showEnglish={showEnglish}
+                    priorityLabel={priorityLabel}
                     onExpand={openFocus}
                   />
                 ))}
@@ -489,6 +541,8 @@ export default function ReadPage() {
           index={positions.get(focusId)!.index}
           total={all.length}
           query={query}
+          showEnglish={showEnglish}
+          priorityLabel={priorityLabel}
           onPrev={() => stepFocus(-1)}
           onNext={() => stepFocus(1)}
           onClose={closeFocus}

@@ -1,24 +1,31 @@
 .sidebar {
-  flex: 0 0 220px;
+  flex: 0 0 216px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 20px 12px;
+  gap: 2px;
+  padding: 16px 10px 12px;
   background: var(--surface);
   border-right: 1px solid var(--border);
+  overflow-x: hidden;
   overflow-y: auto;
+  transition: flex-basis 0.18s ease;
+}
+
+.collapsed {
+  flex-basis: 60px;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 12px 20px;
+  padding: 2px 6px 18px;
 }
 
 .logo {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,12 +33,13 @@
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 0.875rem;
 }
 
 .brandName {
   font-weight: 700;
   font-size: 1rem;
+  white-space: nowrap;
 }
 
 .item {
@@ -39,8 +47,8 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  min-height: 40px;
-  padding: 0 12px;
+  min-height: 38px;
+  padding: 0 11px;
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
@@ -48,6 +56,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   text-align: left;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -62,15 +71,41 @@
   color: var(--accent);
 }
 
-.grow {
+.label {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .badge {
-  padding: 2px 6px;
+  padding: 1px 6px;
   border-radius: 4px;
   background: var(--hover);
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 400;
+}
+
+.spacer {
+  flex: 1;
+  min-height: 16px;
+}
+
+/* 收起时只显示图标 */
+.collapsed .brandName,
+.collapsed .label,
+.collapsed .badge {
+  display: none;
+}
+
+.collapsed .brand {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.collapsed .item {
+  justify-content: center;
+  padding: 0;
 }

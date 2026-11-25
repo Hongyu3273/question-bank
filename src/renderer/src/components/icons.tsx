@@ -199,3 +199,22 @@ export const EyeIcon = (p: IconProps) => (
     <circle cx="12" cy="12" r="3" />
   </Svg>
 )
+
+export const KeyboardIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="2" y="6" width="20" height="12" rx="2" />
+    <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" />
+  </Svg>
+)
+
+export const ArrowUpIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 19V5M6 11l6-6 6 6" />
+  </Svg>
+)
+
+export const ArrowDownIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 5v14M6 13l6 6 6-6" />
+  </Svg>
+)

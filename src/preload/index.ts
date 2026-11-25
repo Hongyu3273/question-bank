@@ -7,7 +7,8 @@ const api: Api = {
     list: () => ipcRenderer.invoke(IPC.banksList),
     create: (name) => ipcRenderer.invoke(IPC.banksCreate, name),
     rename: (id, name) => ipcRenderer.invoke(IPC.banksRename, id, name),
-    delete: (id) => ipcRenderer.invoke(IPC.banksDelete, id)
+    delete: (id) => ipcRenderer.invoke(IPC.banksDelete, id),
+    reorder: (ids) => ipcRenderer.invoke(IPC.banksReorder, ids)
   },
   questions: {
     list: (bankId) => ipcRenderer.invoke(IPC.questionsList, bankId),
@@ -15,13 +16,15 @@ const api: Api = {
     create: (bankId, input) => ipcRenderer.invoke(IPC.questionsCreate, bankId, input),
     update: (id, input) => ipcRenderer.invoke(IPC.questionsUpdate, id, input),
     delete: (id) => ipcRenderer.invoke(IPC.questionsDelete, id),
-    saveImage: (bankId, data, mimeType) => ipcRenderer.invoke(IPC.questionsSaveImage, bankId, data, mimeType)
+    saveImage: (bankId, data, mimeType) => ipcRenderer.invoke(IPC.questionsSaveImage, bankId, data, mimeType),
+    reorder: (bankId, ids) => ipcRenderer.invoke(IPC.questionsReorder, bankId, ids)
   },
   read: {
-    list: (bankIds) => ipcRenderer.invoke(IPC.readList, bankIds)
+    list: (bankIds) => ipcRenderer.invoke(IPC.readList, bankIds),
+    priorities: (bankIds) => ipcRenderer.invoke(IPC.readPriorities, bankIds)
   },
   recite: {
-    start: (bankIds) => ipcRenderer.invoke(IPC.reciteStart, bankIds),
+    start: (bankIds, priorities) => ipcRenderer.invoke(IPC.reciteStart, bankIds, priorities),
     next: () => ipcRenderer.invoke(IPC.reciteNext),
     prev: () => ipcRenderer.invoke(IPC.recitePrev),
     reshuffle: () => ipcRenderer.invoke(IPC.reciteReshuffle),
@@ -40,7 +43,8 @@ const api: Api = {
     set: (key, value) => ipcRenderer.invoke(IPC.settingsSet, key, value)
   },
   app: {
-    info: () => ipcRenderer.invoke(IPC.appInfo)
+    info: () => ipcRenderer.invoke(IPC.appInfo),
+    openDataFolder: () => ipcRenderer.invoke(IPC.appOpenDataFolder)
   }
 }
 

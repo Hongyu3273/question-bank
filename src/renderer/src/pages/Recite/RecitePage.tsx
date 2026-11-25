@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { extractMeta } from '@shared/meta'
 import type { ReciteState } from '@shared/types'
 import { ArrowLeftIcon, EyeIcon, ShuffleIcon } from '../../components/icons'
 import MarkdownView from '../../components/MarkdownView'
+import MetaTags from '../../components/MetaTags'
+import PageHeader from '../../components/PageHeader'
+import { usePriorityLabel } from '../../hooks/usePriorityLabel'
 import { errorMessage } from '../../lib/errors'
 import { useSettingsStore } from '../../stores/settings'
 import { useToastStore } from '../../stores/toast'
@@ -24,6 +28,9 @@ export default function RecitePage() {
   const { t } = useTranslation()
   const toast = useToastStore((s) => s.show)
   const selectedIds = useSettingsStore((s) => s.settings?.selectedBankIds ?? NO_IDS)
+  const priorityFilter = useSettingsStore((s) => s.settings?.priorityFilter ?? NO_IDS)
+  const showEnglish = useSettingsStore((s) => s.settings?.showEnglish ?? true)
+  const priorityLabel = usePriorityLabel()
 
   // undefined:加载中;null:没有可背的题目
   const [state, setState] = useState<ReciteState | null | undefined>(undefined)
@@ -51,13 +58,13 @@ export default function RecitePage() {
     }
     let cancelled = false
     window.api.recite
-      .start(selectedIds)
+      .start(selectedIds, priorityFilter)
       .then((s) => !cancelled && apply(s))
       .catch(fail)
     return () => {
       cancelled = true
     }
-  }, [selectedIds, apply, fail])
+  }, [selectedIds, priorityFilter, apply, fail])
 
   const run = useCallback(
     async (action: () => Promise<ReciteState | null>) => {
@@ -102,20 +109,27 @@ export default function RecitePage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [state, next, prev])
 
+  const parsed = useMemo(() => (state ? extractMeta(state.question.answerMd) : null), [state])
+
   // ---------- 空状态 ----------
 
   if (state === undefined) return null
   if (state === null) {
     const noSelection = selectedIds.length === 0
+    const filtered = priorityFilter.length > 0
     return (
       <div className={styles.empty}>
         <div className={styles.emptyIcon}>
           <ShuffleIcon size={28} />
         </div>
-        <div className={styles.emptyTitle}>{noSelection ? t('read.noSelectionTitle') : t('read.noQuestionsTitle')}</div>
-        <p className={styles.emptyDesc}>{noSelection ? t('recite.noSelectionDesc') : t('read.noQuestionsDesc')}</p>
-        <Link to={noSelection ? '/' : '/manage'} className="btn btn-primary">
-          {noSelection ? t('read.goSelect') : t('home.manageBanks')}
+        <div className={styles.emptyTitle}>
+          {noSelection ? t('read.noSelectionTitle') : filtered ? t('read.noFilteredTitle') : t('read.noQuestionsTitle')}
+        </div>
+        <p className={styles.emptyDesc}>
+          {noSelection ? t('recite.noSelectionDesc') : filtered ? t('read.noFilteredDesc') : t('read.noQuestionsDesc')}
+        </p>
+        <Link to={noSelection || filtered ? '/' : '/manage'} className="btn btn-primary">
+          {noSelection || filtered ? t('read.goSelect') : t('home.manageBanks')}
         </Link>
       </div>
     )
@@ -128,42 +142,53 @@ export default function RecitePage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>{t('nav.recite')}</h1>
-        <Link to="/" className={styles.changeBanks}>
-          {t('recite.changeBanks')}
-        </Link>
-        <div className={styles.progress}>
-          <span className={styles.progressLabel}>{t('recite.roundLabel', { round })}</span>
-          <div
-            className={styles.progressBar}
-            role="progressbar"
-            aria-label={t('recite.progress')}
-            aria-valuemin={1}
-            aria-valuemax={total}
-            aria-valuenow={index}
-          >
-            <div className={styles.progressFill} style={{ width: `${percent}%` }} />
-          </div>
-          <span className={styles.progressCount}>
-            {index} / {total}
-          </span>
-        </div>
-        <button type="button" className="btn btn-sm" onClick={reshuffle} disabled={busy}>
-          <ShuffleIcon size={15} />
-          {t('recite.reshuffle')}
-        </button>
-      </header>
+      <PageHeader
+        title={t('nav.recite')}
+        subtitle={
+          priorityFilter.length > 0
+            ? t('recite.filtered', { priorities: priorityFilter.map(priorityLabel).join('、') })
+            : undefined
+        }
+        actions={
+          <>
+            <Link to="/" className={styles.changeBanks}>
+              {t('recite.changeBanks')}
+            </Link>
+            <div className={styles.progress}>
+              <span className={styles.progressLabel}>{t('recite.roundLabel', { round })}</span>
+              <div
+                className={styles.progressBar}
+                role="progressbar"
+                aria-label={t('recite.progress')}
+                aria-valuemin={1}
+                aria-valuemax={total}
+                aria-valuenow={index}
+              >
+                <div className={styles.progressFill} style={{ width: `${percent}%` }} />
+              </div>
+              <span className={styles.progressCount}>
+                {index} / {total}
+              </span>
+            </div>
+            <button type="button" className="btn" onClick={reshuffle} disabled={busy}>
+              <ShuffleIcon size={15} />
+              {t('recite.reshuffle')}
+            </button>
+          </>
+        }
+      />
 
       <div className={styles.stage}>
         <article ref={cardRef} className={styles.card} aria-labelledby="recite-question">
           <div className={styles.cardMeta}>
             <span className={styles.bankTag}>{bankName}</span>
             <span>{t('recite.questionIndex', { index })}</span>
+            {parsed && <MetaTags meta={parsed.meta} priorityLabel={priorityLabel} />}
           </div>
           <h2 id="recite-question" className={styles.question}>
             {question.title}
           </h2>
+          {showEnglish && parsed?.meta.english && <p className={styles.english}>{parsed.meta.english}</p>}
           <div className={styles.divider} />
 
           {revealed ? (
@@ -175,8 +200,8 @@ export default function RecitePage() {
                   <kbd className={styles.kbd}>{t('recite.space')}</kbd>
                 </button>
               </div>
-              {question.answerMd.trim() ? (
-                <MarkdownView markdown={question.answerMd} bankId={question.bankId} />
+              {parsed?.body.trim() ? (
+                <MarkdownView markdown={parsed.body} bankId={question.bankId} />
               ) : (
                 <p className={styles.noAnswer}>{t('read.noAnswer')}</p>
               )}
@@ -198,11 +223,11 @@ export default function RecitePage() {
       </div>
 
       <footer className={styles.footer}>
-        <button type="button" className={`btn ${styles.navButton}`} onClick={prev} disabled={busy || index <= 1}>
+        <button type="button" className="btn" onClick={prev} disabled={busy || index <= 1}>
           <ArrowLeftIcon size={16} />
           {t('recite.prev')}
         </button>
-        <button type="button" className={`btn btn-primary ${styles.navButton}`} onClick={next} disabled={busy}>
+        <button type="button" className="btn btn-primary" onClick={next} disabled={busy}>
           {index >= total ? t('recite.finishRound') : t('recite.next')}
           <span className={styles.arrowRight}>
             <ArrowLeftIcon size={16} />

@@ -9,7 +9,9 @@
     "recite": "Recite",
     "exam": "Exam",
     "manage": "Banks",
-    "settings": "Settings"
+    "settings": "Settings",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
   },
   "common": {
     "comingSoon": "Coming soon",
@@ -23,16 +25,16 @@
   },
   "home": {
     "title": "Start reviewing",
-    "subtitle": "Select the question banks to review, then choose a mode.",
+    "subtitle": "Pick question banks, then a mode",
     "selectedSummary": "{{banks}} banks selected · {{questions}} questions",
-    "modes": "Modes",
+    "modes": "Choose a mode",
     "readDesc": "Read every question and answer in order, with a table of contents and keyword search.",
     "readAction": "Start reading →",
     "reciteDesc": "Questions are shuffled and shown one at a time, with the answer hidden.",
     "reciteAction": "Start reciting →",
     "examDesc": "Timed answers and automatic scoring. In development.",
     "examAction": "Not available yet",
-    "banks": "Question banks",
+    "banks": "Choose banks",
     "selectAll": "Select all",
     "manageBanks": "Manage banks",
     "emptyTitle": "No question banks yet",
@@ -41,7 +43,11 @@
     "needSelection": "Select at least one question bank first",
     "continueReading": "Continue reading →",
     "lastRead": "Last read: {{title}}",
-    "continueReciting": "Continue reciting →"
+    "continueReciting": "Continue reciting →",
+    "selectNone": "Select none",
+    "priorityFilter": "Priority",
+    "allPriorities": "All",
+    "noFilteredQuestions": "No questions match the priority filter"
   },
   "settings": {
     "title": "Settings",
@@ -56,7 +62,15 @@
     "fontLarge": "Large",
     "language": "Language",
     "about": "About",
-    "version": "Version {{version}}"
+    "version": "Version {{version}}",
+    "showEnglish": "English prompt",
+    "showEnglishDesc": "Show the English version under the question when available",
+    "show": "Show",
+    "hide": "Hide",
+    "homepage": "Project page (GitHub)",
+    "dataFolder": "Data folder",
+    "dataFolderDesc": "Where the database and question images are stored",
+    "openDataFolder": "Open folder"
   },
   "manage": {
     "banks": "Question banks",
@@ -128,7 +142,7 @@
     "savedAt": "Saved · {{time}}",
     "justNow": "just now",
     "revert": "Revert",
-    "shortcutHint": "Ctrl+S to save · ↑↓ to switch",
+    "shortcutHint": "Ctrl+S to save · ↑↓ to switch · drag or Alt+↑↓ to reorder",
     "bankCreated": "Bank created",
     "bankEmptyTitle": "\"{{name}}\" has no questions yet",
     "bankEmptyDesc": "Add the first question to start this bank. Each question has a prompt and an answer; answers support Markdown, code and images.",
@@ -136,7 +150,10 @@
     "bankEmptyTip": "You can also use Import at the top right to add Markdown or Excel files.",
     "newBankDesc": "Banks group your questions, for example by subject or interview topic.",
     "create": "Create",
-    "exportBank": "Export bank"
+    "exportBank": "Export bank",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "dragHint": "Drag to reorder"
   },
   "errors": {
     "UNKNOWN": "Something went wrong. Please try again.",
@@ -186,7 +203,10 @@
     "expand": "Focus view",
     "closeFocus": "Close (Esc)",
     "focusPosition": "{{index}} of {{total}}",
-    "focusHint": "← → to switch · Esc to close"
+    "focusHint": "← → to switch · Esc to close",
+    "summaryFiltered": "{{banks}} banks · {{count}} questions · {{priorities}}",
+    "noFilteredTitle": "No questions match the filter",
+    "noFilteredDesc": "None of the selected banks have questions with these priorities. Adjust the filter on Home."
   },
   "recite": {
     "changeBanks": "Change banks",
@@ -205,7 +225,8 @@
     "finishRound": "Finish round",
     "roundCompleted": "Round {{round}} complete. Reshuffled for a new round.",
     "noSelectionDesc": "Select the banks to recite on the Home page first.",
-    "clickToReveal": "Click anywhere here to show the answer"
+    "clickToReveal": "Click anywhere here to show the answer",
+    "filtered": "Only {{priorities}}"
   },
   "data": {
     "title": "Data",
@@ -255,5 +276,33 @@
       "IMAGE_MISSING": "Image not found: {{detail}}",
       "EXCEL_HEADER_MISSING": "The first row needs \"Question\" and \"Answer\" columns"
     }
+  },
+  "meta": {
+    "priority": {
+      "高": "High",
+      "中": "Medium",
+      "低": "Low",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "priorityOther": "Priority: {{p}}"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "group_global": "General",
+    "group_read": "Read",
+    "group_recite": "Recite",
+    "group_manage": "Banks",
+    "help": "Show shortcuts",
+    "close": "Close dialog",
+    "search": "Search",
+    "nextMatch": "Next result",
+    "prevMatch": "Previous result",
+    "focusSwitch": "Switch questions in focus view",
+    "toggleAnswer": "Show / hide answer",
+    "switchQuestion": "Switch questions",
+    "save": "Save question",
+    "reorder": "Move question or bank"
   }
 }

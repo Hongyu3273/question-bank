@@ -13,6 +13,10 @@ export interface Settings {
   selectedBankIds: string[]
   /** 看题模式上次读到的题目 id */
   readPosition: string | null
+  /** 只看/只背这些优先级的题目;空数组表示全部 */
+  priorityFilter: string[]
+  /** 是否显示英文题干 */
+  showEnglish: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -20,7 +24,9 @@ export const DEFAULT_SETTINGS: Settings = {
   fontSize: 'm',
   language: 'zh-CN',
   selectedBankIds: [],
-  readPosition: null
+  readPosition: null,
+  priorityFilter: [],
+  showEnglish: true
 }
 
 export interface BankSummary {
@@ -54,6 +60,15 @@ export interface Question {
   updatedAt: number
 }
 
+/** 所选题库中各优先级的题目数量 */
+export interface PriorityStats {
+  total: number
+  /** 优先级 → 题目数量(按 高、中、低 排序) */
+  counts: { priority: string; count: number }[]
+  /** 没有标注优先级的题目数量 */
+  unlabeled: number
+}
+
 /** 看题模式:一个题库及其全部题目 */
 export interface ReadBank {
   id: string
@@ -78,6 +93,7 @@ export interface ReciteState {
 /** 首页显示的背题进度 */
 export interface ReciteStatus {
   bankIds: string[]
+  priorities: string[]
   index: number
   total: number
   round: number

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { QuestionSummary } from '@shared/types'
 import { PlusIcon, SearchIcon } from '../../components/icons'
+import { stepId, useDragReorder } from '../../hooks/useDragReorder'
 import styles from './ManagePage.module.css'
 
 interface Props {
@@ -12,10 +13,11 @@ interface Props {
   dirty: boolean
   onSelect: (id: string) => void
   onNew: () => void
+  onReorder: (ids: string[]) => void
 }
 
 /** 中间题目列表:搜索、两行摘要(题干 + 答案开头)、方向键切换 */
-export default function QuestionList({ questions, selectedId, dirty, onSelect, onNew }: Props) {
+export default function QuestionList({ questions, selectedId, dirty, onSelect, onNew, onReorder }: Props) {
   const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const listRef = useRef<HTMLOListElement>(null)
@@ -41,6 +43,11 @@ export default function QuestionList({ questions, selectedId, dirty, onSelect, o
   }
 
   const numberOf = (id: string) => questions.findIndex((q) => q.id === id) + 1
+
+  // 拖动排序;搜索过滤时不能拖动
+  const ids = questions.map((q) => q.id)
+  const searching = query.trim() !== ''
+  const drag = useDragReorder(ids, onReorder, !searching)
 
   return (
     <section className={styles.questionColumn} aria-label={t('manage.questions')}>
@@ -76,8 +83,14 @@ export default function QuestionList({ questions, selectedId, dirty, onSelect, o
         ref={listRef}
         className={styles.questionList}
         onKeyDown={(e) => {
-          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-            e.preventDefault()
+          if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+          e.preventDefault()
+          if (e.altKey) {
+            // Alt + ↑ / ↓ 移动当前题目
+            if (searching || !selectedId || selectedId === 'new') return
+            const next = stepId(ids, selectedId, e.key === 'ArrowUp' ? -1 : 1)
+            if (next !== ids) onReorder(next)
+          } else {
             moveSelection(e.key === 'ArrowDown' ? 1 : -1)
           }
         }}
@@ -95,8 +108,14 @@ export default function QuestionList({ questions, selectedId, dirty, onSelect, o
         )}
         {filtered.map((q) => {
           const selected = q.id === selectedId
+          const mark = drag.indicator(q.id)
+          const liCls = [
+            mark === 'dragging' && styles.dragging,
+            mark === 'before' && styles.dropBefore,
+            mark === 'after' && styles.dropAfter
+          ]
           return (
-            <li key={q.id}>
+            <li key={q.id} className={liCls.filter(Boolean).join(' ') || undefined} {...drag.rowProps(q.id)}>
               <button
                 type="button"
                 className={selected ? `${styles.questionRow} ${styles.questionRowSelected}` : styles.questionRow}

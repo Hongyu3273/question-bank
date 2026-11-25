@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { createHashRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom'
 import ConfirmHost from './components/ConfirmHost'
 import ImportHost from './components/ImportHost'
+import ShortcutHelp from './components/ShortcutHelp'
 import Sidebar from './components/Sidebar'
 import ToastHost from './components/ToastHost'
 import { useApplyAppearance } from './hooks/useApplyAppearance'
@@ -22,6 +23,7 @@ function Layout() {
       </main>
       <ToastHost />
       <ImportHost />
+      <ShortcutHelp />
       <ConfirmHost />
     </div>
   )

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { LIMITS, type BankSummary, type QuestionInput, type QuestionSummary } from '@shared/types'
 import { ArrowLeftIcon, ChevronRightIcon, FolderIcon, PencilIcon, PlusIcon, UploadIcon } from '../../components/icons'
 import NameDialog from '../../components/NameDialog'
+import PageHeader from '../../components/PageHeader'
 import { exportBank, saveTemplate, startImport } from '../../lib/dataActions'
 import { errorMessage } from '../../lib/errors'
 import { confirmDialog } from '../../stores/confirm'
@@ -143,6 +144,31 @@ export default function ManagePage() {
     }
   }
 
+  /** 题库排序:先更新界面,再保存 */
+  const reorderBanks = async (ids: string[]) => {
+    if (!banks) return
+    const byId = new Map(banks.map((b) => [b.id, b]))
+    setBanks(ids.map((id) => byId.get(id)!).filter(Boolean))
+    try {
+      await window.api.banks.reorder(ids)
+    } catch (err) {
+      fail(err)
+      await refreshBanks()
+    }
+  }
+
+  const reorderQuestions = async (ids: string[]) => {
+    if (!bankId) return
+    const byId = new Map(questions.map((q) => [q.id, q]))
+    setQuestions(ids.map((id) => byId.get(id)!).filter(Boolean))
+    try {
+      await window.api.questions.reorder(bankId, ids)
+    } catch (err) {
+      fail(err)
+      await loadQuestions(bankId)
+    }
+  }
+
   const deleteBank = async (bank: BankSummary) => {
     const ok = await confirmDialog({
       title: t('manage.deleteBankTitle', { name: bank.name }),
@@ -255,29 +281,37 @@ export default function ManagePage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button type="button" className="btn btn-sm" onClick={goBack}>
-          <ArrowLeftIcon size={16} />
-          {t('common.back')}
-        </button>
-        <nav className={styles.breadcrumb} aria-label={t('manage.breadcrumb')}>
-          <h1 className={styles.title}>{t('nav.manage')}</h1>
-          {currentBank && (
-            <>
+      <PageHeader
+        leading={
+          <button type="button" className="btn" onClick={goBack}>
+            <ArrowLeftIcon size={16} />
+            {t('common.back')}
+          </button>
+        }
+        title={
+          <nav className={styles.breadcrumb} aria-label={t('manage.breadcrumb')}>
+            <h1 className={styles.title}>{t('nav.manage')}</h1>
+            {currentBank && (
+              <>
                 <ChevronRightIcon size={16} />
                 <span className={styles.breadcrumbCurrent}>{currentBank.name}</span>
-            </>
-          )}
-        </nav>
-        <button type="button" className="btn" onClick={() => void startImport(t)}>
-          <UploadIcon size={16} />
-          {t('data.import')}
-        </button>
-        <button type="button" className="btn btn-primary" onClick={() => setNameDialog({ mode: 'create' })}>
-          <PlusIcon size={16} />
-          {t('manage.newBank')}
-        </button>
-      </header>
+              </>
+            )}
+          </nav>
+        }
+        actions={
+          <>
+            <button type="button" className="btn" onClick={() => void startImport(t)}>
+              <UploadIcon size={16} />
+              {t('data.import')}
+            </button>
+            <button type="button" className="btn btn-primary" onClick={() => setNameDialog({ mode: 'create' })}>
+              <PlusIcon size={16} />
+              {t('manage.newBank')}
+            </button>
+          </>
+        }
+      />
 
       {banks && banks.length === 0 ? (
         <div className={styles.emptyPage}>
@@ -307,6 +341,7 @@ export default function ManagePage() {
             onNew={() => setNameDialog({ mode: 'create' })}
             onRename={(bank) => setNameDialog({ mode: 'rename', bank })}
             onExport={(bank) => void exportBank(bank.id, t)}
+            onReorder={(ids) => void reorderBanks(ids)}
             onDelete={(bank) => void deleteBank(bank)}
           />
 
@@ -334,6 +369,7 @@ export default function ManagePage() {
                   dirty={dirty}
                   onSelect={(id) => void selectQuestion(id)}
                   onNew={() => void newQuestion()}
+                  onReorder={(ids) => void reorderQuestions(ids)}
                 />
               )}
 

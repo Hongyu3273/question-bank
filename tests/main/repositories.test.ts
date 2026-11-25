@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { Db } from '../../src/main/db/database'
-import { createBank, deleteBank, getBank, listBanks, renameBank } from '../../src/main/db/repositories/banks'
+import { createBank, deleteBank, getBank, listBanks, renameBank, reorderBanks } from '../../src/main/db/repositories/banks'
 import {
   createQuestion,
   deleteQuestion,
   getQuestion,
   listQuestions,
   listQuestionsForBanks,
+  priorityStats,
+  reorderQuestions,
   updateQuestion
 } from '../../src/main/db/repositories/questions'
 import { LIMITS } from '../../src/shared/types'
@@ -116,5 +118,44 @@ describe('看题:多个题库的全部题目', () => {
     expect(result[0].questions[0].answerMd).toBe('y')
     expect(listQuestionsForBanks(db, [])).toEqual([])
     expect(() => listQuestionsForBanks(db, 'x')).toThrow('INVALID_ARGUMENT')
+  })
+})
+
+describe('优先级统计', () => {
+  it('按 高、中、低 统计,未标注的单独计数;摘要不含元信息', () => {
+    const bank = createBank(db, 'A')
+    createQuestion(db, bank.id, { title: 'a', answerMd: '*English: A*\n\n> 优先级：低 ｜ 分类：x\n\n正文一' })
+    createQuestion(db, bank.id, { title: 'b', answerMd: '> 优先级：高\n正文' })
+    createQuestion(db, bank.id, { title: 'c', answerMd: '正文' })
+    expect(priorityStats(db, [bank.id])).toEqual({
+      total: 3,
+      counts: [
+        { priority: '高', count: 1 },
+        { priority: '低', count: 1 }
+      ],
+      unlabeled: 1
+    })
+    expect(listQuestions(db, bank.id)[0].snippet).toBe('正文一')
+  })
+})
+
+describe('排序', () => {
+  it('重排题库和题目;id 不完整或重复时拒绝', () => {
+    const a = createBank(db, 'A')
+    const b = createBank(db, 'B')
+    reorderBanks(db, [b.id, a.id])
+    expect(listBanks(db).map((x) => x.name)).toEqual(['B', 'A'])
+    expect(() => reorderBanks(db, [a.id])).toThrow('INVALID_ARGUMENT')
+    expect(() => reorderBanks(db, [a.id, a.id])).toThrow('INVALID_ARGUMENT')
+
+    const q1 = createQuestion(db, a.id, { title: '1', answerMd: '' })
+    const q2 = createQuestion(db, a.id, { title: '2', answerMd: '' })
+    const q3 = createQuestion(db, a.id, { title: '3', answerMd: '' })
+    reorderQuestions(db, a.id, [q3.id, q1.id, q2.id])
+    expect(listQuestions(db, a.id).map((q) => q.title)).toEqual(['3', '1', '2'])
+    expect(() => reorderQuestions(db, a.id, [q1.id, q2.id])).toThrow('INVALID_ARGUMENT')
+    // 新增的题目排在最后
+    createQuestion(db, a.id, { title: '4', answerMd: '' })
+    expect(listQuestions(db, a.id).map((q) => q.title)).toEqual(['3', '1', '2', '4'])
   })
 })

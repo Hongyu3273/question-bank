@@ -9,15 +9,6 @@
 
 /* ---------- 顶部栏 ---------- */
 
-.header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-
 .breadcrumb {
   flex: 1;
   min-width: 0;
@@ -501,7 +492,7 @@
 
 .glyph {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1;
 }
 
@@ -661,4 +652,35 @@
 
 .templateLinks button:hover {
   text-decoration: underline;
+}
+
+/* ---------- 拖动排序 ---------- */
+
+.dragging {
+  opacity: 0.4;
+}
+
+.dropBefore,
+.dropAfter {
+  position: relative;
+}
+
+.dropBefore::before,
+.dropAfter::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.dropBefore::before {
+  top: -1px;
+}
+
+.dropAfter::after {
+  bottom: -1px;
 }

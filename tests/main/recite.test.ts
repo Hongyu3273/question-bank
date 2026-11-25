@@ -44,7 +44,7 @@ describe('shuffle', () => {
 
 describe('背题会话', () => {
   it('合并所选题库并洗牌,一轮内每道题出现且只出现一次', () => {
-    const first = startRecite(db, [a, b], seeded())!
+    const first = startRecite(db, [a, b], [], seeded())!
     expect(first).toMatchObject({ index: 1, total: 5, round: 1, roundCompleted: false })
     const { titles, next } = takeRound(first.question.title)
     expect(titles.sort()).toEqual(['a1', 'a2', 'a3', 'b1', 'b2'])
@@ -52,34 +52,34 @@ describe('背题会话', () => {
   })
 
   it('勾选相同时继续上次进度,勾选变化时重新开始', () => {
-    startRecite(db, [a, b], seeded())
+    startRecite(db, [a, b], [], seeded())
     nextQuestion(db)
-    const again = startRecite(db, [b, a], seeded()) // 顺序不同视为相同
+    const again = startRecite(db, [b, a], [], seeded()) // 顺序不同视为相同
     expect(again?.index).toBe(2)
-    const changed = startRecite(db, [a], seeded())
+    const changed = startRecite(db, [a], [], seeded())
     expect(changed).toMatchObject({ index: 1, total: 3, round: 1 })
   })
 
   it('上一题只在本轮内回退', () => {
-    startRecite(db, [a], seeded())
+    startRecite(db, [a], [], seeded())
     expect(prevQuestion(db)?.index).toBe(1)
     nextQuestion(db)
     expect(prevQuestion(db)?.index).toBe(1)
   })
 
   it('跳过已删除的题目', () => {
-    const first = startRecite(db, [a], seeded())!
+    const first = startRecite(db, [a], [], seeded())!
     const second = nextQuestion(db)!
     prevQuestion(db)
     deleteQuestion(db, first.question.id)
     // 回到会话时,第一题已被删除,显示原来的第二题
-    const resumed = startRecite(db, [a], seeded())!
+    const resumed = startRecite(db, [a], [], seeded())!
     expect(resumed.question.id).toBe(second.question.id)
     expect(resumed.total).toBe(2)
   })
 
   it('新增的题目从下一轮开始出现', () => {
-    const first = startRecite(db, [a], seeded())!
+    const first = startRecite(db, [a], [], seeded())!
     createQuestion(db, a, { title: 'a4', answerMd: '' })
     const { titles, next } = takeRound(first.question.title)
     expect(titles).not.toContain('a4')
@@ -87,7 +87,7 @@ describe('背题会话', () => {
   })
 
   it('重新洗牌回到第一题,轮次不变', () => {
-    startRecite(db, [a, b], seeded())
+    startRecite(db, [a, b], [], seeded())
     nextQuestion(db)
     nextQuestion(db)
     expect(reshuffle(db, seeded(7))).toMatchObject({ index: 1, total: 5, round: 1 })
@@ -101,15 +101,30 @@ describe('背题会话', () => {
   })
 
   it('首页状态反映当前进度', () => {
-    startRecite(db, [a, b], seeded())
+    startRecite(db, [a, b], [], seeded())
     nextQuestion(db)
-    expect(reciteStatus(db)).toEqual({ bankIds: [a, b].sort(), index: 2, total: 5, round: 1 })
+    expect(reciteStatus(db)).toEqual({ bankIds: [a, b].sort(), priorities: [], index: 2, total: 5, round: 1 })
   })
 
   it('所有题目都被删除时结束会话', () => {
-    startRecite(db, [b], seeded())
+    startRecite(db, [b], [], seeded())
     for (const id of db.all<{ id: string }>('SELECT id FROM questions WHERE bank_id = ?', [b])) deleteQuestion(db, id.id)
     expect(nextQuestion(db)).toBeNull()
     expect(reciteStatus(db)).toBeNull()
+  })
+})
+
+describe('按优先级背题', () => {
+  it('只背所选优先级的题目;筛选条件变化时重新开始', async () => {
+    const c = createBank(db, 'C').id
+    createQuestion(db, c, { title: '高1', answerMd: '> 优先级：高 ｜ 分类：x\n\n正文' })
+    createQuestion(db, c, { title: '高2', answerMd: '> 优先级：高\n正文' })
+    createQuestion(db, c, { title: '低1', answerMd: '> 优先级：低\n正文' })
+    createQuestion(db, c, { title: '无标注', answerMd: '正文' })
+    const s = startRecite(db, [c], ['高'], seeded())!
+    expect(s.total).toBe(2)
+    expect(s.question.title.startsWith('高')).toBe(true)
+    expect(startRecite(db, [c], [], seeded())!.total).toBe(4)
+    expect(reciteStatus(db)?.priorities).toEqual([])
   })
 })

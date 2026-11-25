@@ -9,33 +9,15 @@
 
 /* ---------- 顶部栏 ---------- */
 
-.header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 16px;
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.title {
-  margin: 0;
-  font-size: 1.0625rem;
-  font-weight: 700;
-}
-
 .changeBanks {
   font-size: 0.8125rem;
 }
 
 .progress {
-  flex: 1;
-  min-width: 220px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  gap: 10px;
+  margin: 0 8px;
 }
 
 .progressLabel {
@@ -45,7 +27,7 @@
 }
 
 .progressBar {
-  width: 180px;
+  width: 140px;
   height: 6px;
   border-radius: 3px;
   background: var(--hover);
@@ -91,6 +73,7 @@
 
 .cardMeta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   font-size: 0.75rem;
@@ -110,6 +93,13 @@
   font-size: 1.375rem;
   font-weight: 600;
   line-height: 1.5;
+}
+
+.english {
+  margin: -8px 0 0;
+  font-size: 0.9375rem;
+  font-style: italic;
+  color: var(--text-muted);
 }
 
 .divider {
@@ -211,10 +201,6 @@
   justify-content: center;
   gap: 16px;
   padding: 12px 32px 24px;
-}
-
-.navButton {
-  min-width: 160px;
 }
 
 .arrowRight {

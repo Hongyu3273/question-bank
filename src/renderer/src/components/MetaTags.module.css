@@ -1,0 +1,50 @@
+.tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tag {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--hover);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.high {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+}
+
+.medium {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}
+
+.low {
+  background: var(--hover);
+  color: var(--text-muted);
+}
+
+.category {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.source {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

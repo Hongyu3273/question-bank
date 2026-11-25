@@ -1,7 +1,15 @@
 import { randomUUID } from 'node:crypto'
 import { AppError } from '../../../shared/errors'
 import { markdownSnippet } from '../../../shared/markdown'
-import { LIMITS, type Question, type QuestionInput, type QuestionSummary, type ReadBank } from '../../../shared/types'
+import { comparePriority, extractMeta, priorityOf } from '../../../shared/meta'
+import {
+  LIMITS,
+  type PriorityStats,
+  type Question,
+  type QuestionInput,
+  type QuestionSummary,
+  type ReadBank
+} from '../../../shared/types'
 import type { Db } from '../database'
 import { getBank, touchBank } from './banks'
 
@@ -18,7 +26,7 @@ export function listQuestions(db: Db, bankId: string): QuestionSummary[] {
        FROM questions WHERE bank_id = ? ORDER BY sort_order`,
     [bankId]
   )
-  return rows.map(({ head, ...q }) => ({ ...q, snippet: markdownSnippet(head) }))
+  return rows.map(({ head, ...q }) => ({ ...q, snippet: markdownSnippet(extractMeta(head).body) }))
 }
 
 export function getQuestion(db: Db, id: string): Question {
@@ -116,5 +124,41 @@ export function insertQuestions(db: Db, bankId: string, items: QuestionInput[]):
       )
     }
     touchBank(db, bankId)
+  })
+}
+
+/** 所选题库中各优先级的题目数量 */
+export function priorityStats(db: Db, bankIds: unknown): PriorityStats {
+  if (!Array.isArray(bankIds) || !bankIds.every((x) => typeof x === 'string')) throw new AppError('INVALID_ARGUMENT')
+  if (bankIds.length === 0) return { total: 0, counts: [], unlabeled: 0 }
+  const marks = bankIds.map(() => '?').join(', ')
+  const rows = db.all<{ head: string }>(
+    `SELECT substr(answer_md, 1, 1000) AS head FROM questions WHERE bank_id IN (${marks})`,
+    bankIds
+  )
+  const counts = new Map<string, number>()
+  let unlabeled = 0
+  for (const { head } of rows) {
+    const p = priorityOf(head)
+    if (p) counts.set(p, (counts.get(p) ?? 0) + 1)
+    else unlabeled++
+  }
+  return {
+    total: rows.length,
+    counts: [...counts.entries()].sort(([a], [b]) => comparePriority(a, b)).map(([priority, count]) => ({ priority, count })),
+    unlabeled
+  }
+}
+
+/** 按给定顺序重排一个题库的题目;ids 必须恰好包含该题库的所有题目 */
+export function reorderQuestions(db: Db, bankId: string, ids: unknown): void {
+  if (!Array.isArray(ids) || !ids.every((x) => typeof x === 'string')) throw new AppError('INVALID_ARGUMENT')
+  getBank(db, bankId)
+  const existing = db.all<{ id: string }>('SELECT id FROM questions WHERE bank_id = ?', [bankId]).map((r) => r.id)
+  if (ids.length !== existing.length || new Set(ids).size !== ids.length || !existing.every((id) => ids.includes(id))) {
+    throw new AppError('INVALID_ARGUMENT')
+  }
+  db.transaction(() => {
+    ids.forEach((id, i) => db.run('UPDATE questions SET sort_order = ? WHERE id = ?', [i, id]))
   })
 }

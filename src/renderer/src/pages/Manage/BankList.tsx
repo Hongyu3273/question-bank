@@ -1,8 +1,17 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { BankSummary } from '@shared/types'
-import { DownloadIcon, MoreIcon, PencilIcon, PlusIcon, TrashIcon } from '../../components/icons'
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  DownloadIcon,
+  MoreIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon
+} from '../../components/icons'
 import Menu, { anchorBelow, type MenuAnchor } from '../../components/Menu'
+import { stepId, useDragReorder } from '../../hooks/useDragReorder'
 import styles from './ManagePage.module.css'
 
 interface Props {
@@ -13,12 +22,24 @@ interface Props {
   onRename: (bank: BankSummary) => void
   onExport: (bank: BankSummary) => void
   onDelete: (bank: BankSummary) => void
+  onReorder: (ids: string[]) => void
 }
 
 /** 左侧题库列表:类似备忘录的文件夹栏。更多操作在"⋯"按钮和右键菜单里 */
-export default function BankList({ banks, selectedId, onSelect, onNew, onRename, onExport, onDelete }: Props) {
+export default function BankList({
+  banks,
+  selectedId,
+  onSelect,
+  onNew,
+  onRename,
+  onExport,
+  onDelete,
+  onReorder
+}: Props) {
   const { t } = useTranslation()
   const [menu, setMenu] = useState<{ bank: BankSummary; anchor: MenuAnchor } | null>(null)
+  const ids = banks.map((b) => b.id)
+  const drag = useDragReorder(ids, onReorder)
 
   return (
     <nav className={styles.bankColumn} aria-label={t('manage.banks')}>
@@ -38,10 +59,19 @@ export default function BankList({ banks, selectedId, onSelect, onNew, onRename,
       <ul className={styles.bankList}>
         {banks.map((bank) => {
           const selected = bank.id === selectedId
+          const mark = drag.indicator(bank.id)
+          const cls = [
+            styles.bankRow,
+            selected && styles.bankRowSelected,
+            mark === 'dragging' && styles.dragging,
+            mark === 'before' && styles.dropBefore,
+            mark === 'after' && styles.dropAfter
+          ]
           return (
             <li
               key={bank.id}
-              className={selected ? `${styles.bankRow} ${styles.bankRowSelected}` : styles.bankRow}
+              className={cls.filter(Boolean).join(' ')}
+              {...drag.rowProps(bank.id)}
               onContextMenu={(e) => {
                 e.preventDefault()
                 setMenu({ bank, anchor: { x: e.clientX, y: e.clientY } })
@@ -53,7 +83,15 @@ export default function BankList({ banks, selectedId, onSelect, onNew, onRename,
                 aria-current={selected ? 'true' : undefined}
                 onClick={() => onSelect(bank.id)}
                 onDoubleClick={() => onRename(bank)}
-                title={bank.name}
+                onKeyDown={(e) => {
+                  // Alt + ↑ / ↓ 移动题库位置
+                  if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                    e.preventDefault()
+                    const next = stepId(ids, bank.id, e.key === 'ArrowUp' ? -1 : 1)
+                    if (next !== ids) onReorder(next)
+                  }
+                }}
+                title={`${bank.name}\n${t('manage.dragHint')}`}
               >
                 <span className={styles.bankName}>{bank.name}</span>
                 <span className={styles.bankCount}>{bank.questionCount}</span>
@@ -86,6 +124,16 @@ export default function BankList({ banks, selectedId, onSelect, onNew, onRename,
             ? [
                 { label: t('manage.renameBank'), icon: <PencilIcon size={15} />, onSelect: () => onRename(menu.bank) },
                 { label: t('manage.exportBank'), icon: <DownloadIcon size={15} />, onSelect: () => onExport(menu.bank) },
+                {
+                  label: t('manage.moveUp'),
+                  icon: <ArrowUpIcon size={15} />,
+                  onSelect: () => onReorder(stepId(ids, menu.bank.id, -1))
+                },
+                {
+                  label: t('manage.moveDown'),
+                  icon: <ArrowDownIcon size={15} />,
+                  onSelect: () => onReorder(stepId(ids, menu.bank.id, 1))
+                },
                 { label: t('manage.deleteBank'), icon: <TrashIcon size={15} />, danger: true, onSelect: () => onDelete(menu.bank) }
               ]
             : []

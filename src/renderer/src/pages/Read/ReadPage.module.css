@@ -7,40 +7,7 @@
   flex-direction: column;
 }
 
-/* ---------- 顶部栏 ---------- */
-
-.header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 20px;
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.heading {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.title {
-  margin: 0;
-  font-size: 1.0625rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.subtitle {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-}
+/* ---------- 顶部栏中的搜索 ---------- */
 
 .searchBox {
   display: flex;
@@ -390,12 +357,26 @@
 .cardTop {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   margin: -6px -12px 0 0;
 }
 
 .cardNumber {
+  flex-shrink: 0;
   font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.cardTopSpacer {
+  flex: 1;
+}
+
+/* 英文题干 */
+.english {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  font-style: italic;
+  line-height: 1.5;
   color: var(--text-muted);
 }
 

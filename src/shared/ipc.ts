@@ -11,6 +11,7 @@ import type {
   ReciteState,
   ReciteStatus,
   ImportResult,
+  PriorityStats,
   Settings
 } from './types'
 
@@ -19,13 +20,16 @@ export const IPC = {
   banksCreate: 'banks:create',
   banksRename: 'banks:rename',
   banksDelete: 'banks:delete',
+  banksReorder: 'banks:reorder',
   questionsList: 'questions:list',
   questionsGet: 'questions:get',
   questionsCreate: 'questions:create',
   questionsUpdate: 'questions:update',
   questionsDelete: 'questions:delete',
   questionsSaveImage: 'questions:saveImage',
+  questionsReorder: 'questions:reorder',
   readList: 'read:list',
+  readPriorities: 'read:priorities',
   reciteStart: 'recite:start',
   reciteNext: 'recite:next',
   recitePrev: 'recite:prev',
@@ -39,7 +43,8 @@ export const IPC = {
   ioRestore: 'io:restore',
   settingsGetAll: 'settings:getAll',
   settingsSet: 'settings:set',
-  appInfo: 'app:info'
+  appInfo: 'app:info',
+  appOpenDataFolder: 'app:openDataFolder'
 } as const
 
 export interface Api {
@@ -49,6 +54,8 @@ export interface Api {
     rename(id: string, name: string): Promise<void>
     /** 同时删除题库中的题目和图片 */
     delete(id: string): Promise<void>
+    /** 按给定顺序重排全部题库 */
+    reorder(ids: string[]): Promise<void>
   }
   questions: {
     list(bankId: string): Promise<QuestionSummary[]>
@@ -58,14 +65,18 @@ export interface Api {
     delete(id: string): Promise<void>
     /** 保存粘贴或插入的图片,返回 Markdown 中使用的相对路径,如 images/ab12.png */
     saveImage(bankId: string, data: Uint8Array, mimeType: string): Promise<string>
+    /** 按给定顺序重排题库内的题目 */
+    reorder(bankId: string, ids: string[]): Promise<void>
   }
   read: {
     /** 按题库顺序返回所选题库的全部题目(含答案) */
     list(bankIds: string[]): Promise<ReadBank[]>
+    /** 所选题库中各优先级的题目数量 */
+    priorities(bankIds: string[]): Promise<PriorityStats>
   }
   recite: {
     /** 进入背题:勾选与上次相同则继续,否则重新洗牌;没有题目时返回 null */
-    start(bankIds: string[]): Promise<ReciteState | null>
+    start(bankIds: string[], priorities: string[]): Promise<ReciteState | null>
     next(): Promise<ReciteState | null>
     prev(): Promise<ReciteState | null>
     reshuffle(): Promise<ReciteState | null>
@@ -89,6 +100,8 @@ export interface Api {
   }
   app: {
     info(): Promise<AppInfo>
+    /** 在系统文件管理器中打开数据文件夹 */
+    openDataFolder(): Promise<void>
   }
 }
 

@@ -1,9 +1,11 @@
 import { AppError } from '../../shared/errors'
 import type { Question, ReciteState, ReciteStatus } from '../../shared/types'
+import { priorityOf } from '../../shared/meta'
 import type { Db } from '../db/database'
 import { getQuestion } from '../db/repositories/questions'
 
 interface SessionRow {
+  filter: string
   bank_ids: string
   queue: string
   position: number
@@ -12,6 +14,8 @@ interface SessionRow {
 
 interface Session {
   bankIds: string[]
+  /** 优先级筛选;空数组表示全部 */
+  priorities: string[]
   queue: string[]
   position: number
   round: number
@@ -32,11 +36,12 @@ export function shuffle<T>(items: readonly T[], random: Random = Math.random): T
 const normalizeIds = (ids: string[]) => [...new Set(ids)].sort()
 
 function readSession(db: Db): Session | null {
-  const row = db.get<SessionRow>('SELECT bank_ids, queue, position, round FROM recite_session WHERE id = 1')
+  const row = db.get<SessionRow>('SELECT bank_ids, filter, queue, position, round FROM recite_session WHERE id = 1')
   if (!row) return null
   try {
     return {
       bankIds: JSON.parse(row.bank_ids) as string[],
+      priorities: JSON.parse(row.filter) as string[],
       queue: JSON.parse(row.queue) as string[],
       position: row.position,
       round: row.round
@@ -48,19 +53,27 @@ function readSession(db: Db): Session | null {
 
 function writeSession(db: Db, s: Session): void {
   db.run(
-    `INSERT INTO recite_session (id, bank_ids, queue, position, round, updated_at) VALUES (1, ?, ?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET bank_ids = excluded.bank_ids, queue = excluded.queue,
+    `INSERT INTO recite_session (id, bank_ids, filter, queue, position, round, updated_at) VALUES (1, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET bank_ids = excluded.bank_ids, filter = excluded.filter, queue = excluded.queue,
        position = excluded.position, round = excluded.round, updated_at = excluded.updated_at`,
-    [JSON.stringify(s.bankIds), JSON.stringify(s.queue), s.position, s.round, Date.now()]
+    [JSON.stringify(s.bankIds), JSON.stringify(s.priorities), JSON.stringify(s.queue), s.position, s.round, Date.now()]
   )
 }
 
-/** 所选题库当前的全部题目 id */
-function questionIds(db: Db, bankIds: string[]): string[] {
+/** 所选题库当前的题目 id;有优先级筛选时只取这些优先级的题目 */
+function questionIds(db: Db, bankIds: string[], priorities: string[]): string[] {
   if (bankIds.length === 0) return []
   const marks = bankIds.map(() => '?').join(', ')
+  if (priorities.length === 0) {
+    return db.all<{ id: string }>(`SELECT id FROM questions WHERE bank_id IN (${marks})`, bankIds).map((r) => r.id)
+  }
+  const wanted = new Set(priorities)
   return db
-    .all<{ id: string }>(`SELECT id FROM questions WHERE bank_id IN (${marks})`, bankIds)
+    .all<{ id: string; head: string }>(
+      `SELECT id, substr(answer_md, 1, 1000) AS head FROM questions WHERE bank_id IN (${marks})`,
+      bankIds
+    )
+    .filter((r) => wanted.has(priorityOf(r.head) ?? ''))
     .map((r) => r.id)
 }
 
@@ -72,7 +85,7 @@ function resolve(db: Db, s: Session, random: Random, roundCompleted = false): Re
   let changed = false
   for (;;) {
     if (s.position >= s.queue.length) {
-      const ids = questionIds(db, s.bankIds)
+      const ids = questionIds(db, s.bankIds, s.priorities)
       if (ids.length === 0) {
         db.run('DELETE FROM recite_session WHERE id = 1')
         return null
@@ -115,20 +128,31 @@ function requireSession(db: Db): Session {
  * 进入背题模式:勾选的题库与上次相同时继续上次的进度,否则重新洗牌开始。
  * 所选题库没有题目时返回 null。
  */
-export function startRecite(db: Db, rawIds: unknown, random: Random = Math.random): ReciteState | null {
-  if (!Array.isArray(rawIds) || !rawIds.every((x) => typeof x === 'string')) throw new AppError('INVALID_ARGUMENT')
+export function startRecite(
+  db: Db,
+  rawIds: unknown,
+  rawPriorities: unknown = [],
+  random: Random = Math.random
+): ReciteState | null {
+  const isStrings = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string')
+  if (!isStrings(rawIds) || !isStrings(rawPriorities)) throw new AppError('INVALID_ARGUMENT')
   const bankIds = normalizeIds(rawIds)
+  const priorities = normalizeIds(rawPriorities)
   const existing = readSession(db)
-  if (existing && JSON.stringify(existing.bankIds) === JSON.stringify(bankIds)) {
+  if (
+    existing &&
+    JSON.stringify(existing.bankIds) === JSON.stringify(bankIds) &&
+    JSON.stringify(existing.priorities) === JSON.stringify(priorities)
+  ) {
     return db.transaction(() => resolve(db, existing, random))
   }
   return db.transaction(() => {
-    const ids = questionIds(db, bankIds)
+    const ids = questionIds(db, bankIds, priorities)
     if (ids.length === 0) {
       db.run('DELETE FROM recite_session WHERE id = 1')
       return null
     }
-    const s: Session = { bankIds, queue: shuffle(ids, random), position: 0, round: 1 }
+    const s: Session = { bankIds, priorities, queue: shuffle(ids, random), position: 0, round: 1 }
     writeSession(db, s)
     return resolve(db, s, random)
   })
@@ -140,7 +164,7 @@ export function nextQuestion(db: Db, random: Random = Math.random): ReciteState 
     const s = requireSession(db)
     const atEnd = s.position + 1 >= s.queue.length
     const next: Session = atEnd
-      ? { ...s, queue: shuffle(questionIds(db, s.bankIds), random), position: 0, round: s.round + 1 }
+      ? { ...s, queue: shuffle(questionIds(db, s.bankIds, s.priorities), random), position: 0, round: s.round + 1 }
       : { ...s, position: s.position + 1 }
     writeSession(db, next)
     return resolve(db, next, random, atEnd)
@@ -161,7 +185,7 @@ export function prevQuestion(db: Db, random: Random = Math.random): ReciteState 
 export function reshuffle(db: Db, random: Random = Math.random): ReciteState | null {
   return db.transaction(() => {
     const s = requireSession(db)
-    const next: Session = { ...s, queue: shuffle(questionIds(db, s.bankIds), random), position: 0 }
+    const next: Session = { ...s, queue: shuffle(questionIds(db, s.bankIds, s.priorities), random), position: 0 }
     writeSession(db, next)
     return resolve(db, next, random)
   })
@@ -171,5 +195,11 @@ export function reshuffle(db: Db, random: Random = Math.random): ReciteState | n
 export function reciteStatus(db: Db): ReciteStatus | null {
   const s = readSession(db)
   if (!s || s.queue.length === 0) return null
-  return { bankIds: s.bankIds, index: Math.min(s.position + 1, s.queue.length), total: s.queue.length, round: s.round }
+  return {
+    bankIds: s.bankIds,
+    priorities: s.priorities,
+    index: Math.min(s.position + 1, s.queue.length),
+    total: s.queue.length,
+    round: s.round
+  }
 }

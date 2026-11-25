@@ -29,7 +29,7 @@ const baseTheme = (dark: boolean) =>
     {
       '&': {
         height: '100%',
-        fontSize: '13px',
+        fontSize: '0.8125rem',
         backgroundColor: 'transparent',
         color: 'var(--text)'
       },

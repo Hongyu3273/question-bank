@@ -43,6 +43,10 @@ const migrations: Migration[] = [
         updated_at  INTEGER NOT NULL
       );
     `)
+  },
+  // v2:背题会话记录优先级筛选条件(JSON 数组,空数组表示全部)
+  (db) => {
+    db.exec(`ALTER TABLE recite_session ADD COLUMN filter TEXT NOT NULL DEFAULT '[]'`)
   }
 ]
 

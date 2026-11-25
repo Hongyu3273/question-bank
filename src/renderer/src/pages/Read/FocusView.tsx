@@ -1,8 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { extractMeta } from '@shared/meta'
 import type { Question } from '@shared/types'
 import { ArrowLeftIcon, CloseIcon } from '../../components/icons'
 import MarkdownView from '../../components/MarkdownView'
+import MetaTags from '../../components/MetaTags'
 import { useSearchHighlight } from '../../hooks/useSearchHighlight'
 import styles from './FocusView.module.css'
 
@@ -15,16 +17,31 @@ interface Props {
   /** 在所属题库中的题号 */
   number: number
   query: string
+  showEnglish: boolean
+  priorityLabel: (p: string) => string
   onPrev: () => void
   onNext: () => void
   onClose: () => void
 }
 
 /** 单题放大查看:大字号显示一道题,左右切换上一题、下一题 */
-export default function FocusView({ question: q, bankName, index, total, number, query, onPrev, onNext, onClose }: Props) {
+export default function FocusView({
+  question: q,
+  bankName,
+  index,
+  total,
+  number,
+  query,
+  showEnglish,
+  priorityLabel,
+  onPrev,
+  onNext,
+  onClose
+}: Props) {
   const { t } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
+  const { meta, body } = useMemo(() => extractMeta(q.answerMd), [q.answerMd])
   const hasPrev = index > 1
   const hasNext = index < total
 
@@ -85,12 +102,14 @@ export default function FocusView({ question: q, bankName, index, total, number,
 
         <div ref={bodyRef} className={styles.body} tabIndex={-1}>
           <article className={styles.content}>
+            <MetaTags meta={meta} showSource priorityLabel={priorityLabel} />
             <h2 id="focus-title" className={styles.title}>
               {q.title}
             </h2>
+            {showEnglish && meta.english && <p className={styles.english}>{meta.english}</p>}
             <div className={styles.divider} />
-            {q.answerMd.trim() ? (
-              <MarkdownView markdown={q.answerMd} bankId={q.bankId} className={styles.answer} />
+            {body.trim() ? (
+              <MarkdownView markdown={body} bankId={q.bankId} className={styles.answer} />
             ) : (
               <p className={styles.noAnswer}>{t('read.noAnswer')}</p>
             )}

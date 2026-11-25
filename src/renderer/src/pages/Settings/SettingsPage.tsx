@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { FontSize, Language, Settings, ThemeMode } from '@shared/types'
-import { DownloadIcon, UploadIcon } from '../../components/icons'
+import { DownloadIcon, FolderIcon, UploadIcon } from '../../components/icons'
+import PageHeader from '../../components/PageHeader'
 import { saveTemplate } from '../../lib/dataActions'
 import { errorMessage } from '../../lib/errors'
 import { confirmDialog } from '../../stores/confirm'
@@ -81,8 +82,9 @@ export default function SettingsPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>{t('settings.title')}</h1>
+      <PageHeader title={t('settings.title')} />
 
+      <div className={styles.content}>
       <div className={styles.sections}>
         <section className={styles.section} aria-labelledby="settings-appearance">
           <h2 id="settings-appearance" className={styles.sectionTitle}>
@@ -111,6 +113,21 @@ export default function SettingsPage() {
                 { value: 's', label: t('settings.fontSmall') },
                 { value: 'm', label: t('settings.fontMedium') },
                 { value: 'l', label: t('settings.fontLarge') }
+              ]}
+            />
+          </div>
+          <div className={styles.item}>
+            <div className={styles.itemText}>
+              <div className={styles.itemLabel}>{t('settings.showEnglish')}</div>
+              <div className={styles.itemDesc}>{t('settings.showEnglishDesc')}</div>
+            </div>
+            <Segmented<'on' | 'off'>
+              label={t('settings.showEnglish')}
+              value={settings.showEnglish ? 'on' : 'off'}
+              onChange={(v) => void update('showEnglish', v === 'on')}
+              options={[
+                { value: 'on', label: t('settings.show') },
+                { value: 'off', label: t('settings.hide') }
               ]}
             />
           </div>
@@ -171,9 +188,27 @@ export default function SettingsPage() {
             {t('settings.about')}
           </h2>
           <div className={styles.item}>
-            <span className={styles.itemLabel}>{t('settings.version', { version })}</span>
+            <div className={styles.itemText}>
+              <div className={styles.itemLabel}>{t('settings.version', { version })}</div>
+              <div className={styles.itemDesc}>
+                <a href="https://github.com/Hongyu3273/question-bank" target="_blank" rel="noreferrer">
+                  {t('settings.homepage')}
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className={styles.item}>
+            <div className={styles.itemText}>
+              <div className={styles.itemLabel}>{t('settings.dataFolder')}</div>
+              <div className={styles.itemDesc}>{t('settings.dataFolderDesc')}</div>
+            </div>
+            <button type="button" className="btn" onClick={() => void window.api.app.openDataFolder()}>
+              <FolderIcon size={16} />
+              {t('settings.openDataFolder')}
+            </button>
           </div>
         </section>
+      </div>
       </div>
     </div>
   )

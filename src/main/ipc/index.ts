@@ -1,15 +1,17 @@
-import { app, ipcMain, nativeTheme } from 'electron'
+import { app, ipcMain, nativeTheme, shell } from 'electron'
 import { AppError } from '../../shared/errors'
 import { IPC } from '../../shared/ipc'
 import type { AppInfo } from '../../shared/types'
 import { getDb } from '../db/connection'
-import { createBank, deleteBank, getBank, listBanks, renameBank } from '../db/repositories/banks'
+import { createBank, deleteBank, getBank, listBanks, renameBank, reorderBanks } from '../db/repositories/banks'
 import {
   createQuestion,
   deleteQuestion,
   getQuestion,
   listQuestions,
   listQuestionsForBanks,
+  priorityStats,
+  reorderQuestions,
   updateQuestion
 } from '../db/repositories/questions'
 import { getAllSettings, isSettingKey, isValidSettingValue, setSetting } from '../db/repositories/settings'
@@ -34,6 +36,8 @@ export function registerIpc(assets: AssetStore): void {
     assets.deleteBank(bankId)
   })
 
+  ipcMain.handle(IPC.banksReorder, (_e, ids: unknown) => reorderBanks(getDb(), ids))
+
   // 题目
   ipcMain.handle(IPC.questionsList, (_e, bankId: unknown) => listQuestions(getDb(), str(bankId)))
   ipcMain.handle(IPC.questionsGet, (_e, id: unknown) => getQuestion(getDb(), str(id)))
@@ -42,6 +46,7 @@ export function registerIpc(assets: AssetStore): void {
   )
   ipcMain.handle(IPC.questionsUpdate, (_e, id: unknown, input: unknown) => updateQuestion(getDb(), str(id), input))
   ipcMain.handle(IPC.questionsDelete, (_e, id: unknown) => deleteQuestion(getDb(), str(id)))
+  ipcMain.handle(IPC.questionsReorder, (_e, bankId: unknown, ids: unknown) => reorderQuestions(getDb(), str(bankId), ids))
   ipcMain.handle(IPC.questionsSaveImage, (_e, bankId: unknown, data: unknown, mimeType: unknown) => {
     const id = str(bankId)
     getBank(getDb(), id)
@@ -51,9 +56,12 @@ export function registerIpc(assets: AssetStore): void {
 
   // 看题
   ipcMain.handle(IPC.readList, (_e, bankIds: unknown) => listQuestionsForBanks(getDb(), bankIds))
+  ipcMain.handle(IPC.readPriorities, (_e, bankIds: unknown) => priorityStats(getDb(), bankIds))
 
   // 背题
-  ipcMain.handle(IPC.reciteStart, (_e, bankIds: unknown) => startRecite(getDb(), bankIds))
+  ipcMain.handle(IPC.reciteStart, (_e, bankIds: unknown, priorities: unknown) =>
+    startRecite(getDb(), bankIds, priorities)
+  )
   ipcMain.handle(IPC.reciteNext, () => nextQuestion(getDb()))
   ipcMain.handle(IPC.recitePrev, () => prevQuestion(getDb()))
   ipcMain.handle(IPC.reciteReshuffle, () => reshuffle(getDb()))
@@ -66,6 +74,10 @@ export function registerIpc(assets: AssetStore): void {
     setSetting(getDb(), key, value)
     // 主题同步给系统层,窗口标题栏和 prefers-color-scheme 会随之变化
     if (key === 'theme') nativeTheme.themeSource = value as typeof nativeTheme.themeSource
+  })
+
+  ipcMain.handle(IPC.appOpenDataFolder, async () => {
+    await shell.openPath(app.getPath('userData'))
   })
 
   ipcMain.handle(IPC.appInfo, (): AppInfo => ({

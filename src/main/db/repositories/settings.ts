@@ -7,7 +7,9 @@ const validators: { [K in keyof Settings]: (v: unknown) => v is Settings[K] } = 
   fontSize: (v): v is Settings['fontSize'] => v === 's' || v === 'm' || v === 'l',
   language: (v): v is Settings['language'] => v === 'zh-CN' || v === 'en',
   selectedBankIds: (v): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string'),
-  readPosition: (v): v is string | null => v === null || typeof v === 'string'
+  readPosition: (v): v is string | null => v === null || typeof v === 'string',
+  priorityFilter: (v): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string'),
+  showEnglish: (v): v is boolean => typeof v === 'boolean'
 }
 
 export function isSettingKey(key: unknown): key is keyof Settings {
