@@ -88,3 +88,14 @@ describe('题目', () => {
     expect(() => getQuestion(db, q.id)).toThrow('QUESTION_NOT_FOUND')
   })
 })
+
+describe('题目摘要', () => {
+  it('列表返回去掉 Markdown 标记的答案摘要', () => {
+    const bank = createBank(db, 'A')
+    createQuestion(db, bank.id, {
+      title: 't',
+      answerMd: '## 要点\n\n- **数组** + 链表\n\n```java\nint x;\n```\n\n![图](images/a.png) 见[文档](https://a.b)'
+    })
+    expect(listQuestions(db, bank.id)[0].snippet).toBe('要点 数组 + 链表 见文档')
+  })
+})

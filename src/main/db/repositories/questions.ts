@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { AppError } from '../../../shared/errors'
+import { markdownSnippet } from '../../../shared/markdown'
 import { LIMITS, type Question, type QuestionInput, type QuestionSummary } from '../../../shared/types'
 import type { Db } from '../database'
 import { getBank, touchBank } from './banks'
@@ -11,10 +12,13 @@ const SELECT_QUESTION = `
 
 export function listQuestions(db: Db, bankId: string): QuestionSummary[] {
   getBank(db, bankId)
-  return db.all<QuestionSummary>(
-    'SELECT id, bank_id AS bankId, title, sort_order AS sortOrder FROM questions WHERE bank_id = ? ORDER BY sort_order',
+  const rows = db.all<Omit<QuestionSummary, 'snippet'> & { head: string }>(
+    `SELECT id, bank_id AS bankId, title, sort_order AS sortOrder, updated_at AS updatedAt,
+            substr(answer_md, 1, 400) AS head
+       FROM questions WHERE bank_id = ? ORDER BY sort_order`,
     [bankId]
   )
+  return rows.map(({ head, ...q }) => ({ ...q, snippet: markdownSnippet(head) }))
 }
 
 export function getQuestion(db: Db, id: string): Question {

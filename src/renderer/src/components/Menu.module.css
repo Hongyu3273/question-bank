@@ -1,0 +1,37 @@
+.menu {
+  position: fixed;
+  z-index: 900;
+  min-width: 180px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-lg);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover,
+.item:focus-visible {
+  background: var(--hover);
+  outline: none;
+}
+
+.danger {
+  color: var(--danger);
+}

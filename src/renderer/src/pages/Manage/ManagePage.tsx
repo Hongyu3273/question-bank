@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { BankSummary, QuestionInput, QuestionSummary } from '@shared/types'
-import { ArrowLeftIcon, PlusIcon } from '../../components/icons'
+import { ArrowLeftIcon, ChevronRightIcon, PlusIcon } from '../../components/icons'
 import { errorMessage } from '../../lib/errors'
 import { confirmDialog } from '../../stores/confirm'
 import { useToastStore } from '../../stores/toast'
@@ -220,15 +220,25 @@ export default function ManagePage() {
   // ---------- 渲染 ----------
 
   const selectedQuestionId = selection.kind === 'existing' ? selection.id : selection.kind === 'new' ? 'new' : null
+  const currentBank = banks?.find((b) => b.id === bankId) ?? null
+  const currentIndex = selection.kind === 'existing' ? questions.findIndex((q) => q.id === selection.id) : -1
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>{t('nav.manage')}</h1>
-        <button type="button" className="btn" onClick={goBack}>
+        <button type="button" className="btn btn-sm" onClick={goBack}>
           <ArrowLeftIcon size={16} />
           {t('common.back')}
         </button>
+        <nav className={styles.breadcrumb} aria-label={t('manage.breadcrumb')}>
+          <h1 className={styles.title}>{t('nav.manage')}</h1>
+          {currentBank && (
+            <>
+              <ChevronRightIcon size={16} />
+              <span className={styles.breadcrumbCurrent}>{currentBank.name}</span>
+            </>
+          )}
+        </nav>
         <button type="button" className="btn btn-primary" onClick={() => setCreatingBank(true)}>
           <PlusIcon size={16} />
           {t('manage.newBank')}
@@ -261,6 +271,7 @@ export default function ManagePage() {
             <QuestionList
               questions={questions}
               selectedId={selectedQuestionId}
+              dirty={dirty}
               onSelect={(id) => void selectQuestion(id)}
               onNew={() => void newQuestion()}
             />
@@ -268,7 +279,11 @@ export default function ManagePage() {
 
           {bankId && selection.kind !== 'none' ? (
             <QuestionEditor
+              key={selection.kind === 'existing' ? selection.id : 'new'}
               bankId={bankId}
+              bankName={currentBank?.name ?? ''}
+              number={currentIndex >= 0 ? currentIndex + 1 : null}
+              updatedAt={currentIndex >= 0 ? questions[currentIndex].updatedAt : null}
               draft={draft}
               isNew={selection.kind === 'new'}
               dirty={dirty}
@@ -281,7 +296,13 @@ export default function ManagePage() {
             />
           ) : (
             <div className={styles.editorEmpty}>
-              {bankId ? t('manage.selectQuestionHint') : t('manage.selectBankHint')}
+              <p>{bankId ? t('manage.selectQuestionHint') : t('manage.selectBankHint')}</p>
+              {bankId && (
+                <button type="button" className="btn btn-sm" onClick={() => void newQuestion()}>
+                  <PlusIcon size={14} />
+                  {t('manage.newQuestion')}
+                </button>
+              )}
             </div>
           )}
         </div>

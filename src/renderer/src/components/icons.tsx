@@ -98,3 +98,66 @@ export const ArrowLeftIcon = (p: IconProps) => (
     <path d="M19 12H5M11 6l-6 6 6 6" />
   </Svg>
 )
+
+export const MoreIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="5" cy="12" r="1" />
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="19" cy="12" r="1" />
+  </Svg>
+)
+
+export const SearchIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.5-3.5" />
+  </Svg>
+)
+
+export const ChevronRightIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m9 6 6 6-6 6" />
+  </Svg>
+)
+
+export const ListIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+  </Svg>
+)
+
+export const OrderedListIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M10 6h10M10 12h10M10 18h10M4 5h1v4M4 9h2M4 14.5a1 1 0 0 1 2 0c0 .8-2 1.5-2 3.5h2" />
+  </Svg>
+)
+
+export const QuoteIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 7h5v5c0 3-2 5-5 5M14 7h5v5c0 3-2 5-5 5" />
+  </Svg>
+)
+
+export const LinkIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+  </Svg>
+)
+
+export const FunctionIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M15 4h-2a3 3 0 0 0-3 3v10a3 3 0 0 1-3 3H5M7 10h7M16 13l4 5M20 13l-4 5" />
+  </Svg>
+)
+
+export const InlineCodeIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M14 5 10 19M7 8l-4 4 4 4M17 8l4 4-4 4" />
+  </Svg>
+)
+
+export const CheckIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m5 12 5 5 9-10" />
+  </Svg>
+)

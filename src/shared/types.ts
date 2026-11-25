@@ -35,9 +35,16 @@ export interface QuestionSummary {
   bankId: string
   title: string
   sortOrder: number
+  /** 答案的纯文本摘要(一行) */
+  snippet: string
+  updatedAt: number
 }
 
-export interface Question extends QuestionSummary {
+export interface Question {
+  id: string
+  bankId: string
+  title: string
+  sortOrder: number
   /** 答案,Markdown 格式;图片用相对路径 images/xxx.png */
   answerMd: string
   createdAt: number
