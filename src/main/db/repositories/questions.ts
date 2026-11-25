@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { AppError } from '../../../shared/errors'
 import { markdownSnippet } from '../../../shared/markdown'
-import { LIMITS, type Question, type QuestionInput, type QuestionSummary } from '../../../shared/types'
+import { LIMITS, type Question, type QuestionInput, type QuestionSummary, type ReadBank } from '../../../shared/types'
 import type { Db } from '../database'
 import { getBank, touchBank } from './banks'
 
@@ -79,4 +79,23 @@ export function deleteQuestion(db: Db, id: string): void {
     db.run('DELETE FROM questions WHERE id = ?', [id])
     touchBank(db, existing.bankId)
   })
+}
+
+/**
+ * 看题模式:读取多个题库的全部题目。
+ * 题库按题库列表的顺序排列,题目按题库内顺序排列;不存在的题库 id 直接忽略。
+ */
+export function listQuestionsForBanks(db: Db, bankIds: unknown): ReadBank[] {
+  if (!Array.isArray(bankIds) || !bankIds.every((x) => typeof x === 'string')) throw new AppError('INVALID_ARGUMENT')
+  if (bankIds.length === 0) return []
+  const marks = bankIds.map(() => '?').join(', ')
+  const banks = db.all<{ id: string; name: string }>(
+    `SELECT id, name FROM banks WHERE id IN (${marks}) ORDER BY sort_order, created_at`,
+    bankIds
+  )
+  const questions = db.all<Question>(
+    `${SELECT_QUESTION} WHERE bank_id IN (${marks}) ORDER BY sort_order`,
+    bankIds
+  )
+  return banks.map((b) => ({ ...b, questions: questions.filter((q) => q.bankId === b.id) }))
 }

@@ -11,13 +11,16 @@ export interface Settings {
   language: Language
   /** 首页勾选的题库 id */
   selectedBankIds: string[]
+  /** 看题模式上次读到的题目 id */
+  readPosition: string | null
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   fontSize: 'm',
   language: 'zh-CN',
-  selectedBankIds: []
+  selectedBankIds: [],
+  readPosition: null
 }
 
 export interface BankSummary {
@@ -49,6 +52,13 @@ export interface Question {
   answerMd: string
   createdAt: number
   updatedAt: number
+}
+
+/** 看题模式:一个题库及其全部题目 */
+export interface ReadBank {
+  id: string
+  name: string
+  questions: Question[]
 }
 
 export interface QuestionInput {

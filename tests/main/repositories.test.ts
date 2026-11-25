@@ -6,6 +6,7 @@ import {
   deleteQuestion,
   getQuestion,
   listQuestions,
+  listQuestionsForBanks,
   updateQuestion
 } from '../../src/main/db/repositories/questions'
 import { LIMITS } from '../../src/shared/types'
@@ -97,5 +98,23 @@ describe('题目摘要', () => {
       answerMd: '## 要点\n\n- **数组** + 链表\n\n```java\nint x;\n```\n\n![图](images/a.png) 见[文档](https://a.b)'
     })
     expect(listQuestions(db, bank.id)[0].snippet).toBe('要点 数组 + 链表 见文档')
+  })
+})
+
+describe('看题:多个题库的全部题目', () => {
+  it('按题库顺序、题内顺序返回,并忽略不存在的题库', () => {
+    const a = createBank(db, 'A')
+    const b = createBank(db, 'B')
+    createQuestion(db, b.id, { title: 'b1', answerMd: 'x' })
+    createQuestion(db, a.id, { title: 'a1', answerMd: 'y' })
+    createQuestion(db, a.id, { title: 'a2', answerMd: 'z' })
+    const result = listQuestionsForBanks(db, [b.id, 'missing', a.id])
+    expect(result.map((r) => [r.name, r.questions.map((q) => q.title)])).toEqual([
+      ['A', ['a1', 'a2']],
+      ['B', ['b1']]
+    ])
+    expect(result[0].questions[0].answerMd).toBe('y')
+    expect(listQuestionsForBanks(db, [])).toEqual([])
+    expect(() => listQuestionsForBanks(db, 'x')).toThrow('INVALID_ARGUMENT')
   })
 })

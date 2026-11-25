@@ -38,11 +38,12 @@
     "emptyTitle": "还没有题库",
     "emptyDesc": "到题库管理中新建题库,或导入 Markdown / Excel 文件。",
     "emptyAction": "前往题库管理",
-    "needSelection": "请先勾选至少一个题库"
+    "needSelection": "请先勾选至少一个题库",
+    "continueReading": "继续阅读 →",
+    "lastRead": "上次读到:{{title}}"
   },
   "placeholder": {
     "inProgress": "开发中",
-    "read": "看题模式将在 M3 阶段实现:目录、全部题目、关键词搜索和阅读位置记忆。",
     "recite": "背题模式将在 M4 阶段实现:随机洗牌、显示/隐藏答案、快捷键和进度保存。"
   },
   "settings": {
@@ -152,5 +153,23 @@
     "QUESTION_NOT_FOUND": "题目不存在,可能已被删除",
     "IMAGE_TYPE_UNSUPPORTED": "只支持 PNG、JPG、GIF、WebP 图片",
     "IMAGE_TOO_LARGE": "图片不能超过 10MB"
+  },
+  "read": {
+    "summary": "{{banks}} 个题库 · 共 {{count}} 题",
+    "search": "搜索题目和答案",
+    "searchPlaceholder": "搜索题目和答案(Ctrl+F)",
+    "matchPosition": "{{current}} / {{count}}",
+    "noMatch": "无匹配",
+    "prevMatch": "上一个",
+    "nextMatch": "下一个",
+    "toc": "目录",
+    "noAnswer": "(暂无答案)",
+    "end": "已经到底了",
+    "resumed": "已回到上次阅读的位置",
+    "noSelectionTitle": "还没有选择题库",
+    "noSelectionDesc": "先在首页勾选要阅读的题库。",
+    "goSelect": "去首页选择题库",
+    "noQuestionsTitle": "所选题库还没有题目",
+    "noQuestionsDesc": "到题库管理里添加题目后再来阅读。"
   }
 }

@@ -17,6 +17,9 @@ const api: Api = {
     delete: (id) => ipcRenderer.invoke(IPC.questionsDelete, id),
     saveImage: (bankId, data, mimeType) => ipcRenderer.invoke(IPC.questionsSaveImage, bankId, data, mimeType)
   },
+  read: {
+    list: (bankIds) => ipcRenderer.invoke(IPC.readList, bankIds)
+  },
   settings: {
     getAll: () => ipcRenderer.invoke(IPC.settingsGetAll),
     set: (key, value) => ipcRenderer.invoke(IPC.settingsSet, key, value)

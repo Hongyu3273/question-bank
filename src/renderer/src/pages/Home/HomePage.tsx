@@ -13,12 +13,23 @@ export default function HomePage() {
   const { t } = useTranslation()
   const showToast = useToastStore((s) => s.show)
   const selectedIds = useSettingsStore((s) => s.settings?.selectedBankIds ?? NO_IDS)
+  const readPosition = useSettingsStore((s) => s.settings?.readPosition ?? null)
   const updateSetting = useSettingsStore((s) => s.update)
   const [banks, setBanks] = useState<BankSummary[] | null>(null)
+  const [lastRead, setLastRead] = useState<string | null>(null)
 
   useEffect(() => {
     void window.api.banks.list().then(setBanks)
   }, [])
+
+  // 看题模式上次读到的题目(题目已删除时不显示)
+  useEffect(() => {
+    if (!readPosition) return setLastRead(null)
+    window.api.questions
+      .get(readPosition)
+      .then((q) => setLastRead(q.title))
+      .catch(() => setLastRead(null))
+  }, [readPosition])
 
   // 已删除的题库不计入勾选
   const selected = (banks ?? []).filter((b) => selectedIds.includes(b.id))
@@ -55,7 +66,8 @@ export default function HomePage() {
           </div>
           <div className={styles.modeTitle}>{t('nav.read')}</div>
           <p className={styles.modeDesc}>{t('home.readDesc')}</p>
-          <div className={styles.modeAction}>{t('home.readAction')}</div>
+          {lastRead && <div className={styles.modeMeta}>{t('home.lastRead', { title: lastRead })}</div>}
+          <div className={styles.modeAction}>{lastRead ? t('home.continueReading') : t('home.readAction')}</div>
         </Link>
 
         <Link to="/recite" className={styles.mode} onClick={guard}>

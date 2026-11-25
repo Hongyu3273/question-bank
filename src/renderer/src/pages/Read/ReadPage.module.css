@@ -1,0 +1,382 @@
+/* 看题模式:左侧目录 + 右侧连续阅读,参考电子书和文档站的阅读布局 */
+
+.page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- 顶部栏 ---------- */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 280px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: var(--hover);
+  color: var(--text-muted);
+}
+
+.search:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  background: var(--surface);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8125rem;
+}
+
+.matchCount {
+  min-width: 64px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.iconButton {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.iconButton:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.iconButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* 箭头图标:默认朝上,.down 朝下 */
+.iconButton :global(svg) {
+  transform: rotate(-90deg);
+}
+
+.down :global(svg) {
+  transform: rotate(90deg);
+}
+
+/* ---------- 主体 ---------- */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* 目录 */
+.toc {
+  flex: 0 0 260px;
+  overflow-y: auto;
+  padding: 14px 10px 24px;
+  border-right: 1px solid var(--border);
+}
+
+.tocLabel {
+  padding: 0 8px 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.tocBank + .tocBank {
+  margin-top: 8px;
+}
+
+.tocBankButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tocBankButton:hover {
+  background: var(--hover);
+}
+
+.chevron {
+  display: inline-flex;
+  color: var(--text-muted);
+  transition: transform 0.15s;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.tocBankName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tocCount {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.tocList {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tocItem {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px 6px 10px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tocItem:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.tocItemActive,
+.tocItemActive:hover {
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tocNumber {
+  flex: 0 0 18px;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.tocItemActive .tocNumber {
+  color: var(--accent);
+}
+
+.tocTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 阅读区 */
+.list {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  scroll-padding-top: 16px;
+}
+
+.listInner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 40px 64px;
+}
+
+.bankSection + .bankSection {
+  margin-top: 40px;
+}
+
+.bankHeading {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 -8px 12px;
+  padding: 10px 8px;
+  background: var(--bg);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.bankHeadingCount {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.card {
+  padding: 22px 28px 24px;
+  margin-bottom: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  scroll-margin-top: 56px;
+}
+
+.cardActive {
+  border-color: var(--accent);
+}
+
+.cardNumber {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.cardTitle {
+  margin: 6px 0 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.answer {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--divider);
+}
+
+.noAnswer {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.end {
+  margin: 32px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ---------- 空状态 ---------- */
+
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.emptyTitle {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.emptyDesc {
+  max-width: 360px;
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+@media (max-width: 1100px) {
+  .toc {
+    flex-basis: 210px;
+  }
+
+  .listInner {
+    padding: 20px 24px 48px;
+  }
+
+  .search {
+    width: 200px;
+  }
+}

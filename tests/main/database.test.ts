@@ -63,3 +63,14 @@ describe('Db 与迁移', () => {
     expect(listBanks(db)).toHaveLength(0)
   })
 })
+
+describe('设置', () => {
+  it('readPosition 默认为 null,可以保存题目 id', async () => {
+    const db = await openTestDb()
+    expect(getAllSettings(db).readPosition).toBeNull()
+    setSetting(db, 'readPosition', 'q1')
+    expect(getAllSettings(db).readPosition).toBe('q1')
+    setSetting(db, 'readPosition', null)
+    expect(getAllSettings(db).readPosition).toBeNull()
+  })
+})

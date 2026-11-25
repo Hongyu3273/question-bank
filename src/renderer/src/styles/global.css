@@ -135,3 +135,14 @@ button {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* 看题模式的搜索高亮(CSS Custom Highlight API) */
+::highlight(qb-search) {
+  background-color: var(--highlight);
+  color: inherit;
+}
+
+::highlight(qb-search-current) {
+  background-color: #f59e0b;
+  color: #1c1c1e;
+}

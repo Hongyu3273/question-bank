@@ -38,11 +38,12 @@
     "emptyTitle": "No question banks yet",
     "emptyDesc": "Create a bank in Banks, or import a Markdown / Excel file.",
     "emptyAction": "Go to Banks",
-    "needSelection": "Select at least one question bank first"
+    "needSelection": "Select at least one question bank first",
+    "continueReading": "Continue reading →",
+    "lastRead": "Last read: {{title}}"
   },
   "placeholder": {
     "inProgress": "In development",
-    "read": "Read mode arrives in M3: table of contents, all questions, keyword search and reading position.",
     "recite": "Recite mode arrives in M4: shuffling, show/hide answers, keyboard shortcuts and saved progress."
   },
   "settings": {
@@ -152,5 +153,23 @@
     "QUESTION_NOT_FOUND": "This question no longer exists",
     "IMAGE_TYPE_UNSUPPORTED": "Only PNG, JPG, GIF and WebP images are supported",
     "IMAGE_TOO_LARGE": "Images must be 10 MB or smaller"
+  },
+  "read": {
+    "summary": "{{banks}} banks · {{count}} questions",
+    "search": "Search questions and answers",
+    "searchPlaceholder": "Search questions and answers (Ctrl+F)",
+    "matchPosition": "{{current}} / {{count}}",
+    "noMatch": "No matches",
+    "prevMatch": "Previous match",
+    "nextMatch": "Next match",
+    "toc": "Contents",
+    "noAnswer": "(No answer yet)",
+    "end": "You've reached the end",
+    "resumed": "Back where you left off",
+    "noSelectionTitle": "No question banks selected",
+    "noSelectionDesc": "Select the banks to read on the Home page first.",
+    "goSelect": "Select banks",
+    "noQuestionsTitle": "The selected banks have no questions",
+    "noQuestionsDesc": "Add questions in Banks, then come back to read."
   }
 }

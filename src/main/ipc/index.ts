@@ -9,6 +9,7 @@ import {
   deleteQuestion,
   getQuestion,
   listQuestions,
+  listQuestionsForBanks,
   updateQuestion
 } from '../db/repositories/questions'
 import { getAllSettings, isSettingKey, isValidSettingValue, setSetting } from '../db/repositories/settings'
@@ -46,6 +47,9 @@ export function registerIpc(assets: AssetStore): void {
     if (!(data instanceof Uint8Array)) throw new AppError('INVALID_ARGUMENT')
     return assets.saveImage(id, data, str(mimeType))
   })
+
+  // 看题
+  ipcMain.handle(IPC.readList, (_e, bankIds: unknown) => listQuestionsForBanks(getDb(), bankIds))
 
   // 设置
   ipcMain.handle(IPC.settingsGetAll, () => getAllSettings(getDb()))
