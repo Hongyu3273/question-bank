@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { QuestionSummary } from '@shared/types'
 import { PlusIcon, SearchIcon } from '../../components/icons'
 import { stepId, useDragReorder } from '../../hooks/useDragReorder'
+import { usePriorityLabel } from '../../hooks/usePriorityLabel'
 import styles from './ManagePage.module.css'
 
 interface Props {
@@ -17,8 +18,15 @@ interface Props {
 }
 
 /** 中间题目列表:搜索、两行摘要(题干 + 答案开头)、方向键切换 */
+const PRIORITY_DOT: Record<string, string> = {
+  高: styles.dotHigh,
+  中: styles.dotMedium,
+  低: styles.dotLow
+}
+
 export default function QuestionList({ questions, selectedId, dirty, onSelect, onNew, onReorder }: Props) {
   const { t } = useTranslation()
+  const priorityLabel = usePriorityLabel()
   const [query, setQuery] = useState('')
   const listRef = useRef<HTMLOListElement>(null)
 
@@ -124,6 +132,11 @@ export default function QuestionList({ questions, selectedId, dirty, onSelect, o
                 onClick={() => onSelect(q.id)}
               >
                 <span className={styles.questionNumber}>{numberOf(q.id)}</span>
+                <span
+                  className={`${styles.priorityDot} ${q.priority ? (PRIORITY_DOT[q.priority] ?? styles.dotOther) : styles.dotNone}`}
+                  title={q.priority ? priorityLabel(q.priority) : t('meta.none')}
+                  aria-label={q.priority ? priorityLabel(q.priority) : t('meta.none')}
+                />
                 <span className={styles.questionMain}>
                   <span className={styles.questionTitle}>{q.title}</span>
                   <span className={styles.questionSnippet}>{q.snippet || t('manage.noAnswer')}</span>

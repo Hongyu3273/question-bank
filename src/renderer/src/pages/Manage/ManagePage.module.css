@@ -684,3 +684,92 @@
 .dropAfter::after {
   bottom: -1px;
 }
+
+/* ---------- 题目信息(优先级、分类等) ---------- */
+
+.metaForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 8px 24px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.metaField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.metaWide {
+  flex: 1 1 260px;
+}
+
+.metaLabel {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.metaInput {
+  flex: 1;
+  min-width: 0;
+  width: 160px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8125rem;
+}
+
+.metaInput:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+.previewEnglish {
+  margin: 8px 0 12px;
+  font-size: 0.875rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* 题目列表的优先级色点 */
+.priorityDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+}
+
+.dotHigh {
+  background: var(--danger);
+}
+
+.dotMedium {
+  background: var(--warning-text);
+}
+
+.dotLow {
+  background: var(--text-muted);
+  opacity: 0.6;
+}
+
+.dotOther {
+  background: var(--accent);
+}
+
+.dotNone {
+  border: 1.5px dashed var(--border-strong);
+}

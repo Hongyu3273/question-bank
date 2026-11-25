@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { comparePriority, extractMeta, priorityOf } from '../../src/shared/meta'
+import {
+  comparePriority,
+  composeAnswer,
+  extractMeta,
+  NO_PRIORITY,
+  priorityKey,
+  priorityOf,
+  updateMeta
+} from '../../src/shared/meta'
 
 const ANSWER = `*English: Tell me about yourself.*
 
@@ -31,5 +39,32 @@ describe('extractMeta', () => {
 
   it('优先级排序:高、中、低', () => {
     expect(['低', '其他', '高', '中'].sort(comparePriority)).toEqual(['高', '中', '低', '其他'])
+  })
+})
+
+describe('composeAnswer / updateMeta', () => {
+  it('组合后再解析,内容一致', () => {
+    const meta = { english: 'Why?', priority: '高', category: 'Java', source: 'SEEK：x' }
+    const md = composeAnswer(meta, '正文\n\n- 列表')
+    expect(md).toBe('*English: Why?*\n\n> 优先级：高 ｜ 分类：Java ｜ 出处：SEEK：x\n\n正文\n\n- 列表')
+    expect(extractMeta(md)).toEqual({ meta, body: '正文\n\n- 列表' })
+  })
+
+  it('没有元信息时只返回正文;只有元信息时不留多余空行', () => {
+    expect(composeAnswer({}, '正文')).toBe('正文')
+    expect(composeAnswer({ priority: '低' }, '')).toBe('> 优先级：低')
+  })
+
+  it('修改、新增、删除优先级,保留其他元信息和正文', () => {
+    const original = '*English: A*\n\n> 优先级：低 ｜ 分类：x\n\n正文'
+    expect(updateMeta(original, { priority: '高' })).toBe('*English: A*\n\n> 优先级：高 ｜ 分类：x\n\n正文')
+    expect(updateMeta('正文', { priority: '中' })).toBe('> 优先级：中\n\n正文')
+    expect(updateMeta(original, { priority: '' })).toBe('*English: A*\n\n> 分类：x\n\n正文')
+    expect(updateMeta('> 优先级：高\n\n正文', { priority: '' })).toBe('正文')
+  })
+
+  it('未设置优先级的筛选键', () => {
+    expect(priorityKey('正文')).toBe(NO_PRIORITY)
+    expect(priorityKey('> 优先级：高\n正文')).toBe('高')
   })
 })

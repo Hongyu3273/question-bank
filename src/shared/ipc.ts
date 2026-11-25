@@ -11,6 +11,7 @@ import type {
   ReciteState,
   ReciteStatus,
   ImportResult,
+  PriorityScope,
   PriorityStats,
   Settings
 } from './types'
@@ -21,6 +22,7 @@ export const IPC = {
   banksRename: 'banks:rename',
   banksDelete: 'banks:delete',
   banksReorder: 'banks:reorder',
+  banksSetPriority: 'banks:setPriority',
   questionsList: 'questions:list',
   questionsGet: 'questions:get',
   questionsCreate: 'questions:create',
@@ -56,6 +58,8 @@ export interface Api {
     delete(id: string): Promise<void>
     /** 按给定顺序重排全部题库 */
     reorder(ids: string[]): Promise<void>
+    /** 批量设置题库的优先级(null 为清除),返回修改的题目数量 */
+    setPriority(bankId: string, priority: string | null, scope: PriorityScope): Promise<number>
   }
   questions: {
     list(bankId: string): Promise<QuestionSummary[]>

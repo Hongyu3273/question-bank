@@ -108,3 +108,17 @@ describe('parseSheetRows', () => {
     expect(parseSheetRows([['题干', '答案'], [null, '只有答案']]).issues).toEqual([{ code: 'TITLE_EMPTY', row: 2 }])
   })
 })
+
+describe('Excel 元信息列', () => {
+  it('优先级、分类、英文题干列写入答案开头', () => {
+    const { questions } = parseSheetRows([
+      ['题干', '答案', '优先级', '分类', '英文题干'],
+      ['q', 'a', '高', 'Java', 'Why?'],
+      ['q2', 'b', null, null, null]
+    ])
+    expect(questions).toEqual([
+      { title: 'q', answerMd: '*English: Why?*\n\n> 优先级：高 ｜ 分类：Java\n\na' },
+      { title: 'q2', answerMd: 'b' }
+    ])
+  })
+})

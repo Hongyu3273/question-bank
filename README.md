@@ -10,7 +10,7 @@ Built with Electron, React and TypeScript. Data is stored locally in SQLite.
 
 - **Read mode** — all questions and answers from the selected banks in one scrolling page, with a collapsible, resizable table of contents, full-text search (`Ctrl+F`), and a focus view that shows a single question large with ←/→ navigation. Remembers where you stopped.
 - **Recite mode** — the selected banks are merged and shuffled; one question at a time with the answer hidden. Click the answer area or press `Space` to reveal. Every question appears once per round, then the deck reshuffles. Progress survives restarts.
-- **Priority filter** — answers that start with a metadata line (`> 优先级：高 ｜ 分类：… ｜ 出处：…`) show as priority and category tags, and you can read or recite only high-priority questions.
+- **Priorities** — each question can have a priority (High / Medium / Low), category, English prompt and source, shown as tags. Filter by priority on Home or right inside Read mode (including *Not set*). Set them per question in the editor, or for a whole bank at once (*Set priority for all…* in the bank menu) — handy for imported banks that have none.
 - **Bank management** — create, rename, reorder (drag or `Alt+↑/↓`) and delete banks and questions. Markdown editor with toolbar, preview, code highlighting, tables, LaTeX math and pasted images.
 - **Import / export** — Markdown zip (with images), single `.md`, or Excel `.xlsx`; select many files at once. Problems are reported by question and line number; name clashes let you overwrite, keep both or skip. Exports use the same format.
 - **Backup & restore** — everything (banks, images, progress, settings) in one `.qbak` file.
@@ -20,7 +20,7 @@ Built with Electron, React and TypeScript. Data is stored locally in SQLite.
 ## How to use
 
 1. **Get your questions in.** Open **Banks** → **Import** and pick one or more `.zip`, `.md` or `.xlsx` files. Or click **New bank** and type questions in yourself. Templates are under **Settings → Data**.
-2. **Choose what to study.** On **Home**, tick the banks you want under *Choose banks*. Optionally pick a priority (for example only *High*).
+2. **Choose what to study.** On **Home**, tick the banks you want under *Choose banks*. Optionally pick a priority (for example only *High*). If an imported bank has no priorities, use *Set priority for all…* in its menu under **Banks** first.
 3. **Pick a mode.**
    - **Read** to go through everything with answers visible. Click a question title (or the expand icon) for the focus view; use ← / → to move on, `Esc` to close.
    - **Recite** to test yourself. Think of the answer, click the dashed area (or press `Space`) to check, then → for the next one.
@@ -74,7 +74,9 @@ String pool, cached hash code, thread safety.
   > 优先级：高 ｜ 分类：HR ｜ 出处：SEEK
   ```
 
-Excel: first sheet, header row with **Question** and **Answer** columns (or 题干 / 答案), one question per row.
+Excel: first sheet, header row with **Question** and **Answer** columns (or 题干 / 答案), one question per row. Optional columns **Priority**, **Category**, **English**, **Source** (优先级 / 分类 / 英文题干 / 出处) become the metadata line.
+
+Questions without a priority are still imported; they appear under *Not set* and can be given a priority later.
 
 ## Development
 

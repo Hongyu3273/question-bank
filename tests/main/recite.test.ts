@@ -3,6 +3,7 @@ import type { Db } from '../../src/main/db/database'
 import { createBank } from '../../src/main/db/repositories/banks'
 import { createQuestion, deleteQuestion } from '../../src/main/db/repositories/questions'
 import { nextQuestion, prevQuestion, reciteStatus, reshuffle, shuffle, startRecite } from '../../src/main/services/recite'
+import { NO_PRIORITY } from '../../src/shared/meta'
 import { openTestDb } from '../helpers'
 
 /** 可重复的伪随机数 */
@@ -125,6 +126,8 @@ describe('按优先级背题', () => {
     expect(s.total).toBe(2)
     expect(s.question.title.startsWith('高')).toBe(true)
     expect(startRecite(db, [c], [], seeded())!.total).toBe(4)
-    expect(reciteStatus(db)?.priorities).toEqual([])
+    // 未设置优先级的题目可以单独筛选
+    expect(startRecite(db, [c], [NO_PRIORITY], seeded())!.question.title).toBe('无标注')
+    expect(reciteStatus(db)?.priorities).toEqual([NO_PRIORITY])
   })
 })

@@ -1,10 +1,11 @@
 import { useEffect, useState, type MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { NO_PRIORITY } from '@shared/meta'
 import type { BankSummary, PriorityStats, ReciteStatus } from '@shared/types'
 import { BookIcon, CheckIcon, ExamIcon, FolderIcon, ShuffleIcon, UploadIcon } from '../../components/icons'
 import PageHeader from '../../components/PageHeader'
-import { usePriorityLabel } from '../../hooks/usePriorityLabel'
+import PriorityFilter from '../../components/PriorityFilter'
 import { startImport } from '../../lib/dataActions'
 import { useImportStore } from '../../stores/import'
 import { useSettingsStore } from '../../stores/settings'
@@ -16,7 +17,6 @@ const sameList = (a: string[], b: string[]) => JSON.stringify([...a].sort()) ===
 
 export default function HomePage() {
   const { t } = useTranslation()
-  const priorityLabel = usePriorityLabel()
   const showToast = useToastStore((s) => s.show)
   const selectedIds = useSettingsStore((s) => s.settings?.selectedBankIds ?? NO_IDS)
   const priorityFilter = useSettingsStore((s) => s.settings?.priorityFilter ?? NO_IDS)
@@ -60,16 +60,12 @@ export default function HomePage() {
   const filtered =
     !stats || priorityFilter.length === 0
       ? (stats?.total ?? 0)
-      : stats.counts.filter((c) => priorityFilter.includes(c.priority)).reduce((n, c) => n + c.count, 0)
+      : stats.counts.filter((c) => priorityFilter.includes(c.priority)).reduce((n, c) => n + c.count, 0) +
+        (priorityFilter.includes(NO_PRIORITY) ? stats.unlabeled : 0)
 
   const setSelection = (ids: string[]) => void updateSetting('selectedBankIds', ids)
   const toggle = (id: string) =>
     setSelection(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id])
-  const togglePriority = (p: string) =>
-    void updateSetting(
-      'priorityFilter',
-      priorityFilter.includes(p) ? priorityFilter.filter((x) => x !== p) : [...priorityFilter, p]
-    )
 
   // 背题进度只在勾选的题库和筛选与上次背题时相同时显示
   const sameRecite =
@@ -156,34 +152,12 @@ export default function HomePage() {
           )}
 
           {/* 按优先级筛选(看题和背题共用) */}
-          {stats && stats.counts.length > 0 && (
-            <div className={styles.filterRow} role="group" aria-label={t('home.priorityFilter')}>
-              <span className={styles.filterLabel}>{t('home.priorityFilter')}</span>
-              <button
-                type="button"
-                className={priorityFilter.length === 0 ? `${styles.filterChip} ${styles.filterChipOn}` : styles.filterChip}
-                aria-pressed={priorityFilter.length === 0}
-                onClick={() => void updateSetting('priorityFilter', [])}
-              >
-                {t('home.allPriorities')}
-                <span className={styles.filterCount}>{stats.total}</span>
-              </button>
-              {stats.counts.map(({ priority, count }) => {
-                const on = priorityFilter.includes(priority)
-                return (
-                  <button
-                    key={priority}
-                    type="button"
-                    className={on ? `${styles.filterChip} ${styles.filterChipOn}` : styles.filterChip}
-                    aria-pressed={on}
-                    onClick={() => togglePriority(priority)}
-                  >
-                    {priorityLabel(priority)}
-                    <span className={styles.filterCount}>{count}</span>
-                  </button>
-                )
-              })}
-            </div>
+          {stats && (
+            <PriorityFilter
+              stats={stats}
+              selected={priorityFilter}
+              onChange={(v) => void updateSetting('priorityFilter', v)}
+            />
           )}
         </section>
 

@@ -79,19 +79,20 @@ How running time grows with input size, e.g. binary search is $O(\\log n)$.
 /** Excel 模板:表头"题干""答案"加两行示例 */
 export async function excelTemplate(language: string): Promise<{ fileName: string; data: Uint8Array }> {
   const zh = language !== 'en'
-  const header = zh ? ['题干', '答案'] : ['Question', 'Answer']
+  // 前两列必填,后面的列可以删掉或留空
+  const header = zh ? ['题干', '答案', '优先级', '分类', '英文题干'] : ['Question', 'Answer', 'Priority', 'Category', 'English']
   const rows = zh
     ? [
-        ['HashMap 的底层数据结构是什么?', 'JDK 8 以后是 **数组 + 链表 + 红黑树**'],
-        ['什么是时间复杂度?', '衡量算法运行时间随输入规模增长的趋势']
+        ['HashMap 的底层数据结构是什么?', 'JDK 8 以后是 **数组 + 链表 + 红黑树**', '高', 'Java 集合', 'What is the underlying structure of HashMap?'],
+        ['什么是时间复杂度?', '衡量算法运行时间随输入规模增长的趋势', '中', '算法', '']
       ]
     : [
-        ['What is the underlying structure of HashMap?', 'Since JDK 8: **array + linked list + red-black tree**'],
-        ['What is time complexity?', 'How running time grows with input size']
+        ['What is the underlying structure of HashMap?', 'Since JDK 8: **array + linked list + red-black tree**', 'High', 'Java', ''],
+        ['What is time complexity?', 'How running time grows with input size', 'Medium', 'Algorithms', '']
       ]
   const buffer = await writeXlsxFile(
     [header.map((value) => ({ value, fontWeight: 'bold' as const })), ...rows.map((r) => r.map((value) => ({ value })))],
-    { columns: [{ width: 50 }, { width: 80 }] }
+    { columns: [{ width: 50 }, { width: 80 }, { width: 10 }, { width: 20 }, { width: 50 }] }
   ).toBuffer()
   return { fileName: zh ? '示例题库.xlsx' : 'sample-bank.xlsx', data: new Uint8Array(buffer) }
 }

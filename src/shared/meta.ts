@@ -79,3 +79,42 @@ export function comparePriority(a: string, b: string): number {
   if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib)
   return a.localeCompare(b)
 }
+
+/** 筛选中表示"未设置优先级"的值 */
+export const NO_PRIORITY = '__none__'
+
+/** 标准优先级 */
+export const PRIORITIES = ['高', '中', '低'] as const
+
+/** 优先级筛选用的键:没有优先级时为 NO_PRIORITY */
+export function priorityKey(answerMd: string): string {
+  return priorityOf(answerMd) ?? NO_PRIORITY
+}
+
+/**
+ * 把元信息和正文组合成答案(与导入的格式一致):
+ *   *English: …*
+ *
+ *   > 优先级：高 ｜ 分类：… ｜ 出处：…
+ *
+ *   正文
+ */
+export function composeAnswer(meta: QuestionMeta, body: string): string {
+  const parts: string[] = []
+  const english = meta.english?.trim()
+  if (english) parts.push(`*English: ${english}*`)
+  const fields: string[] = []
+  if (meta.priority?.trim()) fields.push(`优先级：${meta.priority.trim()}`)
+  if (meta.category?.trim()) fields.push(`分类：${meta.category.trim()}`)
+  if (meta.source?.trim()) fields.push(`出处：${meta.source.trim()}`)
+  if (fields.length > 0) parts.push(`> ${fields.join(' ｜ ')}`)
+  const text = body.replace(/^\s*\n/, '')
+  if (parts.length === 0) return text
+  return text.trim() ? `${parts.join('\n\n')}\n\n${text}` : parts.join('\n\n')
+}
+
+/** 修改答案中的部分元信息,其余内容不变;值为空字符串表示删除该项 */
+export function updateMeta(answerMd: string, patch: Partial<QuestionMeta>): string {
+  const { meta, body } = extractMeta(answerMd)
+  return composeAnswer({ ...meta, ...patch }, body)
+}

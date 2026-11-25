@@ -1,6 +1,6 @@
 import { AppError } from '../../shared/errors'
 import type { Question, ReciteState, ReciteStatus } from '../../shared/types'
-import { priorityOf } from '../../shared/meta'
+import { priorityKey } from '../../shared/meta'
 import type { Db } from '../db/database'
 import { getQuestion } from '../db/repositories/questions'
 
@@ -73,7 +73,7 @@ function questionIds(db: Db, bankIds: string[], priorities: string[]): string[] 
       `SELECT id, substr(answer_md, 1, 1000) AS head FROM questions WHERE bank_id IN (${marks})`,
       bankIds
     )
-    .filter((r) => wanted.has(priorityOf(r.head) ?? ''))
+    .filter((r) => wanted.has(priorityKey(r.head)))
     .map((r) => r.id)
 }
 

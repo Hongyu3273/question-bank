@@ -1,6 +1,7 @@
 // 题库文件格式:Markdown(questions.md)的解析与生成,以及 Excel 表格行的解析。
 // 只处理文本,不读写文件,方便单独测试。
 
+import { composeAnswer } from '../../shared/meta'
 import { LIMITS } from '../../shared/types'
 import type { ImportIssue } from '../../shared/types'
 
@@ -156,6 +157,10 @@ export function serializeQuestionsMarkdown(name: string, questions: ParsedQuesti
 
 const TITLE_HEADERS = ['题干', '题目', '问题', 'question', 'title']
 const ANSWER_HEADERS = ['答案', '参考答案', 'answer']
+const PRIORITY_HEADERS = ['优先级', 'priority']
+const CATEGORY_HEADERS = ['分类', 'category']
+const ENGLISH_HEADERS = ['英文题干', '英文', 'english']
+const SOURCE_HEADERS = ['出处', '来源', 'source']
 
 type Cell = string | number | boolean | Date | null
 
@@ -165,7 +170,10 @@ function cellText(value: Cell | undefined): string {
   return String(value)
 }
 
-/** 解析 Excel 第一个工作表:第一行为表头,需要"题干""答案"两列 */
+/**
+ * 解析 Excel 第一个工作表:第一行为表头,需要"题干""答案"两列;
+ * 可选"优先级""分类""英文题干""出处"列,写入答案开头的元信息。
+ */
 export function parseSheetRows(rows: Cell[][]): { questions: ParsedQuestion[]; issues: ImportIssue[] } {
   const issues: ImportIssue[] = []
   const header = (rows[0] ?? []).map((c) => cellText(c).trim().toLowerCase())
@@ -174,12 +182,29 @@ export function parseSheetRows(rows: Cell[][]): { questions: ParsedQuestion[]; i
   if (titleCol === -1 || answerCol === -1) {
     return { questions: [], issues: [{ code: 'EXCEL_HEADER_MISSING' }] }
   }
+  const col = (names: string[]) => header.findIndex((h) => names.includes(h))
+  const extra = {
+    priority: col(PRIORITY_HEADERS),
+    category: col(CATEGORY_HEADERS),
+    english: col(ENGLISH_HEADERS),
+    source: col(SOURCE_HEADERS)
+  }
+  const cell = (row: Cell[], i: number) => (i === -1 ? '' : cellText(row[i]).replace(/\s*\n\s*/g, ' ').trim())
   const questions: ParsedQuestion[] = []
   rows.slice(1).forEach((row, i) => {
     const line = i + 2
     const title = cellText(row[titleCol]).replace(/\s*\n\s*/g, ' ').trim()
-    const answerMd = cellText(row[answerCol]).replace(/\r\n?/g, '\n').trim()
-    if (!title && !answerMd) return
+    const body = cellText(row[answerCol]).replace(/\r\n?/g, '\n').trim()
+    const answerMd = composeAnswer(
+      {
+        priority: cell(row, extra.priority),
+        category: cell(row, extra.category),
+        english: cell(row, extra.english),
+        source: cell(row, extra.source)
+      },
+      body
+    )
+    if (!title && !body) return
     if (!title) {
       issues.push({ code: 'TITLE_EMPTY', row: line })
       return

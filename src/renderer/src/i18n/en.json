@@ -153,7 +153,22 @@
     "exportBank": "Export bank",
     "moveUp": "Move up",
     "moveDown": "Move down",
-    "dragHint": "Drag to reorder"
+    "dragHint": "Drag to reorder",
+    "priority": "Priority",
+    "category": "Category",
+    "categoryPlaceholder": "e.g. Java basics",
+    "english": "English",
+    "englishPlaceholder": "Optional",
+    "source": "Source",
+    "sourcePlaceholder": "Optional",
+    "setPriority": "Set priority for all…",
+    "setPriorityTitle": "Set priority for \"{{name}}\"",
+    "setPriorityDesc": "Useful when an imported bank has no priorities: set a default for all questions, then adjust individual ones.",
+    "clearPriority": "Clear priority",
+    "scope": "Apply to",
+    "scopeMissing": "Only questions without a priority ({{count}})",
+    "scopeAll": "All questions ({{count}}); existing priorities are replaced",
+    "priorityUpdated": "Updated the priority of {{count}} questions"
   },
   "errors": {
     "UNKNOWN": "Something went wrong. Please try again.",
@@ -206,7 +221,8 @@
     "focusHint": "← → to switch · Esc to close",
     "summaryFiltered": "{{banks}} banks · {{count}} questions · {{priorities}}",
     "noFilteredTitle": "No questions match the filter",
-    "noFilteredDesc": "None of the selected banks have questions with these priorities. Adjust the filter on Home."
+    "noFilteredDesc": "None of the selected banks have questions with these priorities. Adjust the filter on Home.",
+    "clearFilter": "Show all"
   },
   "recite": {
     "changeBanks": "Change banks",
@@ -286,7 +302,8 @@
       "medium": "Medium",
       "low": "Low"
     },
-    "priorityOther": "Priority: {{p}}"
+    "priorityOther": "Priority: {{p}}",
+    "none": "Not set"
   },
   "shortcuts": {
     "title": "Keyboard shortcuts",

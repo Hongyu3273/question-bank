@@ -12,6 +12,7 @@ import {
   listQuestionsForBanks,
   priorityStats,
   reorderQuestions,
+  setBankPriority,
   updateQuestion
 } from '../db/repositories/questions'
 import { getAllSettings, isSettingKey, isValidSettingValue, setSetting } from '../db/repositories/settings'
@@ -37,6 +38,9 @@ export function registerIpc(assets: AssetStore): void {
   })
 
   ipcMain.handle(IPC.banksReorder, (_e, ids: unknown) => reorderBanks(getDb(), ids))
+  ipcMain.handle(IPC.banksSetPriority, (_e, bankId: unknown, priority: unknown, scope: unknown) =>
+    setBankPriority(getDb(), str(bankId), priority, scope)
+  )
 
   // 题目
   ipcMain.handle(IPC.questionsList, (_e, bankId: unknown) => listQuestions(getDb(), str(bankId)))

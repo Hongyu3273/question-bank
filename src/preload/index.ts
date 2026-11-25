@@ -8,7 +8,8 @@ const api: Api = {
     create: (name) => ipcRenderer.invoke(IPC.banksCreate, name),
     rename: (id, name) => ipcRenderer.invoke(IPC.banksRename, id, name),
     delete: (id) => ipcRenderer.invoke(IPC.banksDelete, id),
-    reorder: (ids) => ipcRenderer.invoke(IPC.banksReorder, ids)
+    reorder: (ids) => ipcRenderer.invoke(IPC.banksReorder, ids),
+    setPriority: (bankId, priority, scope) => ipcRenderer.invoke(IPC.banksSetPriority, bankId, priority, scope)
   },
   questions: {
     list: (bankId) => ipcRenderer.invoke(IPC.questionsList, bankId),

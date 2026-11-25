@@ -9,6 +9,7 @@ import {
   listQuestionsForBanks,
   priorityStats,
   reorderQuestions,
+  setBankPriority,
   updateQuestion
 } from '../../src/main/db/repositories/questions'
 import { LIMITS } from '../../src/shared/types'
@@ -157,5 +158,21 @@ describe('排序', () => {
     // 新增的题目排在最后
     createQuestion(db, a.id, { title: '4', answerMd: '' })
     expect(listQuestions(db, a.id).map((q) => q.title)).toEqual(['3', '1', '2', '4'])
+  })
+})
+
+describe('批量设置优先级', () => {
+  it('只补未设置的、全部覆盖、清除;列表返回优先级', () => {
+    const bank = createBank(db, 'A')
+    createQuestion(db, bank.id, { title: 'a', answerMd: '> 优先级：高 ｜ 分类：x\n\n正文' })
+    createQuestion(db, bank.id, { title: 'b', answerMd: '正文' })
+    expect(setBankPriority(db, bank.id, '中', 'missing')).toBe(1)
+    expect(listQuestions(db, bank.id).map((q) => q.priority)).toEqual(['高', '中'])
+    expect(setBankPriority(db, bank.id, '低', 'all')).toBe(2)
+    expect(listQuestionsForBanks(db, [bank.id])[0].questions[0].answerMd).toBe('> 优先级：低 ｜ 分类：x\n\n正文')
+    expect(setBankPriority(db, bank.id, null, 'all')).toBe(2)
+    expect(listQuestions(db, bank.id).map((q) => q.priority)).toEqual([null, null])
+    expect(listQuestionsForBanks(db, [bank.id])[0].questions[1].answerMd).toBe('正文')
+    expect(() => setBankPriority(db, bank.id, '高', 'some')).toThrow('INVALID_ARGUMENT')
   })
 })

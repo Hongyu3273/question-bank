@@ -153,7 +153,22 @@
     "exportBank": "导出题库",
     "moveUp": "上移",
     "moveDown": "下移",
-    "dragHint": "拖动可调整顺序"
+    "dragHint": "拖动可调整顺序",
+    "priority": "优先级",
+    "category": "分类",
+    "categoryPlaceholder": "例如 Java 基础",
+    "english": "英文题干",
+    "englishPlaceholder": "可选",
+    "source": "出处",
+    "sourcePlaceholder": "可选",
+    "setPriority": "批量设置优先级…",
+    "setPriorityTitle": "批量设置「{{name}}」的优先级",
+    "setPriorityDesc": "适合导入的题库没有优先级时,先统一设置一个默认值,之后再逐题调整。",
+    "clearPriority": "清除优先级",
+    "scope": "应用到",
+    "scopeMissing": "只设置还没有优先级的题目({{count}} 道)",
+    "scopeAll": "全部题目({{count}} 道),已有的优先级会被覆盖",
+    "priorityUpdated": "已更新 {{count}} 道题目的优先级"
   },
   "errors": {
     "UNKNOWN": "操作失败,请重试",
@@ -206,7 +221,8 @@
     "focusHint": "← → 切换题目 · Esc 关闭",
     "summaryFiltered": "{{banks}} 个题库 · {{count}} 题 · {{priorities}}",
     "noFilteredTitle": "没有符合筛选条件的题目",
-    "noFilteredDesc": "所选题库中没有这些优先级的题目,回到首页调整优先级筛选。"
+    "noFilteredDesc": "所选题库中没有这些优先级的题目,回到首页调整优先级筛选。",
+    "clearFilter": "显示全部"
   },
   "recite": {
     "changeBanks": "更换题库",
@@ -283,7 +299,8 @@
       "中": "中优先级",
       "低": "低优先级"
     },
-    "priorityOther": "优先级:{{p}}"
+    "priorityOther": "优先级:{{p}}",
+    "none": "未设置"
   },
   "shortcuts": {
     "title": "键盘快捷键",

@@ -1,11 +1,12 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import type { Question, ReadBank } from '@shared/types'
-import { extractMeta, priorityOf } from '@shared/meta'
+import type { PriorityStats, Question, ReadBank } from '@shared/types'
+import { comparePriority, extractMeta, NO_PRIORITY, priorityKey } from '@shared/meta'
 import { BookIcon, ChevronRightIcon, ExpandIcon, PanelLeftIcon, SearchIcon } from '../../components/icons'
 import MetaTags from '../../components/MetaTags'
 import PageHeader, { pageHeaderStyles } from '../../components/PageHeader'
+import PriorityFilter from '../../components/PriorityFilter'
 import MarkdownView from '../../components/MarkdownView'
 import { usePriorityLabel } from '../../hooks/usePriorityLabel'
 import { useResizablePanel } from '../../hooks/useResizablePanel'
@@ -138,11 +139,32 @@ export default function ReadPage() {
     if (priorityFilter.length === 0) return loaded
     const wanted = new Set(priorityFilter)
     return loaded
-      .map((b) => ({ ...b, questions: b.questions.filter((q) => wanted.has(priorityOf(q.answerMd) ?? '')) }))
+      .map((b) => ({ ...b, questions: b.questions.filter((q) => wanted.has(priorityKey(q.answerMd))) }))
       .filter((b) => b.questions.length > 0)
   }, [loaded, priorityFilter])
 
   const all = useMemo(() => banks?.flatMap((b) => b.questions) ?? [], [banks])
+
+  /** 所选题库(筛选前)的优先级分布,用于顶部筛选栏 */
+  const stats = useMemo((): PriorityStats | null => {
+    if (!loaded) return null
+    const counts = new Map<string, number>()
+    let total = 0
+    let unlabeled = 0
+    for (const q of loaded.flatMap((b) => b.questions)) {
+      total++
+      const key = priorityKey(q.answerMd)
+      if (key === NO_PRIORITY) unlabeled++
+      else counts.set(key, (counts.get(key) ?? 0) + 1)
+    }
+    return {
+      total,
+      unlabeled,
+      counts: [...counts.entries()].sort(([a], [b]) => comparePriority(a, b)).map(([priority, count]) => ({ priority, count }))
+    }
+  }, [loaded])
+
+  const setPriorityFilter = (value: string[]) => void updateSetting('priorityFilter', value)
 
   // 题目变化时:先渲染开头几道题的答案,其余随滚动渲染
   useEffect(() => {
@@ -339,7 +361,16 @@ export default function ReadPage() {
   if (all.length === 0) {
     const filteredOut = loaded.some((b) => b.questions.length > 0)
     return filteredOut ? (
-      <Empty title={t('read.noFilteredTitle')} desc={t('read.noFilteredDesc')} to="/" action={t('read.goSelect')} />
+      <div className={styles.empty}>
+        <div className={styles.emptyIcon}>
+          <BookIcon size={28} />
+        </div>
+        <div className={styles.emptyTitle}>{t('read.noFilteredTitle')}</div>
+        <p className={styles.emptyDesc}>{t('read.noFilteredDesc')}</p>
+        <button type="button" className="btn btn-primary" onClick={() => setPriorityFilter([])}>
+          {t('read.clearFilter')}
+        </button>
+      </div>
     ) : (
       <Empty title={t('read.noQuestionsTitle')} desc={t('read.noQuestionsDesc')} to="/manage" action={t('home.manageBanks')} />
     )
@@ -429,6 +460,12 @@ export default function ReadPage() {
           </div>
         }
       />
+
+      {stats && stats.counts.length + (stats.unlabeled > 0 ? 1 : 0) > 1 && (
+        <div className={styles.filterBar}>
+          <PriorityFilter stats={stats} selected={priorityFilter} onChange={setPriorityFilter} compact />
+        </div>
+      )}
 
       <div className={toc.dragging ? `${styles.body} ${styles.resizing}` : styles.body}>
         {!toc.collapsed && (

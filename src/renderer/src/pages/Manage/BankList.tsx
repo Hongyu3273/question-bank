@@ -5,6 +5,7 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   DownloadIcon,
+  FlagIcon,
   MoreIcon,
   PencilIcon,
   PlusIcon,
@@ -23,6 +24,7 @@ interface Props {
   onExport: (bank: BankSummary) => void
   onDelete: (bank: BankSummary) => void
   onReorder: (ids: string[]) => void
+  onSetPriority: (bank: BankSummary) => void
 }
 
 /** 左侧题库列表:类似备忘录的文件夹栏。更多操作在"⋯"按钮和右键菜单里 */
@@ -34,7 +36,8 @@ export default function BankList({
   onRename,
   onExport,
   onDelete,
-  onReorder
+  onReorder,
+  onSetPriority
 }: Props) {
   const { t } = useTranslation()
   const [menu, setMenu] = useState<{ bank: BankSummary; anchor: MenuAnchor } | null>(null)
@@ -123,6 +126,7 @@ export default function BankList({
           menu
             ? [
                 { label: t('manage.renameBank'), icon: <PencilIcon size={15} />, onSelect: () => onRename(menu.bank) },
+                { label: t('manage.setPriority'), icon: <FlagIcon size={15} />, onSelect: () => onSetPriority(menu.bank) },
                 { label: t('manage.exportBank'), icon: <DownloadIcon size={15} />, onSelect: () => onExport(menu.bank) },
                 {
                   label: t('manage.moveUp'),

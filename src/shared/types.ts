@@ -44,8 +44,10 @@ export interface QuestionSummary {
   bankId: string
   title: string
   sortOrder: number
-  /** 答案的纯文本摘要(一行) */
+  /** 答案的纯文本摘要(一行,不含元信息) */
   snippet: string
+  /** 优先级;未设置时为 null */
+  priority: string | null
   updatedAt: number
 }
 
@@ -68,6 +70,9 @@ export interface PriorityStats {
   /** 没有标注优先级的题目数量 */
   unlabeled: number
 }
+
+/** 批量设置优先级的范围:只改未设置的题目,或全部题目 */
+export type PriorityScope = 'missing' | 'all'
 
 /** 看题模式:一个题库及其全部题目 */
 export interface ReadBank {

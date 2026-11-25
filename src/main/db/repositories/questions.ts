@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { AppError } from '../../../shared/errors'
 import { markdownSnippet } from '../../../shared/markdown'
-import { comparePriority, extractMeta, priorityOf } from '../../../shared/meta'
+import { comparePriority, extractMeta, priorityOf, updateMeta } from '../../../shared/meta'
 import {
   LIMITS,
+  type PriorityScope,
   type PriorityStats,
   type Question,
   type QuestionInput,
@@ -20,13 +21,16 @@ const SELECT_QUESTION = `
 
 export function listQuestions(db: Db, bankId: string): QuestionSummary[] {
   getBank(db, bankId)
-  const rows = db.all<Omit<QuestionSummary, 'snippet'> & { head: string }>(
+  const rows = db.all<Omit<QuestionSummary, 'snippet' | 'priority'> & { head: string }>(
     `SELECT id, bank_id AS bankId, title, sort_order AS sortOrder, updated_at AS updatedAt,
             substr(answer_md, 1, 400) AS head
        FROM questions WHERE bank_id = ? ORDER BY sort_order`,
     [bankId]
   )
-  return rows.map(({ head, ...q }) => ({ ...q, snippet: markdownSnippet(extractMeta(head).body) }))
+  return rows.map(({ head, ...q }) => {
+    const { meta, body } = extractMeta(head)
+    return { ...q, snippet: markdownSnippet(body), priority: meta.priority ?? null }
+  })
 }
 
 export function getQuestion(db: Db, id: string): Question {
@@ -161,4 +165,37 @@ export function reorderQuestions(db: Db, bankId: string, ids: unknown): void {
   db.transaction(() => {
     ids.forEach((id, i) => db.run('UPDATE questions SET sort_order = ? WHERE id = ?', [i, id]))
   })
+}
+
+/**
+ * 批量设置一个题库的优先级。priority 为 null 时清除优先级。
+ * scope 为 missing 时只修改还没有优先级的题目。返回修改的题目数量。
+ */
+export function setBankPriority(db: Db, bankId: string, priority: unknown, scope: unknown): number {
+  if (!(priority === null || (typeof priority === 'string' && priority.trim() && priority.length <= 20))) {
+    throw new AppError('INVALID_ARGUMENT')
+  }
+  if (scope !== 'missing' && scope !== 'all') throw new AppError('INVALID_ARGUMENT')
+  getBank(db, bankId)
+  const rows = db.all<{ id: string; answerMd: string }>('SELECT id, answer_md AS answerMd FROM questions WHERE bank_id = ?', [
+    bankId
+  ])
+  const value = priority === null ? '' : priority.trim()
+  let changed = 0
+  db.transaction(() => {
+    const now = Date.now()
+    for (const r of rows) {
+      const current = priorityOf(r.answerMd)
+      if ((scope as PriorityScope) === 'missing' && current) continue
+      if ((current ?? '') === value) continue
+      db.run('UPDATE questions SET answer_md = ?, updated_at = ? WHERE id = ?', [
+        updateMeta(r.answerMd, { priority: value }),
+        now,
+        r.id
+      ])
+      changed++
+    }
+    if (changed > 0) touchBank(db, bankId)
+  })
+  return changed
 }

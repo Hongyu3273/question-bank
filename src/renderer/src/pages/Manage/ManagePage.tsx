@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { LIMITS, type BankSummary, type QuestionInput, type QuestionSummary } from '@shared/types'
+import { LIMITS, type BankSummary, type PriorityScope, type QuestionInput, type QuestionSummary } from '@shared/types'
 import { ArrowLeftIcon, ChevronRightIcon, FolderIcon, PencilIcon, PlusIcon, UploadIcon } from '../../components/icons'
 import NameDialog from '../../components/NameDialog'
 import PageHeader from '../../components/PageHeader'
@@ -11,6 +11,7 @@ import { confirmDialog } from '../../stores/confirm'
 import { useImportStore } from '../../stores/import'
 import { useToastStore } from '../../stores/toast'
 import BankList from './BankList'
+import PriorityDialog from './PriorityDialog'
 import QuestionEditor from './QuestionEditor'
 import QuestionList from './QuestionList'
 import styles from './ManagePage.module.css'
@@ -36,6 +37,8 @@ export default function ManagePage() {
   const [saved, setSaved] = useState<QuestionInput>(EMPTY)
   const [draft, setDraft] = useState<QuestionInput>(EMPTY)
   const [saving, setSaving] = useState(false)
+  /** 批量设置优先级的题库,以及其中未设置优先级的题目数量 */
+  const [priorityBank, setPriorityBank] = useState<{ bank: BankSummary; missing: number } | null>(null)
 
   const dirty = selection.kind !== 'none' && (draft.title !== saved.title || draft.answerMd !== saved.answerMd)
   const fail = useCallback((err: unknown) => toast(errorMessage(err, t), 3000), [toast, t])
@@ -166,6 +169,29 @@ export default function ManagePage() {
     } catch (err) {
       fail(err)
       await loadQuestions(bankId)
+    }
+  }
+
+  const openPriorityDialog = async (bank: BankSummary) => {
+    try {
+      const stats = await window.api.read.priorities([bank.id])
+      setPriorityBank({ bank, missing: stats.unlabeled })
+    } catch (err) {
+      fail(err)
+    }
+  }
+
+  const submitPriority = async (priority: string | null, scope: PriorityScope) => {
+    if (!priorityBank) return
+    // 当前编辑的题目属于这个题库且有未保存修改时,先确认
+    if (priorityBank.bank.id === bankId && !(await confirmDiscard())) return
+    try {
+      const changed = await window.api.banks.setPriority(priorityBank.bank.id, priority, scope)
+      setPriorityBank(null)
+      if (priorityBank.bank.id === bankId) await openBank(bankId)
+      toast(t('manage.priorityUpdated', { count: changed }))
+    } catch (err) {
+      fail(err)
     }
   }
 
@@ -342,6 +368,7 @@ export default function ManagePage() {
             onRename={(bank) => setNameDialog({ mode: 'rename', bank })}
             onExport={(bank) => void exportBank(bank.id, t)}
             onReorder={(ids) => void reorderBanks(ids)}
+            onSetPriority={(bank) => void openPriorityDialog(bank)}
             onDelete={(bank) => void deleteBank(bank)}
           />
 
@@ -405,6 +432,13 @@ export default function ManagePage() {
           )}
         </div>
       )}
+
+      <PriorityDialog
+        bank={priorityBank?.bank ?? null}
+        missing={priorityBank?.missing ?? 0}
+        onSubmit={submitPriority}
+        onClose={() => setPriorityBank(null)}
+      />
 
       <NameDialog
         open={nameDialog !== null}

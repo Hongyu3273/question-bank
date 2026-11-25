@@ -1,5 +1,6 @@
-import { useDeferredValue, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type InputHTMLAttributes, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { composeAnswer, extractMeta, PRIORITIES, type QuestionMeta } from '@shared/meta'
 import { LIMITS, type QuestionInput } from '@shared/types'
 import {
   CheckIcon,
@@ -17,11 +18,39 @@ import {
 } from '../../components/icons'
 import MarkdownEditor, { type MarkdownEditorHandle } from '../../components/MarkdownEditor'
 import MarkdownView from '../../components/MarkdownView'
+import MetaTags from '../../components/MetaTags'
+import { usePriorityLabel } from '../../hooks/usePriorityLabel'
 import Menu, { anchorBelow, type MenuAnchor } from '../../components/Menu'
 import { formatRelative } from '../../lib/time'
 import styles from './ManagePage.module.css'
 
 type ViewMode = 'edit' | 'preview'
+
+/**
+ * 元信息输入框:保留正在输入的原文(包括末尾空格),
+ * 只有外部值真正变化(例如切换题目)时才同步。分隔符 ｜ 会替换为 /,避免破坏格式。
+ */
+function MetaInput({
+  value,
+  onCommit,
+  ...rest
+}: { value: string; onCommit: (v: string) => void } & Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'>) {
+  const [text, setText] = useState(value)
+  useEffect(() => {
+    setText((current) => (current.trim() === value ? current : value))
+  }, [value])
+  return (
+    <input
+      {...rest}
+      value={text}
+      onChange={(e) => {
+        const v = e.target.value.replace(/[｜|]/g, '/')
+        setText(v)
+        onCommit(v)
+      }}
+    />
+  )
+}
 const VIEW_KEY = 'qb.editorView'
 
 function loadViewMode(): ViewMode {
@@ -76,8 +105,13 @@ export default function QuestionEditor({
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const [view, setView] = useState<ViewMode>(loadViewMode)
   const [menu, setMenu] = useState<MenuAnchor | null>(null)
+  const priorityLabel = usePriorityLabel()
+  // 答案拆成元信息(优先级、分类等)和正文:元信息用表单编辑,编辑器只编辑正文
+  const { meta, body } = useMemo(() => extractMeta(draft.answerMd), [draft.answerMd])
+  const setMeta = (patch: Partial<QuestionMeta>) => onChange({ ...draft, answerMd: composeAnswer({ ...meta, ...patch }, body) })
+  const setBody = (next: string) => onChange({ ...draft, answerMd: composeAnswer(meta, next) })
   // 预览延后渲染,输入时不卡顿
-  const preview = useDeferredValue(draft.answerMd)
+  const preview = useDeferredValue(body)
 
   // 新增题目时聚焦题干
   useEffect(() => {
@@ -208,6 +242,63 @@ export default function QuestionEditor({
         }}
       />
 
+      {/* 题目信息:优先级、分类、英文题干、出处 */}
+      <div className={styles.metaForm}>
+        <div className={styles.metaField}>
+          <span className={styles.metaLabel}>{t('manage.priority')}</span>
+          <div className={styles.segmented} role="radiogroup" aria-label={t('manage.priority')}>
+            {(['', ...PRIORITIES] as string[]).map((p) => {
+              const on = (meta.priority ?? '') === p
+              return (
+                <button
+                  key={p || 'none'}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  className={on ? `${styles.segment} ${styles.segmentOn}` : styles.segment}
+                  onClick={() => setMeta({ priority: p })}
+                >
+                  {p ? priorityLabel(p) : t('meta.none')}
+                </button>
+              )
+            })}
+            {meta.priority && !(PRIORITIES as readonly string[]).includes(meta.priority) && (
+              <span className={`${styles.segment} ${styles.segmentOn}`}>{meta.priority}</span>
+            )}
+          </div>
+        </div>
+        <label className={styles.metaField}>
+          <span className={styles.metaLabel}>{t('manage.category')}</span>
+          <MetaInput
+            className={styles.metaInput}
+            value={meta.category ?? ''}
+            maxLength={60}
+            placeholder={t('manage.categoryPlaceholder')}
+            onCommit={(v) => setMeta({ category: v })}
+          />
+        </label>
+        <label className={`${styles.metaField} ${styles.metaWide}`}>
+          <span className={styles.metaLabel}>{t('manage.english')}</span>
+          <MetaInput
+            className={styles.metaInput}
+            value={meta.english ?? ''}
+            maxLength={300}
+            placeholder={t('manage.englishPlaceholder')}
+            onCommit={(v) => setMeta({ english: v })}
+          />
+        </label>
+        <label className={`${styles.metaField} ${styles.metaWide}`}>
+          <span className={styles.metaLabel}>{t('manage.source')}</span>
+          <MetaInput
+            className={styles.metaInput}
+            value={meta.source ?? ''}
+            maxLength={200}
+            placeholder={t('manage.sourcePlaceholder')}
+            onCommit={(v) => setMeta({ source: v })}
+          />
+        </label>
+      </div>
+
       {view === 'edit' && (
         <div className={styles.formatBar} role="toolbar" aria-label={t('manage.toolbar')}>
           {tools.map((group, gi) => (
@@ -245,8 +336,8 @@ export default function QuestionEditor({
           <div className={styles.editorPane}>
             <MarkdownEditor
               ref={editorRef}
-              value={draft.answerMd}
-              onChange={(answerMd) => onChange({ ...draft, answerMd })}
+              value={body}
+              onChange={setBody}
               onImage={onImage}
               ariaLabel={t('manage.answerSource')}
               placeholder={t('manage.answerPlaceholder')}
@@ -254,6 +345,8 @@ export default function QuestionEditor({
           </div>
         ) : (
           <div className={styles.previewPane} aria-label={t('manage.preview')}>
+            <MetaTags meta={meta} showSource priorityLabel={priorityLabel} />
+            {meta.english && <p className={styles.previewEnglish}>{meta.english}</p>}
             {preview.trim() ? (
               <MarkdownView markdown={preview} bankId={bankId} />
             ) : (
