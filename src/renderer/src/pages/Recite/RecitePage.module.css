@@ -55,12 +55,12 @@
   min-height: 0;
   display: flex;
   justify-content: center;
-  padding: 24px 32px 12px;
+  padding: 24px var(--page-padding-x) 12px;
 }
 
 .card {
   width: 100%;
-  max-width: 860px;
+  max-width: var(--reading-width);
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -200,7 +200,7 @@
   display: flex;
   justify-content: center;
   gap: 16px;
-  padding: 12px 32px 24px;
+  padding: 12px var(--page-padding-x) 24px;
 }
 
 .arrowRight {

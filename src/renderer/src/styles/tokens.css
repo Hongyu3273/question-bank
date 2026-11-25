@@ -74,3 +74,52 @@
 
   color-scheme: dark;
 }
+
+/* ---------- 尺寸适配 ----------
+   窗口越大，基础字号和内容区宽度按档位放大，最大化或全屏时不会显得空。
+   与主题无关，所以单独放在这里。 */
+:root {
+  --screen-scale: 1;
+  --reading-width: 860px;
+  --settings-width: 760px;
+  --focus-width: 1280px;
+  --bank-column: 210px;
+  --question-column: 300px;
+  --page-padding-x: 32px;
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --screen-scale: 1.05;
+    --reading-width: 980px;
+    --settings-width: 860px;
+    --focus-width: 1400px;
+    --bank-column: 230px;
+    --question-column: 340px;
+    --page-padding-x: 40px;
+  }
+}
+
+@media (min-width: 1680px) {
+  :root {
+    --screen-scale: 1.1;
+    --reading-width: 1100px;
+    --settings-width: 960px;
+    --focus-width: 1560px;
+    --bank-column: 250px;
+    --question-column: 380px;
+    --page-padding-x: 48px;
+  }
+}
+
+@media (min-width: 2200px) {
+  :root {
+    --screen-scale: 1.2;
+    --reading-width: 1280px;
+    --settings-width: 1080px;
+    --focus-width: 1800px;
+    --bank-column: 280px;
+    --question-column: 420px;
+    --page-padding-x: 56px;
+  }
+}

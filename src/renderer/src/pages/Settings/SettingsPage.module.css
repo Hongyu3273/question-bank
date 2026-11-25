@@ -8,11 +8,12 @@
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 32px 40px;
+  padding: 24px var(--page-padding-x) 40px;
 }
 
 .sections {
-  max-width: 760px;
+  max-width: var(--settings-width);
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 16px;

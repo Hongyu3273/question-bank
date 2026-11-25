@@ -317,7 +317,7 @@
 }
 
 .listInner {
-  max-width: 860px;
+  max-width: var(--reading-width);
   margin: 0 auto;
   padding: 24px 40px 64px;
 }

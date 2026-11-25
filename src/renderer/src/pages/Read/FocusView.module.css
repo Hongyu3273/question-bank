@@ -3,7 +3,7 @@
 .dialog {
   width: calc(100vw - 48px);
   height: calc(100vh - 48px);
-  max-width: 1280px;
+  max-width: var(--focus-width);
   max-height: none;
   padding: 0;
   border: 1px solid var(--border);
@@ -125,7 +125,7 @@
 }
 
 .content {
-  max-width: 900px;
+  max-width: var(--reading-width);
   margin: 0 auto;
   padding: 40px 24px 56px;
 }

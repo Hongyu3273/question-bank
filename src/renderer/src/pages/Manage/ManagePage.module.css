@@ -79,7 +79,7 @@
 /* ---------- 题库栏 ---------- */
 
 .bankColumn {
-  flex: 0 0 210px;
+  flex: 0 0 var(--bank-column);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -199,7 +199,7 @@
 /* ---------- 题目栏 ---------- */
 
 .questionColumn {
-  flex: 0 0 300px;
+  flex: 0 0 var(--question-column);
   min-width: 0;
   display: flex;
   flex-direction: column;

@@ -5,7 +5,8 @@
 }
 
 html {
-  font-size: calc(16px * var(--font-scale));
+  /* 用户设置的字号 × 窗口尺寸档位 */
+  font-size: calc(16px * var(--font-scale) * var(--screen-scale, 1));
 }
 
 body {
