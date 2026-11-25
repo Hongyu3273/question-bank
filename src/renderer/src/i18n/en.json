@@ -14,7 +14,11 @@
   "common": {
     "comingSoon": "Coming soon",
     "notAvailable": "This feature is not available yet",
-    "questionCount": "{{count}} questions"
+    "questionCount": "{{count}} questions",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "OK"
   },
   "home": {
     "title": "Start reviewing",
@@ -38,8 +42,7 @@
   "placeholder": {
     "inProgress": "In development",
     "read": "Read mode arrives in M3: table of contents, all questions, keyword search and reading position.",
-    "recite": "Recite mode arrives in M4: shuffling, show/hide answers, keyboard shortcuts and saved progress.",
-    "manage": "Bank management arrives in M2: create, edit and delete banks and questions, Markdown editor with preview, image pasting."
+    "recite": "Recite mode arrives in M4: shuffling, show/hide answers, keyboard shortcuts and saved progress."
   },
   "settings": {
     "title": "Settings",
@@ -55,5 +58,60 @@
     "language": "Language",
     "about": "About",
     "version": "Version {{version}}"
+  },
+  "manage": {
+    "banks": "Question banks",
+    "banksCount": "Banks ({{count}})",
+    "newBank": "New bank",
+    "bankName": "Bank name",
+    "bankNamePlaceholder": "Bank name, press Enter to save",
+    "renameBank": "Rename bank",
+    "deleteBank": "Delete bank",
+    "deleteBankTitle": "Delete \"{{name}}\"?",
+    "deleteBankMessage": "Its {{count}} questions and images will be deleted too. This cannot be undone.",
+    "bankDeleted": "Bank deleted",
+    "emptyDesc": "Create a question bank, then start adding questions.",
+    "selectBankHint": "Select or create a question bank on the left",
+    "questions": "Questions",
+    "questionsCount": "{{count}} questions",
+    "newQuestion": "New question",
+    "untitled": "(New question)",
+    "noQuestions": "This bank has no questions yet. Click \"New question\" to add one.",
+    "selectQuestionHint": "Select a question to edit, or click \"New question\"",
+    "editQuestion": "Edit question",
+    "title": "Question",
+    "titlePlaceholder": "Enter the question",
+    "answer": "Answer (Markdown)",
+    "answerSource": "Answer Markdown source",
+    "toolbar": "Insert",
+    "insertImage": "Insert image",
+    "insertCode": "Insert code block",
+    "insertTable": "Insert table",
+    "tableHead": "Column",
+    "preview": "Preview",
+    "previewEmpty": "The answer preview appears here.",
+    "deleteQuestion": "Delete question",
+    "deleteQuestionTitle": "Delete this question?",
+    "questionDeleted": "Question deleted",
+    "unsaved": "Unsaved changes (Ctrl+S to save)",
+    "pasteHint": "Paste or drop images directly",
+    "saved": "Saved",
+    "discardTitle": "Discard unsaved changes?",
+    "discardMessage": "This question has changes that haven't been saved. Continuing will lose them.",
+    "discard": "Discard"
+  },
+  "errors": {
+    "UNKNOWN": "Something went wrong. Please try again.",
+    "INVALID_ARGUMENT": "Invalid input",
+    "BANK_NAME_EMPTY": "Bank name can't be empty",
+    "BANK_NAME_TOO_LONG": "Bank name can be at most 50 characters",
+    "BANK_NAME_EXISTS": "A bank with this name already exists",
+    "BANK_NOT_FOUND": "This bank no longer exists",
+    "QUESTION_TITLE_EMPTY": "The question can't be empty",
+    "QUESTION_TITLE_TOO_LONG": "The question can be at most 500 characters",
+    "ANSWER_TOO_LONG": "The answer is too long",
+    "QUESTION_NOT_FOUND": "This question no longer exists",
+    "IMAGE_TYPE_UNSUPPORTED": "Only PNG, JPG, GIF and WebP images are supported",
+    "IMAGE_TOO_LARGE": "Images must be 10 MB or smaller"
   }
 }

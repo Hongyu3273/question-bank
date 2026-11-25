@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { createHashRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom'
+import ConfirmHost from './components/ConfirmHost'
 import Sidebar from './components/Sidebar'
 import ToastHost from './components/ToastHost'
 import { useApplyAppearance } from './hooks/useApplyAppearance'
@@ -10,6 +11,34 @@ import RecitePage from './pages/Recite/RecitePage'
 import SettingsPage from './pages/Settings/SettingsPage'
 import { useSettingsStore } from './stores/settings'
 import styles from './App.module.css'
+
+function Layout() {
+  return (
+    <div className={styles.app}>
+      <Sidebar />
+      <main className={styles.content}>
+        <Outlet />
+      </main>
+      <ToastHost />
+      <ConfirmHost />
+    </div>
+  )
+}
+
+// HashRouter 形式的数据路由:适配 file:// 加载,并支持离开页面前的拦截(useBlocker)
+const router = createHashRouter([
+  {
+    element: <Layout />,
+    children: [
+      { path: '/', element: <HomePage /> },
+      { path: '/read', element: <ReadPage /> },
+      { path: '/recite', element: <RecitePage /> },
+      { path: '/manage', element: <ManagePage /> },
+      { path: '/settings', element: <SettingsPage /> },
+      { path: '*', element: <Navigate to="/" replace /> }
+    ]
+  }
+])
 
 export default function App() {
   const settings = useSettingsStore((s) => s.settings)
@@ -24,20 +53,5 @@ export default function App() {
   // 设置加载完成前不渲染界面,避免主题和语言闪烁
   if (!settings) return null
 
-  return (
-    <div className={styles.app}>
-      <Sidebar />
-      <main className={styles.content}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/read" element={<ReadPage />} />
-          <Route path="/recite" element={<RecitePage />} />
-          <Route path="/manage" element={<ManagePage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-      <ToastHost />
-    </div>
-  )
+  return <RouterProvider router={router} />
 }

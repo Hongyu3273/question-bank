@@ -29,7 +29,35 @@ export interface BankSummary {
   updatedAt: number
 }
 
+/** 题目列表中的一项(不含答案) */
+export interface QuestionSummary {
+  id: string
+  bankId: string
+  title: string
+  sortOrder: number
+}
+
+export interface Question extends QuestionSummary {
+  /** 答案,Markdown 格式;图片用相对路径 images/xxx.png */
+  answerMd: string
+  createdAt: number
+  updatedAt: number
+}
+
+export interface QuestionInput {
+  title: string
+  answerMd: string
+}
+
 export interface AppInfo {
   version: string
   platform: string
 }
+
+/** 字段长度限制,主进程校验与界面提示共用 */
+export const LIMITS = {
+  bankName: 50,
+  questionTitle: 500,
+  answer: 200_000,
+  imageBytes: 10 * 1024 * 1024
+} as const

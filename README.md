@@ -25,6 +25,7 @@ npm run dev     # 启动开发模式(改代码后界面自动刷新)
 
 | 命令 | 作用 |
 |---|---|
+| `npm test` | 运行单元测试 |
 | `npm run typecheck` | TypeScript 类型检查 |
 | `npm run build` | 编译到 `out/` |
 | `npm run dist:win` | 打包 Windows 安装包到 `dist/` |
@@ -54,7 +55,7 @@ src/
         └─ styles/      设计 token(浅色/深色)和全局样式
 ```
 
-用户数据保存在系统的应用数据目录:
+用户数据保存在系统的应用数据目录(`app.db` 是数据库,`assets/<题库 id>/images/` 是题目中的图片):
 
 - Windows:`%APPDATA%\知识题库\`
 - macOS:`~/Library/Application Support/知识题库/`
@@ -64,7 +65,7 @@ src/
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | M1 骨架 | 窗口、侧边栏与路由、数据库与迁移、IPC、主题/字号/语言设置 | ✅ |
-| M2 题库管理 | 题库和题目的增删改、Markdown 编辑器与预览、图片粘贴 | |
+| M2 题库管理 | 题库和题目的增删改、Markdown 编辑器与预览、图片粘贴 | ✅ |
 | M3 看题模式 | 首页题库勾选、全量列表、目录、搜索高亮、阅读位置 | |
 | M4 背题模式 | 洗牌会话、显示/隐藏答案、快捷键、进度 | |
 | M5 导入导出 | Markdown zip、Excel、同名冲突、导出、模板、备份恢复 | |

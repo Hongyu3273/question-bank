@@ -1,7 +1,279 @@
+import { useCallback, useEffect, useState } from 'react'
+import { useBlocker } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import Placeholder from '../../components/Placeholder'
+import type { BankSummary, QuestionInput, QuestionSummary } from '@shared/types'
+import { PlusIcon } from '../../components/icons'
+import { errorMessage } from '../../lib/errors'
+import { confirmDialog } from '../../stores/confirm'
+import { useToastStore } from '../../stores/toast'
+import BankList from './BankList'
+import QuestionEditor from './QuestionEditor'
+import QuestionList from './QuestionList'
+import styles from './ManagePage.module.css'
+
+type Selection = { kind: 'none' } | { kind: 'new' } | { kind: 'existing'; id: string }
+
+const EMPTY: QuestionInput = { title: '', answerMd: '' }
+const NONE: Selection = { kind: 'none' }
 
 export default function ManagePage() {
   const { t } = useTranslation()
-  return <Placeholder title={t('nav.manage')} description={t('placeholder.manage')} />
+  const toast = useToastStore((s) => s.show)
+
+  const [banks, setBanks] = useState<BankSummary[] | null>(null)
+  const [bankId, setBankId] = useState<string | null>(null)
+  const [creatingBank, setCreatingBank] = useState(false)
+  const [questions, setQuestions] = useState<QuestionSummary[]>([])
+  const [selection, setSelection] = useState<Selection>(NONE)
+  const [saved, setSaved] = useState<QuestionInput>(EMPTY)
+  const [draft, setDraft] = useState<QuestionInput>(EMPTY)
+  const [saving, setSaving] = useState(false)
+
+  const dirty = selection.kind !== 'none' && (draft.title !== saved.title || draft.answerMd !== saved.answerMd)
+  const fail = useCallback((err: unknown) => toast(errorMessage(err, t), 3000), [toast, t])
+
+  /** 有未保存的修改时,先确认是否放弃 */
+  const confirmDiscard = useCallback(
+    async () =>
+      !dirty ||
+      confirmDialog({
+        title: t('manage.discardTitle'),
+        message: t('manage.discardMessage'),
+        confirmLabel: t('manage.discard'),
+        danger: true
+      }),
+    [dirty, t]
+  )
+
+  // 离开题库管理页面前,同样确认未保存的修改
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) => dirty && currentLocation.pathname !== nextLocation.pathname
+  )
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return
+    void confirmDialog({
+      title: t('manage.discardTitle'),
+      message: t('manage.discardMessage'),
+      confirmLabel: t('manage.discard'),
+      danger: true
+    }).then((ok) => (ok ? blocker.proceed() : blocker.reset()))
+  }, [blocker, t])
+
+  const refreshBanks = useCallback(async () => {
+    const list = await window.api.banks.list()
+    setBanks(list)
+    return list
+  }, [])
+
+  const loadQuestions = useCallback(async (id: string) => {
+    setQuestions(await window.api.questions.list(id))
+  }, [])
+
+  const resetEditor = () => {
+    setSelection(NONE)
+    setSaved(EMPTY)
+    setDraft(EMPTY)
+  }
+
+  /** 切换到某个题库(不做未保存确认) */
+  const openBank = useCallback(
+    async (id: string | null) => {
+      setBankId(id)
+      resetEditor()
+      if (id) await loadQuestions(id)
+      else setQuestions([])
+    },
+    [loadQuestions]
+  )
+
+  // 首次进入:加载题库并选中第一个
+  useEffect(() => {
+    void refreshBanks()
+      .then((list) => openBank(list[0]?.id ?? null))
+      .catch(fail)
+  }, [refreshBanks, openBank, fail])
+
+  // ---------- 题库 ----------
+
+  const selectBank = async (id: string) => {
+    if (id === bankId || !(await confirmDiscard())) return
+    await openBank(id).catch(fail)
+  }
+
+  const createBank = async (name: string) => {
+    if (!(await confirmDiscard())) return
+    const bank = await window.api.banks.create(name)
+    await refreshBanks()
+    await openBank(bank.id)
+  }
+
+  const renameBank = async (id: string, name: string) => {
+    await window.api.banks.rename(id, name)
+    await refreshBanks()
+  }
+
+  const deleteBank = async (bank: BankSummary) => {
+    const ok = await confirmDialog({
+      title: t('manage.deleteBankTitle', { name: bank.name }),
+      message: t('manage.deleteBankMessage', { count: bank.questionCount }),
+      confirmLabel: t('common.delete'),
+      danger: true
+    })
+    if (!ok) return
+    try {
+      await window.api.banks.delete(bank.id)
+      const list = await refreshBanks()
+      if (bank.id === bankId) await openBank(list[0]?.id ?? null)
+      toast(t('manage.bankDeleted'))
+    } catch (err) {
+      fail(err)
+    }
+  }
+
+  // ---------- 题目 ----------
+
+  const selectQuestion = async (id: string) => {
+    if (selection.kind === 'existing' && selection.id === id) return
+    if (!(await confirmDiscard())) return
+    try {
+      const q = await window.api.questions.get(id)
+      const input = { title: q.title, answerMd: q.answerMd }
+      setSelection({ kind: 'existing', id })
+      setSaved(input)
+      setDraft(input)
+    } catch (err) {
+      fail(err)
+    }
+  }
+
+  const newQuestion = async () => {
+    if (!bankId || !(await confirmDiscard())) return
+    setSelection({ kind: 'new' })
+    setSaved(EMPTY)
+    setDraft(EMPTY)
+  }
+
+  const save = async () => {
+    if (!bankId || selection.kind === 'none' || saving) return
+    setSaving(true)
+    try {
+      const q =
+        selection.kind === 'new'
+          ? await window.api.questions.create(bankId, draft)
+          : await window.api.questions.update(selection.id, draft)
+      const input = { title: q.title, answerMd: q.answerMd }
+      setSelection({ kind: 'existing', id: q.id })
+      setSaved(input)
+      setDraft(input)
+      await Promise.all([loadQuestions(bankId), refreshBanks()])
+      toast(t('manage.saved'))
+    } catch (err) {
+      fail(err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const cancel = () => {
+    if (selection.kind === 'new') resetEditor()
+    else setDraft(saved)
+  }
+
+  const deleteQuestion = async () => {
+    if (selection.kind !== 'existing' || !bankId) return
+    const ok = await confirmDialog({
+      title: t('manage.deleteQuestionTitle'),
+      message: saved.title,
+      confirmLabel: t('common.delete'),
+      danger: true
+    })
+    if (!ok) return
+    try {
+      await window.api.questions.delete(selection.id)
+      resetEditor()
+      await Promise.all([loadQuestions(bankId), refreshBanks()])
+      toast(t('manage.questionDeleted'))
+    } catch (err) {
+      fail(err)
+    }
+  }
+
+  const saveImage = async (file: File): Promise<string | null> => {
+    if (!bankId) return null
+    try {
+      const data = new Uint8Array(await file.arrayBuffer())
+      return await window.api.questions.saveImage(bankId, data, file.type)
+    } catch (err) {
+      fail(err)
+      return null
+    }
+  }
+
+  // ---------- 渲染 ----------
+
+  const selectedQuestionId = selection.kind === 'existing' ? selection.id : selection.kind === 'new' ? 'new' : null
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>{t('nav.manage')}</h1>
+        <button type="button" className="btn btn-primary" onClick={() => setCreatingBank(true)}>
+          <PlusIcon size={16} />
+          {t('manage.newBank')}
+        </button>
+      </header>
+
+      {banks && banks.length === 0 && !creatingBank ? (
+        <div className={styles.emptyPage}>
+          <div className={styles.emptyTitle}>{t('home.emptyTitle')}</div>
+          <p className={styles.emptyDesc}>{t('manage.emptyDesc')}</p>
+          <button type="button" className="btn btn-primary" onClick={() => setCreatingBank(true)}>
+            <PlusIcon size={16} />
+            {t('manage.newBank')}
+          </button>
+        </div>
+      ) : (
+        <div className={styles.body}>
+          <BankList
+            banks={banks ?? []}
+            selectedId={bankId}
+            creating={creatingBank}
+            onCreatingChange={setCreatingBank}
+            onSelect={(id) => void selectBank(id)}
+            onCreate={createBank}
+            onRename={renameBank}
+            onDelete={(bank) => void deleteBank(bank)}
+          />
+
+          {bankId && (
+            <QuestionList
+              questions={questions}
+              selectedId={selectedQuestionId}
+              onSelect={(id) => void selectQuestion(id)}
+              onNew={() => void newQuestion()}
+            />
+          )}
+
+          {bankId && selection.kind !== 'none' ? (
+            <QuestionEditor
+              bankId={bankId}
+              draft={draft}
+              isNew={selection.kind === 'new'}
+              dirty={dirty}
+              saving={saving}
+              onChange={setDraft}
+              onSave={() => void save()}
+              onCancel={cancel}
+              onDelete={() => void deleteQuestion()}
+              onImage={saveImage}
+            />
+          ) : (
+            <div className={styles.editorEmpty}>
+              {bankId ? t('manage.selectQuestionHint') : t('manage.selectBankHint')}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }

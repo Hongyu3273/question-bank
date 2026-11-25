@@ -53,3 +53,42 @@ export const SettingsIcon = (p: IconProps) => (
     <circle cx="18" cy="18" r="2" />
   </Svg>
 )
+
+export const PlusIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Svg>
+)
+
+export const PencilIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 20h4L19 9l-4-4L4 16z" />
+  </Svg>
+)
+
+export const TrashIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+  </Svg>
+)
+
+export const ImageIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <circle cx="9" cy="10" r="2" />
+    <path d="m21 16-5-5L5 20" />
+  </Svg>
+)
+
+export const CodeIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m8 7-5 5 5 5M16 7l5 5-5 5" />
+  </Svg>
+)
+
+export const TableIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M3 10h18M3 15h18M10 4v16" />
+  </Svg>
+)

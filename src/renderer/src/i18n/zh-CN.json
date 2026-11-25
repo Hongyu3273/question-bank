@@ -14,7 +14,11 @@
   "common": {
     "comingSoon": "即将开放",
     "notAvailable": "功能未开放",
-    "questionCount": "{{count}} 题"
+    "questionCount": "{{count}} 题",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "confirm": "确定"
   },
   "home": {
     "title": "开始复习",
@@ -38,8 +42,7 @@
   "placeholder": {
     "inProgress": "开发中",
     "read": "看题模式将在 M3 阶段实现:目录、全部题目、关键词搜索和阅读位置记忆。",
-    "recite": "背题模式将在 M4 阶段实现:随机洗牌、显示/隐藏答案、快捷键和进度保存。",
-    "manage": "题库管理将在 M2 阶段实现:题库和题目的增删改、Markdown 编辑与预览、图片粘贴。"
+    "recite": "背题模式将在 M4 阶段实现:随机洗牌、显示/隐藏答案、快捷键和进度保存。"
   },
   "settings": {
     "title": "设置",
@@ -55,5 +58,60 @@
     "language": "界面语言",
     "about": "关于",
     "version": "版本 {{version}}"
+  },
+  "manage": {
+    "banks": "题库列表",
+    "banksCount": "题库({{count}})",
+    "newBank": "新建题库",
+    "bankName": "题库名称",
+    "bankNamePlaceholder": "输入题库名称,回车保存",
+    "renameBank": "重命名题库",
+    "deleteBank": "删除题库",
+    "deleteBankTitle": "删除题库「{{name}}」?",
+    "deleteBankMessage": "题库中的 {{count}} 道题目和图片会一起删除,此操作无法撤销。",
+    "bankDeleted": "题库已删除",
+    "emptyDesc": "新建一个题库,然后开始添加题目。",
+    "selectBankHint": "在左侧选择或新建一个题库",
+    "questions": "题目列表",
+    "questionsCount": "{{count}} 道题目",
+    "newQuestion": "新增题目",
+    "untitled": "(新题目)",
+    "noQuestions": "这个题库还没有题目,点击「新增题目」开始录入。",
+    "selectQuestionHint": "选择一道题目进行编辑,或点击「新增题目」",
+    "editQuestion": "编辑题目",
+    "title": "题干",
+    "titlePlaceholder": "输入题目",
+    "answer": "答案(Markdown)",
+    "answerSource": "答案 Markdown 源码",
+    "toolbar": "插入",
+    "insertImage": "插入图片",
+    "insertCode": "插入代码块",
+    "insertTable": "插入表格",
+    "tableHead": "列名",
+    "preview": "预览",
+    "previewEmpty": "答案的预览会显示在这里。",
+    "deleteQuestion": "删除题目",
+    "deleteQuestionTitle": "删除这道题目?",
+    "questionDeleted": "题目已删除",
+    "unsaved": "有未保存的修改(Ctrl+S 保存)",
+    "pasteHint": "支持直接粘贴或拖入图片",
+    "saved": "已保存",
+    "discardTitle": "放弃未保存的修改?",
+    "discardMessage": "当前题目有修改尚未保存,继续操作会丢失这些修改。",
+    "discard": "放弃修改"
+  },
+  "errors": {
+    "UNKNOWN": "操作失败,请重试",
+    "INVALID_ARGUMENT": "参数不正确",
+    "BANK_NAME_EMPTY": "题库名称不能为空",
+    "BANK_NAME_TOO_LONG": "题库名称不能超过 50 个字",
+    "BANK_NAME_EXISTS": "已有同名题库",
+    "BANK_NOT_FOUND": "题库不存在,可能已被删除",
+    "QUESTION_TITLE_EMPTY": "题干不能为空",
+    "QUESTION_TITLE_TOO_LONG": "题干不能超过 500 个字",
+    "ANSWER_TOO_LONG": "答案太长了",
+    "QUESTION_NOT_FOUND": "题目不存在,可能已被删除",
+    "IMAGE_TYPE_UNSUPPORTED": "只支持 PNG、JPG、GIF、WebP 图片",
+    "IMAGE_TOO_LARGE": "图片不能超过 10MB"
   }
 }

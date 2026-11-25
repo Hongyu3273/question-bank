@@ -3,6 +3,8 @@ import { join } from 'node:path'
 import { closeDb, getDb, openDb } from './db/connection'
 import { getAllSettings, readInternal, writeInternal } from './db/repositories/settings'
 import { registerIpc } from './ipc'
+import { handleAssetProtocol, registerAssetScheme } from './protocol'
+import { AssetStore } from './services/assets'
 
 interface WindowBounds {
   x: number
@@ -67,6 +69,8 @@ function createWindow(): void {
   }
 }
 
+registerAssetScheme()
+
 // 只允许运行一个实例,避免两个进程同时写数据库
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -86,7 +90,9 @@ if (!app.requestSingleInstanceLock()) {
       return
     }
     nativeTheme.themeSource = getAllSettings(getDb()).theme
-    registerIpc()
+    const assets = new AssetStore(join(app.getPath('userData'), 'assets'))
+    handleAssetProtocol(assets)
+    registerIpc(assets)
     createWindow()
 
     app.on('activate', () => {
