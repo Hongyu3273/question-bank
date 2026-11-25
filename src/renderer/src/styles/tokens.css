@@ -26,6 +26,9 @@
   --toast-text: #ffffff;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --scrollbar-thumb: #c8c8c4;
+  --scrollbar-thumb-hover: #a8a8a4;
+  --scrollbar-track: #f0f0ed;
 
   --radius-card: 14px;
   --radius-control: 10px;
@@ -65,6 +68,9 @@
   --toast-text: #1c1c1e;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --scrollbar-thumb: #4a4b52;
+  --scrollbar-thumb-hover: #5e5f68;
+  --scrollbar-track: #1f2024;
 
   color-scheme: dark;
 }

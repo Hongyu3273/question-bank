@@ -147,3 +147,27 @@ button {
   background-color: #f59e0b;
   color: #1c1c1e;
 }
+
+/* 滚动条:始终显示,可拖动。
+   Windows 11 上 Chromium 默认是悬停才出现的细滚动条,不容易发现也不好拖。 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  min-height: 40px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--scrollbar-thumb) padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-hover);
+}

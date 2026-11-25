@@ -301,6 +301,21 @@
   scroll-padding-top: 16px;
 }
 
+/* 阅读区滚动条更宽、带轨道,像网页一样方便拖动定位 */
+.list::-webkit-scrollbar {
+  width: 14px;
+}
+
+.list::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-left: 1px solid var(--divider);
+}
+
+.list::-webkit-scrollbar-thumb {
+  min-height: 48px;
+  border-width: 3px;
+}
+
 .listInner {
   max-width: 860px;
   margin: 0 auto;
