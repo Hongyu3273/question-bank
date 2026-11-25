@@ -17,16 +17,15 @@
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
-    "postinstall": "electron-builder install-app-deps",
     "dist:win": "npm run build && electron-builder --win",
     "dist:mac": "npm run build && electron-builder --mac"
   },
   "dependencies": {
-    "better-sqlite3": "^13.2.0"
+    "sql.js": "^1.17.0"
   },
   "devDependencies": {
     "@fontsource/inter": "^5.2.6",
-    "@types/better-sqlite3": "^9.6.0",
+    "@types/sql.js": "^1.16.1",
     "@types/node": "^22.15.0",
     "@types/react": "^19.3.1",
     "@types/react-dom": "^19.3.0",

@@ -1,6 +1,6 @@
-import type Database from 'better-sqlite3'
+import type { Db } from './database'
 
-type Migration = (db: Database.Database) => void
+type Migration = (db: Db) => void
 
 /**
  * 数据库迁移列表。下标 i 的迁移把数据库从版本 i 升级到 i + 1。
@@ -48,16 +48,16 @@ const migrations: Migration[] = [
 
 export const SCHEMA_VERSION = migrations.length
 
-export function runMigrations(db: Database.Database): void {
-  const current = db.pragma('user_version', { simple: true }) as number
+export function runMigrations(db: Db): void {
+  const current = db.get<{ user_version: number }>('PRAGMA user_version')?.user_version ?? 0
   if (current > SCHEMA_VERSION) {
     throw new Error(`数据库版本(${current})高于当前程序支持的版本(${SCHEMA_VERSION}),请更新软件。`)
   }
-  const upgrade = db.transaction(() => {
+  if (current === SCHEMA_VERSION) return
+  db.transaction(() => {
     for (let v = current; v < SCHEMA_VERSION; v++) {
       migrations[v](db)
-      db.pragma(`user_version = ${v + 1}`)
+      db.exec(`PRAGMA user_version = ${v + 1}`)
     }
   })
-  upgrade()
 }

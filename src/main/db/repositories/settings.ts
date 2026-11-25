@@ -1,5 +1,5 @@
-import type Database from 'better-sqlite3'
 import { DEFAULT_SETTINGS, type Settings } from '../../../shared/types'
+import type { Db } from '../database'
 
 /** 设置项的取值校验,防止界面传入非法值写进数据库 */
 const validators: { [K in keyof Settings]: (v: unknown) => v is Settings[K] } = {
@@ -17,8 +17,8 @@ export function isValidSettingValue<K extends keyof Settings>(key: K, value: unk
   return validators[key](value)
 }
 
-export function getAllSettings(db: Database.Database): Settings {
-  const rows = db.prepare('SELECT key, value FROM settings').all() as { key: string; value: string }[]
+export function getAllSettings(db: Db): Settings {
+  const rows = db.all<{ key: string; value: string }>('SELECT key, value FROM settings')
   const result: Settings = { ...DEFAULT_SETTINGS }
   for (const { key, value } of rows) {
     if (!isSettingKey(key)) continue
@@ -34,15 +34,13 @@ export function getAllSettings(db: Database.Database): Settings {
   return result
 }
 
-export function setSetting<K extends keyof Settings>(db: Database.Database, key: K, value: Settings[K]): void {
+export function setSetting<K extends keyof Settings>(db: Db, key: K, value: Settings[K]): void {
   writeRaw(db, key, value)
 }
 
 /** 程序内部使用的键值(例如窗口位置),不对界面开放 */
-export function readInternal<T>(db: Database.Database, key: string): T | undefined {
-  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(`internal.${key}`) as
-    | { value: string }
-    | undefined
+export function readInternal<T>(db: Db, key: string): T | undefined {
+  const row = db.get<{ value: string }>('SELECT value FROM settings WHERE key = ?', [`internal.${key}`])
   if (!row) return undefined
   try {
     return JSON.parse(row.value) as T
@@ -51,12 +49,13 @@ export function readInternal<T>(db: Database.Database, key: string): T | undefin
   }
 }
 
-export function writeInternal(db: Database.Database, key: string, value: unknown): void {
+export function writeInternal(db: Db, key: string, value: unknown): void {
   writeRaw(db, `internal.${key}`, value)
 }
 
-function writeRaw(db: Database.Database, key: string, value: unknown): void {
-  db.prepare(
-    'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value'
-  ).run(key, JSON.stringify(value))
+function writeRaw(db: Db, key: string, value: unknown): void {
+  db.run('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [
+    key,
+    JSON.stringify(value)
+  ])
 }

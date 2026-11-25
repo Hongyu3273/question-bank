@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme, screen, shell } from 'electron'
+import { app, BrowserWindow, dialog, nativeTheme, screen, shell } from 'electron'
 import { join } from 'node:path'
 import { closeDb, getDb, openDb } from './db/connection'
 import { getAllSettings, readInternal, writeInternal } from './db/repositories/settings'
@@ -77,8 +77,14 @@ if (!app.requestSingleInstanceLock()) {
     mainWindow.focus()
   })
 
-  void app.whenReady().then(() => {
-    openDb()
+  void app.whenReady().then(async () => {
+    try {
+      await openDb()
+    } catch (err) {
+      dialog.showErrorBox('无法打开数据库', err instanceof Error ? err.message : String(err))
+      app.quit()
+      return
+    }
     nativeTheme.themeSource = getAllSettings(getDb()).theme
     registerIpc()
     createWindow()

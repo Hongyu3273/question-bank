@@ -7,7 +7,7 @@
 - **考试模式**:暂未开放
 - **题库管理**:Markdown 编辑与预览,支持 Markdown(zip)和 Excel 导入导出
 
-技术栈:Electron · TypeScript · React · Vite(electron-vite)· SQLite(better-sqlite3)
+技术栈:Electron · TypeScript · React · Vite(electron-vite)· SQLite(sql.js,WebAssembly 版,无需本机编译)
 
 ## 开发环境
 
@@ -17,7 +17,7 @@
 - [Git](https://git-scm.com/)
 
 ```bash
-npm install     # 安装依赖,并为 Electron 编译 better-sqlite3
+npm install     # 安装依赖
 npm run dev     # 启动开发模式(改代码后界面自动刷新)
 ```
 
@@ -30,10 +30,11 @@ npm run dev     # 启动开发模式(改代码后界面自动刷新)
 | `npm run dist:win` | 打包 Windows 安装包到 `dist/` |
 | `npm run dist:mac` | 打包 macOS 安装包到 `dist/`(需要在 Mac 上执行) |
 
-如果 `npm install` 在编译 better-sqlite3 时报错,通常是没有找到对应 Electron 版本的预编译文件,需要本机编译:
+Windows 上如果 PowerShell 提示"禁止运行脚本",先运行一次:
 
-- Windows:安装 [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/),勾选"使用 C++ 的桌面开发"
-- macOS:运行 `xcode-select --install`
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
 
 ## 目录结构
 

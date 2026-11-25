@@ -8,8 +8,6 @@ directories:
 files:
   - out/**/*
   - package.json
-asarUnpack:
-  - "**/node_modules/better-sqlite3/**"
 win:
   target:
     - target: nsis

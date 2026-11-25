@@ -1,20 +1,21 @@
-import Database from 'better-sqlite3'
 import { app } from 'electron'
+import { createRequire } from 'node:module'
 import { join } from 'node:path'
+import { Db } from './database'
 import { runMigrations } from './migrations'
 
-let db: Database.Database | null = null
+let db: Db | null = null
 
 /** 打开数据库并执行迁移。应用启动时调用一次。 */
-export function openDb(file = join(app.getPath('userData'), 'app.db')): Database.Database {
-  db = new Database(file)
-  db.pragma('journal_mode = WAL')
-  db.pragma('foreign_keys = ON')
+export async function openDb(file = join(app.getPath('userData'), 'app.db')): Promise<Db> {
+  const require = createRequire(__filename)
+  const wasmPath = require.resolve('sql.js/dist/sql-wasm.wasm')
+  db = await Db.open(file, wasmPath)
   runMigrations(db)
   return db
 }
 
-export function getDb(): Database.Database {
+export function getDb(): Db {
   if (!db) throw new Error('数据库尚未打开')
   return db
 }
