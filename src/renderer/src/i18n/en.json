@@ -65,7 +65,7 @@
     "banksCount": "Banks ({{count}})",
     "newBank": "New bank",
     "bankName": "Bank name",
-    "bankNamePlaceholder": "Bank name, press Enter to save",
+    "bankNamePlaceholder": "e.g. Java basics",
     "renameBank": "Rename bank",
     "deleteBank": "Delete bank",
     "deleteBankTitle": "Delete \"{{name}}\"?",
@@ -131,7 +131,14 @@
     "savedAt": "Saved · {{time}}",
     "justNow": "just now",
     "revert": "Revert",
-    "shortcutHint": "Ctrl+S to save · ↑↓ to switch"
+    "shortcutHint": "Ctrl+S to save · ↑↓ to switch",
+    "bankCreated": "Bank created",
+    "bankEmptyTitle": "\"{{name}}\" has no questions yet",
+    "bankEmptyDesc": "Add the first question to start this bank. Each question has a prompt and an answer; answers support Markdown, code and images.",
+    "addFirstQuestion": "Add the first question",
+    "bankEmptyTip": "Importing Markdown or Excel question sets is coming soon.",
+    "newBankDesc": "Banks group your questions, for example by subject or interview topic.",
+    "create": "Create"
   },
   "errors": {
     "UNKNOWN": "Something went wrong. Please try again.",

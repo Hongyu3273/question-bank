@@ -65,7 +65,7 @@
     "banksCount": "题库({{count}})",
     "newBank": "新建题库",
     "bankName": "题库名称",
-    "bankNamePlaceholder": "输入题库名称,回车保存",
+    "bankNamePlaceholder": "例如:Java 基础",
     "renameBank": "重命名题库",
     "deleteBank": "删除题库",
     "deleteBankTitle": "删除题库「{{name}}」?",
@@ -131,7 +131,14 @@
     "savedAt": "已保存 · {{time}}",
     "justNow": "刚刚",
     "revert": "撤销修改",
-    "shortcutHint": "Ctrl+S 保存 · ↑↓ 切换题目"
+    "shortcutHint": "Ctrl+S 保存 · ↑↓ 切换题目",
+    "bankCreated": "题库已创建",
+    "bankEmptyTitle": "「{{name}}」还没有题目",
+    "bankEmptyDesc": "添加第一道题目,开始建立这个题库。每道题包含题干和答案,答案支持 Markdown、代码和图片。",
+    "addFirstQuestion": "新增第一道题",
+    "bankEmptyTip": "之后也可以导入整理好的 Markdown 或 Excel 题库(即将开放)。",
+    "newBankDesc": "题库用来归类题目,例如按科目或面试方向划分。",
+    "create": "创建"
   },
   "errors": {
     "UNKNOWN": "操作失败,请重试",

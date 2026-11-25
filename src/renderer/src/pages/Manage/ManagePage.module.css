@@ -183,26 +183,26 @@
   display: none;
 }
 
-/* 题库名称输入 */
-.nameInput {
+/* 列表底部的"新建题库"行,类似备忘录的"新建文件夹" */
+.addBankRow {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px;
-  background: var(--surface);
-  border: 1px solid var(--accent);
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  margin-top: 4px;
+  padding: 0 10px;
+  border: 0;
   border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
 }
 
-.nameInputError {
-  font-size: 0.75rem;
-  color: var(--danger);
-}
-
-.nameInputActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
+.addBankRow:hover {
+  background: var(--hover);
+  color: var(--accent);
 }
 
 /* ---------- 题目栏 ---------- */
@@ -583,7 +583,40 @@
   text-align: right;
 }
 
-/* ---------- 无题库 ---------- */
+/* ---------- 空题库 / 无题库 ---------- */
+
+.bankEmpty {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.emptyTip {
+  max-width: 360px;
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
 
 .emptyPage {
   flex: 1;
@@ -601,7 +634,9 @@
 }
 
 .emptyDesc {
+  max-width: 360px;
   margin: 0 0 8px;
+  line-height: 1.6;
   font-size: 0.875rem;
   color: var(--text-muted);
 }
