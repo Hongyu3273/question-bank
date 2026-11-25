@@ -109,9 +109,9 @@ npm run dev     # start the app with hot reload
 
 1. Bump `version` in `package.json`, e.g. `1.0.1`.
 2. Write the notes in `release-notes/v1.0.1.md`.
-3. Commit, then push a tag: `git tag v1.0.1 && git push origin v1.0.1`.
+3. Commit and push to main.
 
-GitHub Actions runs the tests, builds on Windows and macOS, uploads to Releases and publishes. Installed copies pick up the update automatically.
+When GitHub Actions sees a new version number it runs the tests, builds on Windows and macOS, uploads to Releases and publishes. Installed copies pick up the update automatically.
 
 On Windows, if PowerShell says scripts are disabled, run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 

@@ -63,9 +63,9 @@ npm run dev     # 启动开发模式(改代码后界面自动刷新)
 
 1. 修改 `package.json` 中的 `version`,例如 `1.0.1`。
 2. 在 `release-notes/v1.0.1.md` 写更新说明。
-3. 提交后推送标签:`git tag v1.0.1 && git push origin v1.0.1`。
+3. 提交并推送到 main。
 
-GitHub Actions 会运行测试,在 Windows 和 macOS 上打包,上传到 Releases 并正式发布。已安装的软件会自动检查到新版本。
+GitHub Actions 发现新的版本号后会运行测试,在 Windows 和 macOS 上打包,上传到 Releases 并正式发布。已安装的软件会自动检查到新版本。
 
 Windows 上如果 PowerShell 提示"禁止运行脚本",先运行一次:
 
