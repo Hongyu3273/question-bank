@@ -1,101 +1,127 @@
-# 知识题库
+# Question Bank
 
-面向自己和少数人的复习工具,以简答题为主。桌面应用,支持 macOS 和 Windows,离线使用,不依赖服务器。
+**English** | [简体中文](README.zh-CN.md)
 
-- **看题模式**:按顺序展示所选题库的全部题目和答案,支持目录和搜索
-- **背题模式**:所选题库随机洗牌,每次一题,答案默认隐藏
-- **考试模式**:暂未开放
-- **题库管理**:Markdown 编辑与预览,支持 Markdown(zip)和 Excel 导入导出
+A desktop app for reviewing interview questions. Read every question with its answer, or recite them one at a time as shuffled flashcards. Works fully offline on Windows and macOS — no account, no server.
 
-技术栈:Electron · TypeScript · React · Vite(electron-vite)· SQLite(sql.js,WebAssembly 版,无需本机编译)
+Built with Electron, React and TypeScript. Data is stored locally in SQLite.
 
-## 开发环境
+## Features
 
-需要安装:
+- **Read mode** — all questions and answers from the selected banks in one scrolling page, with a collapsible, resizable table of contents, full-text search (`Ctrl+F`), and a focus view that shows a single question large with ←/→ navigation. Remembers where you stopped.
+- **Recite mode** — the selected banks are merged and shuffled; one question at a time with the answer hidden. Click the answer area or press `Space` to reveal. Every question appears once per round, then the deck reshuffles. Progress survives restarts.
+- **Priority filter** — answers that start with a metadata line (`> 优先级：高 ｜ 分类：… ｜ 出处：…`) show as priority and category tags, and you can read or recite only high-priority questions.
+- **Bank management** — create, rename, reorder (drag or `Alt+↑/↓`) and delete banks and questions. Markdown editor with toolbar, preview, code highlighting, tables, LaTeX math and pasted images.
+- **Import / export** — Markdown zip (with images), single `.md`, or Excel `.xlsx`; select many files at once. Problems are reported by question and line number; name clashes let you overwrite, keep both or skip. Exports use the same format.
+- **Backup & restore** — everything (banks, images, progress, settings) in one `.qbak` file.
+- **Settings** — light / dark / system theme, three font sizes, Chinese or English interface, show or hide English prompts.
+- Exam mode is shown in the menu but not available yet.
 
-- [Node.js](https://nodejs.org/) 22.12 或更高版本
-- [Git](https://git-scm.com/)
+## How to use
 
-```bash
-npm install     # 安装依赖
-npm run dev     # 启动开发模式(改代码后界面自动刷新)
+1. **Get your questions in.** Open **Banks** → **Import** and pick one or more `.zip`, `.md` or `.xlsx` files. Or click **New bank** and type questions in yourself. Templates are under **Settings → Data**.
+2. **Choose what to study.** On **Home**, tick the banks you want under *Choose banks*. Optionally pick a priority (for example only *High*).
+3. **Pick a mode.**
+   - **Read** to go through everything with answers visible. Click a question title (or the expand icon) for the focus view; use ← / → to move on, `Esc` to close.
+   - **Recite** to test yourself. Think of the answer, click the dashed area (or press `Space`) to check, then → for the next one.
+4. **Fix things as you go.** Edit a question in **Banks**; changes appear everywhere. Press `?` anywhere to see all keyboard shortcuts.
+5. **Keep your data safe.** **Settings → Data → Export backup** creates a `.qbak` file you can restore on another computer.
+
+## Question bank format
+
+A bank is a folder containing `questions.md` and an optional `images/` folder, zipped:
+
+```
+Java basics.zip
+└─ Java basics/
+   ├─ questions.md
+   └─ images/
+      └─ hashmap.png
 ```
 
-其他命令:
-
-| 命令 | 作用 |
-|---|---|
-| `npm test` | 运行单元测试 |
-| `npm run typecheck` | TypeScript 类型检查 |
-| `npm run build` | 编译到 `out/` |
-| `npm run dist:win` | 打包 Windows 安装包到 `dist/` |
-| `npm run dist:mac` | 打包 macOS 安装包到 `dist/`(需要在 Mac 上执行) |
-
-Windows 上如果 PowerShell 提示"禁止运行脚本",先运行一次:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
-
-## 题库文件格式
-
-导入支持三种文件,可以一次选择多个:
-
-- **Markdown 压缩包(.zip,推荐)**:`<题库名>/questions.md` 加同级的 `images/` 图片文件夹。一个压缩包里可以有多个题库。
-- **单个 Markdown 文件(.md)**:不带图片。
-- **Excel(.xlsx)**:第一个工作表,第一行表头需要"题干""答案"两列。
-
-`questions.md` 的写法:
+`questions.md`:
 
 ````markdown
-# 题库名
+# Java basics
 
-## 第一道题的题干
-
----answer---
-
-答案,支持 **Markdown**、代码块、表格、公式 $O(n)$ 和图片 ![](images/a.png)
-
-## 第二道题的题干
+## What is the underlying structure of HashMap?
 
 ---answer---
 
-……
+Since JDK 8: **array + linked list + red-black tree**.
+
+```java
+Map<String, Integer> map = new HashMap<>();
+```
+
+![](images/hashmap.png)
+
+## Why is String immutable?
+
+---answer---
+
+String pool, cached hash code, thread safety.
 ````
 
-导出的题库使用同样的格式。设置页可以下载 Markdown 和 Excel 模板。
+- `#` — bank name (first line)
+- `##` — starts a question; the heading text is the question
+- `---answer---` — everything after it, up to the next `##`, is the answer. Use `###` for headings inside answers.
+- Optional metadata at the top of an answer is shown as tags:
 
-## 目录结构
+  ```markdown
+  *English: Tell me about yourself.*
+
+  > 优先级：高 ｜ 分类：HR ｜ 出处：SEEK
+  ```
+
+Excel: first sheet, header row with **Question** and **Answer** columns (or 题干 / 答案), one question per row.
+
+## Development
+
+Requires [Node.js](https://nodejs.org/) 22.12+ and Git.
+
+```bash
+npm install     # install dependencies (downloads Electron)
+npm run dev     # start the app with hot reload
+```
+
+| Command | Purpose |
+|---|---|
+| `npm test` | Unit tests (Vitest) |
+| `npm run typecheck` | TypeScript checks |
+| `npm run build` | Build to `out/` |
+| `npm run dist:win` | Windows installer in `dist/` |
+| `npm run dist:mac` | macOS installer in `dist/` (run on a Mac) |
+
+On Windows, if PowerShell says scripts are disabled, run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+
+### Project layout
 
 ```
 src/
-├─ shared/      主进程与界面共用的类型和 IPC 接口定义
-├─ main/        主进程:窗口、数据库、文件读写
-│   ├─ db/      连接、迁移、各表的读写
-│   └─ ipc/     界面可调用的接口
-├─ preload/     把白名单接口暴露为 window.api
-└─ renderer/    React 界面
-    └─ src/
-        ├─ components/  侧边栏、提示等通用组件
-        ├─ pages/       首页、看题、背题、题库管理、设置
-        ├─ stores/      Zustand 状态
-        ├─ i18n/        中文和英文文案
-        └─ styles/      设计 token(浅色/深色)和全局样式
+├─ shared/     types, IPC contract, metadata parsing (main + renderer)
+├─ main/       Electron main process: window, SQLite (sql.js), import/export, backup
+├─ preload/    exposes a typed window.api to the renderer
+└─ renderer/   React UI: pages, components, stores, i18n (zh-CN / en)
+tests/         Vitest unit tests
 ```
 
-用户数据保存在系统的应用数据目录(`app.db` 是数据库,`assets/<题库 id>/images/` 是题目中的图片):
+User data lives in the OS app-data folder (`%APPDATA%\知识题库\` on Windows, `~/Library/Application Support/知识题库/` on macOS): `app.db` plus `assets/<bank id>/images/`.
 
-- Windows:`%APPDATA%\知识题库\`
-- macOS:`~/Library/Application Support/知识题库/`
+### Design notes
 
-## 开发进度
+- **Security**: context isolation, sandboxed renderer, no Node in the UI; raw HTML in Markdown is never rendered; zip imports reject unsafe paths and oversized entries.
+- **Database**: sql.js (SQLite compiled to WebAssembly), so there is nothing to compile on install. Writes are saved atomically (temp file + rename). Schema upgrades run automatically.
+- **Large banks**: read mode renders answers lazily and uses `content-visibility`; tested with 1,200+ questions and 500+ images.
 
-| 阶段 | 内容 | 状态 |
-|---|---|---|
-| M1 骨架 | 窗口、侧边栏与路由、数据库与迁移、IPC、主题/字号/语言设置 | ✅ |
-| M2 题库管理 | 题库和题目的增删改、Markdown 编辑器与预览、图片粘贴 | ✅ |
-| M3 看题模式 | 首页题库勾选、全量列表、目录、搜索高亮、阅读位置 | ✅ |
-| M4 背题模式 | 洗牌会话、显示/隐藏答案、快捷键、进度 | ✅ |
-| M5 导入导出 | Markdown zip、Excel、同名冲突、导出、模板、备份恢复 | ✅ |
-| M6 设置 | 完善设置页、全部文案中英文 | ✅ |
-| M7 发布 | GitHub Actions 双平台构建、Releases、自动更新 | |
+## Roadmap
+
+| Milestone | Status |
+|---|---|
+| M1 App shell, database, settings | ✅ |
+| M2 Bank management and editor | ✅ |
+| M3 Read mode | ✅ |
+| M4 Recite mode | ✅ |
+| M5 Import / export / backup | ✅ |
+| M6 Settings and i18n | ✅ |
+| M7 Installers, GitHub Releases, auto-update | ⏳ |
