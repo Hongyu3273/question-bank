@@ -327,7 +327,9 @@
     "doubleClickFocus": "Open the question enlarged",
     "rate": "Rate: Forgot / Unsure / Got it (after showing the answer)",
     "undoRate": "Undo the last rating",
-    "switchQuestionShuffle": "Previous / next question (Go through all)"
+    "switchQuestionShuffle": "Previous / next question (Go through all)",
+    "zoom": "Zoom question content",
+    "wheel": "Scroll"
   },
   "guide": {
     "button": "Format guide",
@@ -409,5 +411,10 @@
     "dayStart": "Day starts at",
     "dayStartDesc": "Studying before this time still counts toward the previous day; today's task refreshes at this time",
     "hour": "{{hour}}:00"
+  },
+  "zoom": {
+    "level": "Content zoom {{percent}}%",
+    "reset": "Reset",
+    "hint": "Hold Ctrl and scroll to zoom the question content; click to reset to 100%"
   }
 }

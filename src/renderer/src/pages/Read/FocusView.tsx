@@ -7,6 +7,8 @@ import MarkdownView from '../../components/MarkdownView'
 import MetaTags from '../../components/MetaTags'
 import { useSearchHighlight } from '../../hooks/useSearchHighlight'
 import styles from './FocusView.module.css'
+import ZoomBadge from '../../components/ZoomBadge'
+import { useContentZoomStyle, ZOOM_AREA } from '../../hooks/useContentZoom'
 
 interface Props {
   question: Question
@@ -39,6 +41,7 @@ export default function FocusView({
   onClose
 }: Props) {
   const { t } = useTranslation()
+  const zoomStyle = useContentZoomStyle()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
   const { meta, body } = useMemo(() => extractMeta(q.answerMd), [q.answerMd])
@@ -100,8 +103,8 @@ export default function FocusView({
           <ArrowLeftIcon size={16} />
         </button>
 
-        <div ref={bodyRef} className={styles.body} tabIndex={-1}>
-          <article className={styles.content}>
+        <div ref={bodyRef} className={styles.body} tabIndex={-1} {...ZOOM_AREA}>
+          <article className={styles.content} style={zoomStyle}>
             <MetaTags meta={meta} showSource priorityLabel={priorityLabel} />
             <h2 id="focus-title" className={styles.title}>
               {q.title}
@@ -141,6 +144,7 @@ export default function FocusView({
           </span>
         </button>
       </footer>
+      <ZoomBadge className={styles.zoomBadge} />
     </dialog>
   )
 }

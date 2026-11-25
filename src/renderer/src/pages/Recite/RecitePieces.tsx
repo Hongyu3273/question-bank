@@ -9,6 +9,8 @@ import type { Grade, GradePreview, Question, ReciteMode } from '@shared/types'
 import { EyeIcon, ShuffleIcon } from '../../components/icons'
 import MarkdownView from '../../components/MarkdownView'
 import MetaTags from '../../components/MetaTags'
+import ZoomBadge from '../../components/ZoomBadge'
+import { useContentZoomStyle, ZOOM_AREA } from '../../hooks/useContentZoom'
 import { usePriorityLabel } from '../../hooks/usePriorityLabel'
 import { useSettingsStore } from '../../stores/settings'
 import styles from './RecitePage.module.css'
@@ -105,10 +107,16 @@ export function QuestionCard({ question, bankName, badges, revealed, onReveal, o
   const showEnglish = useSettingsStore((s) => s.settings?.showEnglish ?? true)
   const priorityLabel = usePriorityLabel()
   const parsed = useMemo(() => extractMeta(question.answerMd), [question.answerMd])
+  const zoomStyle = useContentZoomStyle()
 
   return (
-    <div className={styles.stage}>
-      <article ref={cardRef as RefObject<HTMLElement>} className={styles.card} aria-labelledby="recite-question">
+    <div className={styles.stage} {...ZOOM_AREA}>
+      <article
+        ref={cardRef as RefObject<HTMLElement>}
+        className={styles.card}
+        style={zoomStyle}
+        aria-labelledby="recite-question"
+      >
         <div className={styles.cardMeta}>
           <span className={styles.bankTag}>{bankName}</span>
           {badges}
@@ -149,6 +157,7 @@ export function QuestionCard({ question, bankName, badges, revealed, onReveal, o
           </button>
         )}
       </article>
+      <ZoomBadge />
     </div>
   )
 }

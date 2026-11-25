@@ -324,7 +324,9 @@
     "doubleClickFocus": "放大查看这道题",
     "rate": "自评:不会 / 模糊 / 记住(显示答案后)",
     "undoRate": "撤销上一次自评",
-    "switchQuestionShuffle": "切换题目(全部刷一遍)"
+    "switchQuestionShuffle": "切换题目(全部刷一遍)",
+    "zoom": "缩放题目内容",
+    "wheel": "滚轮"
   },
   "guide": {
     "button": "格式说明",
@@ -401,5 +403,10 @@
     "dayStart": "每天从几点开始",
     "dayStartDesc": "这个时间之前学习仍算前一天,今日任务在这个时间刷新",
     "hour": "{{hour}}:00"
+  },
+  "zoom": {
+    "level": "内容缩放 {{percent}}%",
+    "reset": "重置",
+    "hint": "按住 Ctrl 滚动鼠标滚轮可缩放题目内容;点击恢复 100%"
   }
 }

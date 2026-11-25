@@ -125,7 +125,7 @@
 }
 
 .content {
-  max-width: var(--reading-width);
+  max-width: calc(var(--reading-width) / var(--content-zoom, 1));
   margin: 0 auto;
   padding: 40px 24px 56px;
 }
@@ -185,4 +185,10 @@
   .content {
     padding: 28px 8px 40px;
   }
+}
+
+/* 缩放比例放在底部栏上方,不挡住按钮 */
+.dialog .zoomBadge {
+  bottom: 72px;
+  right: 28px;
 }

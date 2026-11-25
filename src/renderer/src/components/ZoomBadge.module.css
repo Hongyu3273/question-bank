@@ -1,0 +1,27 @@
+.badge {
+  position: absolute;
+  right: 20px;
+  bottom: 16px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.reset {
+  color: var(--accent);
+}
+
+.badge:hover {
+  border-color: var(--border-strong);
+}

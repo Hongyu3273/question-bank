@@ -6,6 +6,7 @@ import ShortcutHelp from './components/ShortcutHelp'
 import Sidebar from './components/Sidebar'
 import ToastHost from './components/ToastHost'
 import { useApplyAppearance } from './hooks/useApplyAppearance'
+import { useCtrlWheelZoom } from './hooks/useContentZoom'
 import HomePage from './pages/Home/HomePage'
 import ManagePage from './pages/Manage/ManagePage'
 import ReadPage from './pages/Read/ReadPage'
@@ -53,6 +54,7 @@ export default function App() {
   }, [load])
 
   useApplyAppearance(settings)
+  useCtrlWheelZoom()
 
   // 设置加载完成前不渲染界面,避免主题和语言闪烁
   if (!settings) return null

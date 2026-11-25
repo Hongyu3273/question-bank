@@ -96,6 +96,7 @@
 /* ---------- 主体 ---------- */
 
 .body {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -317,7 +318,8 @@
 }
 
 .listInner {
-  max-width: var(--reading-width);
+  /* 内容缩放(Ctrl + 滚轮)时保持阅读区宽度不变 */
+  max-width: calc(var(--reading-width) / var(--content-zoom, 1));
   margin: 0 auto;
   padding: 24px 40px 64px;
 }

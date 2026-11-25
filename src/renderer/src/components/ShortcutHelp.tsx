@@ -12,6 +12,7 @@ const GROUPS: { title: string; items: [string[], string][] }[] = [
       [['Enter'], 'nextMatch'],
       [['Shift', 'Enter'], 'prevMatch'],
       [['DoubleClick'], 'doubleClickFocus'],
+      [['Ctrl', 'Wheel'], 'zoom'],
       [['←', '→'], 'focusSwitch']
     ]
   },
@@ -87,7 +88,7 @@ export default function ShortcutHelp() {
                       <dd>
                         {keys.map((k) => (
                           <kbd key={k} className={styles.kbd}>
-                            {k === 'Space' ? t('recite.space') : k === 'DoubleClick' ? t('shortcuts.doubleClick') : k}
+                            {k === 'Space' ? t('recite.space') : k === 'DoubleClick' ? t('shortcuts.doubleClick') : k === 'Wheel' ? t('shortcuts.wheel') : k}
                           </kbd>
                         ))}
                       </dd>

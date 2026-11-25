@@ -57,6 +57,7 @@
 /* ---------- 卡片 ---------- */
 
 .stage {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -66,7 +67,7 @@
 
 .card {
   width: 100%;
-  max-width: var(--reading-width);
+  max-width: calc(var(--reading-width) / var(--content-zoom, 1));
   display: flex;
   flex-direction: column;
   gap: 18px;

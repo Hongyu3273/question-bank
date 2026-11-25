@@ -16,6 +16,8 @@ import { useSettingsStore } from '../../stores/settings'
 import { useToastStore } from '../../stores/toast'
 import FocusView from './FocusView'
 import styles from './ReadPage.module.css'
+import ZoomBadge from '../../components/ZoomBadge'
+import { useContentZoomStyle, ZOOM_AREA } from '../../hooks/useContentZoom'
 
 const NO_IDS: string[] = []
 
@@ -110,6 +112,7 @@ export default function ReadPage() {
   const showEnglish = useSettingsStore((s) => s.settings?.showEnglish ?? true)
   const updateSetting = useSettingsStore((s) => s.update)
   const priorityLabel = usePriorityLabel()
+  const zoomStyle = useContentZoomStyle()
 
   const [loaded, setLoaded] = useState<ReadBank[] | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -553,8 +556,8 @@ export default function ReadPage() {
           {...toc.separatorProps}
         />
 
-        <div ref={listRef} className={styles.list}>
-          <div className={styles.listInner}>
+        <div ref={listRef} className={styles.list} {...ZOOM_AREA}>
+          <div className={styles.listInner} style={zoomStyle}>
             {banks.map((bank) => (
               <section key={bank.id} className={styles.bankSection} aria-labelledby={`bank-${bank.id}`}>
                 <h2 id={`bank-${bank.id}`} className={styles.bankHeading} data-search-skip>
@@ -584,6 +587,7 @@ export default function ReadPage() {
             </p>
           </div>
         </div>
+        <ZoomBadge />
       </div>
 
       {focusId && positions.has(focusId) && (
