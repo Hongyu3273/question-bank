@@ -80,7 +80,7 @@ export default function FocusView({ question: q, bankName, index, total, number,
           disabled={!hasPrev}
           onClick={onPrev}
         >
-          <ArrowLeftIcon size={22} />
+          <ArrowLeftIcon size={16} />
         </button>
 
         <div ref={bodyRef} className={styles.body} tabIndex={-1}>
@@ -105,20 +105,20 @@ export default function FocusView({ question: q, bankName, index, total, number,
           disabled={!hasNext}
           onClick={onNext}
         >
-          <ArrowLeftIcon size={22} />
+          <ArrowLeftIcon size={16} />
         </button>
       </div>
 
       <footer className={styles.footer}>
-        <button type="button" className="btn" onClick={onPrev} disabled={!hasPrev}>
-          <ArrowLeftIcon size={16} />
+        <button type="button" className="btn btn-sm" onClick={onPrev} disabled={!hasPrev}>
+          <ArrowLeftIcon size={14} />
           {t('recite.prev')}
         </button>
         <span className={styles.hint}>{t('read.focusHint')}</span>
-        <button type="button" className="btn btn-primary" onClick={onNext} disabled={!hasNext} autoFocus>
+        <button type="button" className="btn btn-sm btn-primary" onClick={onNext} disabled={!hasNext} autoFocus>
           {t('recite.next')}
           <span className={styles.flip}>
-            <ArrowLeftIcon size={16} />
+            <ArrowLeftIcon size={14} />
           </span>
         </button>
       </footer>
