@@ -10,6 +10,7 @@ import { AssetStore } from './services/assets'
 import { runDailyBackup } from './services/autoBackup'
 import { createBackup } from './services/backup'
 import { initLogger, log } from './services/logger'
+import { initUpdater } from './services/updater'
 
 /** 所有 IPC 调用出错时写日志:预期内的错误(AppError)记为警告,其余记为错误 */
 function logIpcErrors(): void {
@@ -134,6 +135,8 @@ if (!app.requestSingleInstanceLock()) {
     }
     setTimeout(backupNow, 5000)
     setInterval(backupNow, 60 * 60 * 1000)
+
+    initUpdater(() => getAllSettings(getDb()).language)
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()

@@ -75,7 +75,15 @@
     "openDataFolder": "Open folder",
     "logs": "Logs",
     "logsDesc": "Records of errors. Send the log file to the developer when something goes wrong",
-    "openLogFolder": "Open log folder"
+    "openLogFolder": "Open log folder",
+    "releases": "Releases",
+    "checkUpdates": "Check for updates",
+    "checking": "Checking…",
+    "updateDev": "Updates are not checked in development mode",
+    "updateLatest": "You're up to date ({{version}})",
+    "updateDownloading": "Version {{version}} is available and downloading in the background. You'll be asked to restart when it's ready",
+    "updateAvailable": "Version {{version}} is available. Use the window that opened to download it",
+    "updateError": "Couldn't check for updates. Check your connection and try again"
   },
   "manage": {
     "banks": "Question banks",

@@ -75,7 +75,15 @@
     "openDataFolder": "打开文件夹",
     "logs": "日志",
     "logsDesc": "软件出错时的记录。遇到问题时可以把日志文件发给开发者",
-    "openLogFolder": "打开日志文件夹"
+    "openLogFolder": "打开日志文件夹",
+    "releases": "版本发布",
+    "checkUpdates": "检查更新",
+    "checking": "正在检查…",
+    "updateDev": "开发模式下不检查更新",
+    "updateLatest": "已是最新版本({{version}})",
+    "updateDownloading": "发现新版本 {{version}},正在后台下载,完成后会提示重启",
+    "updateAvailable": "发现新版本 {{version}},请在弹出的窗口中前往下载",
+    "updateError": "检查更新失败,请检查网络后重试"
   },
   "manage": {
     "banks": "题库列表",

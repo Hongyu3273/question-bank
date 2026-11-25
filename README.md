@@ -6,6 +6,10 @@ A desktop app for reviewing interview questions. Read every question with its an
 
 Built with Electron, React and TypeScript. Data is stored locally in SQLite.
 
+## Download
+
+Get the latest version from [Releases](https://github.com/Hongyu3273/question-bank/releases/latest): the `.exe` for Windows, or the `.dmg` for your Mac's chip (`arm64` for Apple silicon, `x64` for Intel). The app isn't code-signed; the release notes explain how to open it the first time.
+
 ## Features
 
 - **Read mode** — all questions and answers from the selected banks in one scrolling page, with a collapsible, resizable table of contents, full-text search (`Ctrl+F`), and a focus view that shows a single question large with ←/→ navigation. Remembers where you stopped.
@@ -101,6 +105,14 @@ npm run dev     # start the app with hot reload
 | `npm run dist:win` | Windows installer in `dist/` |
 | `npm run dist:mac` | macOS installer in `dist/` (run on a Mac) |
 
+### Releasing a new version
+
+1. Bump `version` in `package.json`, e.g. `1.0.1`.
+2. Write the notes in `release-notes/v1.0.1.md`.
+3. Commit, then push a tag: `git tag v1.0.1 && git push origin v1.0.1`.
+
+GitHub Actions runs the tests, builds on Windows and macOS, uploads to Releases and publishes. Installed copies pick up the update automatically.
+
 On Windows, if PowerShell says scripts are disabled, run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 ### Project layout
@@ -133,4 +145,4 @@ User data lives in the OS app-data folder (`%APPDATA%\知识题库\` on Windows,
 | Spaced repetition | ✅ |
 | M5 Import / export / backup | ✅ |
 | M6 Settings and i18n | ✅ |
-| M7 Installers, GitHub Releases, auto-update | ⏳ |
+| M7 Installers, GitHub Releases, auto-update | ✅ |

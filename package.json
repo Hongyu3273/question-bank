@@ -1,7 +1,7 @@
 {
   "name": "question-bank",
   "productName": "知识题库",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "知识题库桌面应用:看题模式与背题模式,离线使用",
   "author": "Hongyu3273",
@@ -23,6 +23,7 @@
     "dist:mac": "npm run build && electron-builder --mac"
   },
   "dependencies": {
+    "electron-updater": "^6.8.11",
     "fflate": "^0.8.3",
     "read-excel-file": "^9.3.20",
     "sql.js": "^1.17.0",

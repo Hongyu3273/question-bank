@@ -61,7 +61,8 @@ const api: Api = {
     info: () => ipcRenderer.invoke(IPC.appInfo),
     openDataFolder: () => ipcRenderer.invoke(IPC.appOpenDataFolder),
     openLogFolder: () => ipcRenderer.invoke(IPC.appOpenLogFolder),
-    logError: (message) => ipcRenderer.invoke(IPC.appLogError, message)
+    logError: (message) => ipcRenderer.invoke(IPC.appLogError, message),
+    checkUpdates: () => ipcRenderer.invoke(IPC.appCheckUpdates)
   }
 }
 

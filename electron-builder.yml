@@ -1,6 +1,8 @@
-# 打包配置(M7 阶段会进一步完善)
+# 打包配置:Windows 安装包(NSIS)、macOS dmg + zip(Intel 和 Apple 芯片各一份)
+# 发布由 .github/workflows/release.yml 在推送 v* 标签时自动完成
 appId: com.hongyu3273.questionbank
 productName: 知识题库
+copyright: Copyright © 2026 Hongyu3273
 artifactName: question-bank-${version}-${os}-${arch}.${ext}
 directories:
   buildResources: resources
@@ -8,25 +10,40 @@ directories:
 files:
   - out/**/*
   - package.json
+# 应用图标(1024×1024 PNG,打包时自动生成 .ico 和 .icns)
+icon: resources/icon.png
+
 win:
   target:
     - target: nsis
       arch: [x64]
 nsis:
   oneClick: false
+  perMachine: false
   allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
   shortcutName: 知识题库
+  # 卸载时保留题库数据
+  deleteAppDataOnUninstall: false
+
 mac:
-  # 未购买开发者证书,不签名
-  identity: null
+  # 没有 Apple 开发者证书:使用 ad-hoc 签名,避免 Apple 芯片上提示"已损坏"
+  identity: '-'
+  hardenedRuntime: false
   category: public.app-category.education
   target:
     - target: dmg
       arch: [x64, arm64]
+    # zip 供自动更新检查使用
     - target: zip
       arch: [x64, arm64]
+dmg:
+  title: 知识题库 ${version}
+
 publish:
   provider: github
   owner: Hongyu3273
   repo: question-bank
-  releaseType: release
+  # 先上传到草稿,两个平台都打包成功后再由工作流正式发布
+  releaseType: draft

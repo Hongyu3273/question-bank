@@ -31,6 +31,7 @@ import {
   wrongBookIds
 } from '../services/srs'
 import { log, logDirectory } from '../services/logger'
+import { checkForUpdates } from '../services/updater'
 
 /** 界面传来的参数不可信,先确认类型 */
 function str(value: unknown): string {
@@ -117,6 +118,7 @@ export function registerIpc(assets: AssetStore): void {
     const dir = logDirectory()
     if (dir) await shell.openPath(dir)
   })
+  ipcMain.handle(IPC.appCheckUpdates, () => checkForUpdates())
   ipcMain.handle(IPC.appLogError, (_e, message: unknown) => {
     if (typeof message === 'string') log('error', `[renderer] ${message.slice(0, 4000)}`)
   })

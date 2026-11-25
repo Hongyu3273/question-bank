@@ -271,3 +271,11 @@ export interface AutoBackup {
   date: string
   size: number
 }
+
+/** 检查更新的结果 */
+export type UpdateCheck =
+  | { status: 'dev' }
+  | { status: 'latest'; version: string }
+  /** autoInstall:Windows 会在后台下载并提示重启;macOS 需要手动下载 */
+  | { status: 'available'; version: string; autoInstall: boolean }
+  | { status: 'error' }

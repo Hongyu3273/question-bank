@@ -66,6 +66,26 @@ export default function SettingsPage() {
     })
   }, [])
 
+  const [checking, setChecking] = useState(false)
+  const checkUpdates = async () => {
+    setChecking(true)
+    try {
+      const r = await window.api.app.checkUpdates()
+      if (r.status === 'dev') toast(t('settings.updateDev'))
+      else if (r.status === 'latest') toast(t('settings.updateLatest', { version: r.version }))
+      else if (r.status === 'available') {
+        toast(
+          r.autoInstall
+            ? t('settings.updateDownloading', { version: r.version })
+            : t('settings.updateAvailable', { version: r.version }),
+          4000
+        )
+      } else toast(t('settings.updateError'), 4000)
+    } finally {
+      setChecking(false)
+    }
+  }
+
   const restoreAuto = async () => {
     const chosen = autoBackups.find((b) => b.name === autoChoice)
     if (!chosen) return
@@ -282,8 +302,15 @@ export default function SettingsPage() {
                 <a href="https://github.com/Hongyu3273/question-bank" target="_blank" rel="noreferrer">
                   {t('settings.homepage')}
                 </a>
+                {' · '}
+                <a href="https://github.com/Hongyu3273/question-bank/releases" target="_blank" rel="noreferrer">
+                  {t('settings.releases')}
+                </a>
               </div>
             </div>
+            <button type="button" className="btn" onClick={() => void checkUpdates()} disabled={checking}>
+              {checking ? t('settings.checking') : t('settings.checkUpdates')}
+            </button>
           </div>
           <div className={styles.item}>
             <div className={styles.itemText}>

@@ -4,6 +4,10 @@
 
 面向自己和少数人的复习工具,以简答题为主。桌面应用,支持 macOS 和 Windows,离线使用,不依赖服务器。
 
+## 下载
+
+到 [Releases](https://github.com/Hongyu3273/question-bank/releases/latest) 下载最新版本:Windows 选 `.exe`,Mac 按芯片选 `arm64.dmg`(Apple 芯片)或 `x64.dmg`(Intel)。软件没有代码签名,第一次打开的方法见 Release 说明。
+
 ## 功能
 
 - **看题模式**:连续展示所选题库的全部题目和答案;目录可折叠、可拖动调整宽度;全文搜索(Ctrl+F);点击题干放大单题,← → 切换;记住阅读位置。
@@ -54,6 +58,14 @@ npm run dev     # 启动开发模式(改代码后界面自动刷新)
 | `npm run build` | 编译到 `out/` |
 | `npm run dist:win` | 打包 Windows 安装包到 `dist/` |
 | `npm run dist:mac` | 打包 macOS 安装包到 `dist/`(需要在 Mac 上执行) |
+
+### 发布新版本
+
+1. 修改 `package.json` 中的 `version`,例如 `1.0.1`。
+2. 在 `release-notes/v1.0.1.md` 写更新说明。
+3. 提交后推送标签:`git tag v1.0.1 && git push origin v1.0.1`。
+
+GitHub Actions 会运行测试,在 Windows 和 macOS 上打包,上传到 Releases 并正式发布。已安装的软件会自动检查到新版本。
 
 Windows 上如果 PowerShell 提示"禁止运行脚本",先运行一次:
 
@@ -125,4 +137,4 @@ src/
 | 记忆曲线 | FSRS、自评、今日任务、每日数量、错题本 | ✅ |
 | M5 导入导出 | Markdown zip、Excel、同名冲突、导出、模板、备份恢复 | ✅ |
 | M6 设置 | 完善设置页、全部文案中英文 | ✅ |
-| M7 发布 | GitHub Actions 双平台构建、Releases、自动更新 | |
+| M7 发布 | GitHub Actions 双平台构建、Releases、自动更新 | ✅ |

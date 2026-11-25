@@ -14,6 +14,7 @@ import type {
   StudyStats,
   TodaySummary,
   AutoBackup,
+  UpdateCheck,
   ReciteState,
   ReciteStatus,
   ImportResult,
@@ -57,6 +58,7 @@ export const IPC = {
   ioRestoreAuto: 'io:restoreAuto',
   appOpenLogFolder: 'app:openLogFolder',
   appLogError: 'app:logError',
+  appCheckUpdates: 'app:checkUpdates',
   ioImport: 'io:import',
   ioResolveConflict: 'io:resolveConflict',
   ioExportBank: 'io:exportBank',
@@ -154,6 +156,8 @@ export interface Api {
     openLogFolder(): Promise<void>
     /** 记录界面中发生的错误 */
     logError(message: string): Promise<void>
+    /** 检查新版本 */
+    checkUpdates(): Promise<UpdateCheck>
   }
 }
 
