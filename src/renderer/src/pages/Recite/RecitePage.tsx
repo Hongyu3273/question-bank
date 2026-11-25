@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { ReciteState } from '@shared/types'
-import { ArrowLeftIcon, ShuffleIcon } from '../../components/icons'
+import { ArrowLeftIcon, EyeIcon, ShuffleIcon } from '../../components/icons'
 import MarkdownView from '../../components/MarkdownView'
 import { errorMessage } from '../../lib/errors'
 import { useSettingsStore } from '../../stores/settings'
@@ -182,13 +182,17 @@ export default function RecitePage() {
               )}
             </div>
           ) : (
-            <div className={styles.hidden}>
-              <p className={styles.hiddenText}>{t('recite.thinkFirst')}</p>
-              <button type="button" className="btn btn-primary" onClick={() => setRevealed(true)}>
-                {t('recite.showAnswer')}
-                <kbd className={`${styles.kbd} ${styles.kbdOnAccent}`}>{t('recite.space')}</kbd>
-              </button>
-            </div>
+            // 整个区域都可以点击:点任意位置显示答案
+            <button type="button" className={styles.hidden} onClick={() => setRevealed(true)}>
+              <span className={styles.hiddenIcon} aria-hidden="true">
+                <EyeIcon size={26} />
+              </span>
+              <span className={styles.hiddenText}>{t('recite.thinkFirst')}</span>
+              <span className={styles.hiddenHint}>
+                {t('recite.clickToReveal')}
+                <kbd className={styles.kbd}>{t('recite.space')}</kbd>
+              </span>
+            </button>
           )}
         </article>
       </div>

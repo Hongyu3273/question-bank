@@ -204,7 +204,8 @@
     "next": "下一题",
     "finishRound": "完成本轮",
     "roundCompleted": "第 {{round}} 轮已完成,已重新洗牌开始新一轮",
-    "noSelectionDesc": "先在首页勾选要背的题库。"
+    "noSelectionDesc": "先在首页勾选要背的题库。",
+    "clickToReveal": "点击此区域任意位置显示答案"
   },
   "data": {
     "title": "数据",

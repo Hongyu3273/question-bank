@@ -204,7 +204,8 @@
     "next": "Next",
     "finishRound": "Finish round",
     "roundCompleted": "Round {{round}} complete. Reshuffled for a new round.",
-    "noSelectionDesc": "Select the banks to recite on the Home page first."
+    "noSelectionDesc": "Select the banks to recite on the Home page first.",
+    "clickToReveal": "Click anywhere here to show the answer"
   },
   "data": {
     "title": "Data",
