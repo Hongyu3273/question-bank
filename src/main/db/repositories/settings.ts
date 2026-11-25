@@ -9,7 +9,9 @@ const validators: { [K in keyof Settings]: (v: unknown) => v is Settings[K] } = 
   selectedBankIds: (v): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string'),
   readPosition: (v): v is string | null => v === null || typeof v === 'string',
   priorityFilter: (v): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string'),
-  showEnglish: (v): v is boolean => typeof v === 'boolean'
+  showEnglish: (v): v is boolean => typeof v === 'boolean',
+  reciteMode: (v): v is Settings['reciteMode'] => v === 'today' || v === 'shuffle',
+  dayStartHour: (v): v is number => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 23
 }
 
 export function isSettingKey(key: unknown): key is keyof Settings {

@@ -9,7 +9,9 @@ Built with Electron, React and TypeScript. Data is stored locally in SQLite.
 ## Features
 
 - **Read mode** — all questions and answers from the selected banks in one scrolling page, with a collapsible, resizable table of contents, full-text search (`Ctrl+F`), and a focus view that shows a single question large with ←/→ navigation. Remembers where you stopped.
-- **Recite mode** — the selected banks are merged and shuffled; one question at a time with the answer hidden. Click the answer area or press `Space` to reveal. Every question appears once per round, then the deck reshuffles. Progress survives restarts.
+- **Recite · Today (spaced repetition)** — scheduled with the FSRS algorithm. After seeing the answer, rate yourself Forgot / Unsure / Got it (`1` / `2` / `3`): forgotten questions come back in 10 minutes, remembered ones at growing intervals. Each bank has its own daily limits for new questions and reviews, new questions are introduced by priority, and you can learn more or review ahead once you're done. `Ctrl+Z` undoes a rating.
+- **Recite · Go through all** — shuffle the selected banks and go through every question, handy before an interview. Ratings still count toward spaced repetition.
+- **Mistakes** — questions you mark Forgot are collected automatically and removed after you mark Got it on two different days. Practise them on their own from Home.
 - **Priorities** — each question can have a priority (High / Medium / Low), category, English prompt and source, shown as tags. Filter by priority on Home or right inside Read mode (including *Not set*). Set them per question in the editor, or for a whole bank at once (*Set priority for all…* in the bank menu) — handy for imported banks that have none.
 - **Bank management** — create, rename, reorder (drag or `Alt+↑/↓`) and delete banks and questions. Markdown editor with toolbar, preview, code highlighting, tables, LaTeX math and pasted images.
 - **Import / export** — Markdown zip (with images), single `.md`, or Excel `.xlsx`; select many files at once. Problems are reported by question and line number; name clashes let you overwrite, keep both or skip. Exports use the same format.
@@ -23,7 +25,7 @@ Built with Electron, React and TypeScript. Data is stored locally in SQLite.
 2. **Choose what to study.** On **Home**, tick the banks you want under *Choose banks*. Optionally pick a priority (for example only *High*). If an imported bank has no priorities, use *Set priority for all…* in its menu under **Banks** first.
 3. **Pick a mode.**
    - **Read** to go through everything with answers visible. Click a question title (or the expand icon) for the focus view; use ← / → to move on, `Esc` to close.
-   - **Recite** to test yourself. Think of the answer, click the dashed area (or press `Space`) to check, then → for the next one.
+   - **Recite** to test yourself. Think of the answer, click the dashed area (or press `Space`) to check, then rate yourself with `1` / `2` / `3`.
 4. **Fix things as you go.** Edit a question in **Banks**; changes appear everywhere. Press `?` anywhere to see all keyboard shortcuts.
 5. **Keep your data safe.** **Settings → Data → Export backup** creates a `.qbak` file you can restore on another computer.
 
@@ -124,6 +126,7 @@ User data lives in the OS app-data folder (`%APPDATA%\知识题库\` on Windows,
 | M2 Bank management and editor | ✅ |
 | M3 Read mode | ✅ |
 | M4 Recite mode | ✅ |
+| Spaced repetition | ✅ |
 | M5 Import / export / backup | ✅ |
 | M6 Settings and i18n | ✅ |
 | M7 Installers, GitHub Releases, auto-update | ⏳ |

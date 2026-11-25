@@ -5,6 +5,7 @@ import type { Db } from '../database'
 
 const SELECT_SUMMARY = `
   SELECT b.id, b.name, b.sort_order AS sortOrder, b.created_at AS createdAt, b.updated_at AS updatedAt,
+         b.new_per_day AS newPerDay, b.review_per_day AS reviewPerDay,
          COUNT(q.id) AS questionCount
     FROM banks b
     LEFT JOIN questions q ON q.bank_id = b.id`

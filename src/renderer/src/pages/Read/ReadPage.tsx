@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import type { PriorityStats, Question, ReadBank } from '@shared/types'
+import { WRONG_BOOK_ID, type PriorityStats, type Question, type ReadBank } from '@shared/types'
 import { comparePriority, extractMeta, NO_PRIORITY, priorityKey } from '@shared/meta'
 import { BookIcon, ChevronRightIcon, ExpandIcon, PanelLeftIcon, SearchIcon } from '../../components/icons'
 import MetaTags from '../../components/MetaTags'
@@ -141,7 +141,8 @@ export default function ReadPage() {
     window.api.read
       .list(selectedIds)
       .then((list) => {
-        if (!cancelled) setLoaded(list)
+        // 错题本没有题库名,用界面语言显示
+        if (!cancelled) setLoaded(list.map((b) => (b.id === WRONG_BOOK_ID ? { ...b, name: t('wrongBook.name') } : b)))
       })
       .catch((err) => toast(errorMessage(err, t), 3000))
     return () => {

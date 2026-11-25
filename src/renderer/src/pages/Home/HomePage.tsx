@@ -2,7 +2,7 @@ import { useEffect, useState, type MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { NO_PRIORITY } from '@shared/meta'
-import type { BankSummary, PriorityStats, ReciteStatus } from '@shared/types'
+import { WRONG_BOOK_ID, type BankSummary, type PriorityStats, type ReciteStatus, type TodaySummary } from '@shared/types'
 import { BookIcon, CheckIcon, ExamIcon, FolderIcon, ShuffleIcon, UploadIcon } from '../../components/icons'
 import ImportGuide from '../../components/ImportGuide'
 import PageHeader from '../../components/PageHeader'
@@ -22,6 +22,7 @@ export default function HomePage() {
   const selectedIds = useSettingsStore((s) => s.settings?.selectedBankIds ?? NO_IDS)
   const priorityFilter = useSettingsStore((s) => s.settings?.priorityFilter ?? NO_IDS)
   const readPosition = useSettingsStore((s) => s.settings?.readPosition ?? null)
+  const reciteMode = useSettingsStore((s) => s.settings?.reciteMode ?? 'today')
   const updateSetting = useSettingsStore((s) => s.update)
   const importVersion = useImportStore((s) => s.version)
 
@@ -29,6 +30,7 @@ export default function HomePage() {
   const [stats, setStats] = useState<PriorityStats | null>(null)
   const [lastRead, setLastRead] = useState<string | null>(null)
   const [recite, setRecite] = useState<ReciteStatus | null>(null)
+  const [today, setToday] = useState<TodaySummary | null>(null)
 
   useEffect(() => {
     void window.api.banks.list().then(setBanks)
@@ -47,15 +49,25 @@ export default function HomePage() {
       .catch(() => setLastRead(null))
   }, [readPosition])
 
-  // 已删除的题库不计入勾选
+  // 已删除的题库不计入勾选;错题本单独勾选
+  const wrongSelected = selectedIds.includes(WRONG_BOOK_ID)
   const selected = (banks ?? []).filter((b) => selectedIds.includes(b.id))
-  const selectedKey = selected.map((b) => b.id).join(',')
+  const selectedKey = [...selected.map((b) => b.id), ...(wrongSelected ? [WRONG_BOOK_ID] : [])].join(',')
+  const selectionCount = selected.length + (wrongSelected ? 1 : 0)
+  const filterKey = priorityFilter.join(',')
 
   // 所选题库的优先级分布
   useEffect(() => {
     const ids = selectedKey ? selectedKey.split(',') : []
     void window.api.read.priorities(ids).then(setStats)
   }, [selectedKey, importVersion])
+
+  // 今日任务数量和错题本数量
+  useEffect(() => {
+    const ids = selectedKey ? selectedKey.split(',') : []
+    void window.api.study.summary(ids, filterKey ? filterKey.split(',') : []).then(setToday)
+  }, [selectedKey, filterKey, importVersion])
+  const wrongCount = today?.wrongBook ?? 0
 
   // 当前筛选下的题目数量
   const filtered =
@@ -65,16 +77,24 @@ export default function HomePage() {
         (priorityFilter.includes(NO_PRIORITY) ? stats.unlabeled : 0)
 
   const setSelection = (ids: string[]) => void updateSetting('selectedBankIds', ids)
+  // 勾选普通题库时取消错题本,反之亦然
   const toggle = (id: string) =>
-    setSelection(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id])
+    setSelection(
+      selectedIds.includes(id)
+        ? selectedIds.filter((x) => x !== id)
+        : [...selectedIds.filter((x) => x !== WRONG_BOOK_ID), id]
+    )
+  const toggleWrongBook = () => setSelection(wrongSelected ? [] : [WRONG_BOOK_ID])
 
   // 背题进度只在勾选的题库和筛选与上次背题时相同时显示
   const sameRecite =
-    recite !== null && sameList(selected.map((b) => b.id), recite.bankIds) && sameList(priorityFilter, recite.priorities)
+    recite !== null &&
+    sameList(selectedKey ? selectedKey.split(',') : [], recite.bankIds) &&
+    sameList(priorityFilter, recite.priorities)
 
   // 没有可看的题目时,阻止进入看题和背题
   const guard = (e: MouseEvent) => {
-    if (selected.length === 0) {
+    if (selectionCount === 0) {
       e.preventDefault()
       showToast(t('home.needSelection'))
     } else if (filtered === 0) {
@@ -98,7 +118,7 @@ export default function HomePage() {
             {banks && banks.length > 0 && (
               <div className={styles.sectionActions}>
                 <span className={styles.summary}>
-                  {t('home.selectedSummary', { banks: selected.length, questions: filtered })}
+                  {t('home.selectedSummary', { banks: selectionCount, questions: filtered })}
                 </span>
                 <button type="button" className={styles.linkButton} onClick={() => setSelection(banks.map((b) => b.id))}>
                   {t('home.selectAll')}
@@ -150,6 +170,19 @@ export default function HomePage() {
                   </label>
                 )
               })}
+              {(wrongCount > 0 || wrongSelected) && (
+                <label
+                  className={`${styles.bankChip} ${styles.wrongChip} ${wrongSelected ? styles.bankChipOn : ''}`}
+                  title={`${t('wrongBook.hint')}\n${t('wrongBook.exclusive')}`}
+                >
+                  <input type="checkbox" checked={wrongSelected} onChange={toggleWrongBook} className="sr-only" />
+                  <span className={styles.check} aria-hidden="true">
+                    {wrongSelected && <CheckIcon size={12} />}
+                  </span>
+                  <span className={styles.bankName}>{t('wrongBook.name')}</span>
+                  <span className={styles.bankCount}>{wrongCount}</span>
+                </label>
+              )}
             </div>
           )}
 
@@ -188,7 +221,16 @@ export default function HomePage() {
               </div>
               <div className={styles.modeTitle}>{t('nav.recite')}</div>
               <p className={styles.modeDesc}>{t('home.reciteDesc')}</p>
-              {recite && sameRecite && (
+              {reciteMode === 'today' && today && selectionCount > 0 && (
+                <div className={styles.todayCounts}>
+                  <span className={styles.todayNew}>{t('study.countNew', { count: today.counts.newLeft })}</span>
+                  <span className={styles.todayReview}>
+                    {t('study.countReview', { count: today.counts.reviewLeft + today.counts.learningLeft })}
+                  </span>
+                  <span className={styles.todayDone}>{t('study.countDone', { count: today.counts.doneToday })}</span>
+                </div>
+              )}
+              {reciteMode === 'shuffle' && recite && sameRecite && (
                 <div className={styles.modeProgress}>
                   <div className={styles.modeProgressText}>
                     <span>{t('recite.roundLabel', { round: recite.round })}</span>
@@ -202,7 +244,14 @@ export default function HomePage() {
                 </div>
               )}
               <div className={styles.modeAction}>
-                {recite && sameRecite ? t('home.continueReciting') : t('home.reciteAction')}
+                {reciteMode === 'today'
+                  ? today && today.counts.newLeft + today.counts.reviewLeft + today.counts.learningLeft === 0 &&
+                    today.counts.doneToday > 0
+                    ? t('home.todayDone')
+                    : t('home.startToday')
+                  : recite && sameRecite
+                    ? t('home.continueReciting')
+                    : t('home.reciteAction')}
               </div>
             </Link>
 

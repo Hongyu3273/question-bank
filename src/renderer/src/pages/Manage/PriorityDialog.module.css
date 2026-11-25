@@ -92,3 +92,48 @@
   gap: 10px;
   margin-top: 22px;
 }
+
+/* ---------- 学习设置 ---------- */
+
+.field {
+  margin-top: 16px;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.numberInput {
+  width: 120px;
+}
+
+.fieldHint,
+.fieldError {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.fieldError {
+  color: var(--danger);
+}
+
+.resetBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.resetBox .fieldHint {
+  flex: 1;
+  margin: 0;
+}

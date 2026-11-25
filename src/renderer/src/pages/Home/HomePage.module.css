@@ -153,6 +153,37 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* 错题本:虚线边框,和普通题库区分 */
+.wrongChip {
+  border-style: dashed;
+}
+
+.wrongChip .bankName {
+  color: var(--danger);
+}
+
+/* 背题卡片上的今日任务数量 */
+.todayCounts {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.todayNew {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.todayReview {
+  color: var(--success-text);
+  font-weight: 600;
+}
+
+.todayDone {
+  color: var(--text-muted);
+}
+
 /* 模式卡片 */
 .modes {
   display: grid;

@@ -8,6 +8,10 @@ import type {
   QuestionInput,
   QuestionSummary,
   ReadBank,
+  Grade,
+  StudyLimits,
+  StudyState,
+  TodaySummary,
   ReciteState,
   ReciteStatus,
   ImportResult,
@@ -23,6 +27,8 @@ export const IPC = {
   banksDelete: 'banks:delete',
   banksReorder: 'banks:reorder',
   banksSetPriority: 'banks:setPriority',
+  banksSetStudyLimits: 'banks:setStudyLimits',
+  banksResetProgress: 'banks:resetProgress',
   questionsList: 'questions:list',
   questionsGet: 'questions:get',
   questionsCreate: 'questions:create',
@@ -37,6 +43,12 @@ export const IPC = {
   recitePrev: 'recite:prev',
   reciteReshuffle: 'recite:reshuffle',
   reciteStatus: 'recite:status',
+  studyState: 'study:state',
+  studySummary: 'study:summary',
+  studyRate: 'study:rate',
+  studyUndo: 'study:undo',
+  studyExtend: 'study:extend',
+  studyRemoveWrong: 'study:removeWrong',
   ioImport: 'io:import',
   ioResolveConflict: 'io:resolveConflict',
   ioExportBank: 'io:exportBank',
@@ -60,6 +72,10 @@ export interface Api {
     reorder(ids: string[]): Promise<void>
     /** 批量设置题库的优先级(null 为清除),返回修改的题目数量 */
     setPriority(bankId: string, priority: string | null, scope: PriorityScope): Promise<number>
+    /** 设置一个或多个题库的每日新题数和复习上限 */
+    setStudyLimits(bankIds: string[], limits: StudyLimits): Promise<void>
+    /** 清除题库的学习进度 */
+    resetProgress(bankId: string): Promise<void>
   }
   questions: {
     list(bankId: string): Promise<QuestionSummary[]>
@@ -86,6 +102,18 @@ export interface Api {
     reshuffle(): Promise<ReciteState | null>
     /** 当前进度(不改变会话),首页使用 */
     status(): Promise<ReciteStatus | null>
+  }
+  /** 记忆曲线(今日任务) */
+  study: {
+    state(bankIds: string[], priorities: string[]): Promise<StudyState>
+    summary(bankIds: string[], priorities: string[]): Promise<TodaySummary>
+    /** 自评:1 不会,2 模糊,3 记住 */
+    rate(questionId: string, grade: Grade): Promise<void>
+    /** 撤销今天最后一次自评,返回那道题的 id */
+    undo(): Promise<string | null>
+    /** 再学几道新题,或提前复习几道明天的题 */
+    extend(kind: 'new' | 'ahead', count: number): Promise<void>
+    removeFromWrongBook(questionId: string): Promise<void>
   }
   io: {
     /** 选择一个或多个题库文件(.zip / .md / .xlsx)并导入;每个题库一条结果 */

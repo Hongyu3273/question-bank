@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { LIMITS, type BankSummary, type PriorityScope, type QuestionInput, type QuestionSummary } from '@shared/types'
+import {
+  LIMITS,
+  type BankSummary,
+  type PriorityScope,
+  type QuestionInput,
+  type QuestionSummary,
+  type StudyLimits
+} from '@shared/types'
 import { ArrowLeftIcon, ChevronRightIcon, FolderIcon, PencilIcon, PlusIcon, UploadIcon } from '../../components/icons'
 import ImportGuide from '../../components/ImportGuide'
 import NameDialog from '../../components/NameDialog'
@@ -13,6 +20,7 @@ import { useImportStore } from '../../stores/import'
 import { useToastStore } from '../../stores/toast'
 import BankList from './BankList'
 import PriorityDialog from './PriorityDialog'
+import StudyDialog from './StudyDialog'
 import QuestionEditor from './QuestionEditor'
 import QuestionList from './QuestionList'
 import styles from './ManagePage.module.css'
@@ -28,6 +36,7 @@ export default function ManagePage() {
   const navigate = useNavigate()
 
   const [banks, setBanks] = useState<BankSummary[] | null>(null)
+  const [studyBank, setStudyBank] = useState<BankSummary | null>(null)
   const [bankId, setBankId] = useState<string | null>(null)
   /** 新建或重命名题库的弹窗 */
   const [nameDialog, setNameDialog] = useState<{ mode: 'create' } | { mode: 'rename'; bank: BankSummary } | null>(
@@ -191,6 +200,36 @@ export default function ManagePage() {
       setPriorityBank(null)
       if (priorityBank.bank.id === bankId) await openBank(bankId)
       toast(t('manage.priorityUpdated', { count: changed }))
+    } catch (err) {
+      fail(err)
+    }
+  }
+
+  const submitStudy = async (limits: StudyLimits, applyAll: boolean) => {
+    if (!studyBank || !banks) return
+    try {
+      await window.api.banks.setStudyLimits(applyAll ? banks.map((b) => b.id) : [studyBank.id], limits)
+      setStudyBank(null)
+      await refreshBanks()
+      toast(applyAll ? t('studySettings.savedAll') : t('studySettings.saved'))
+    } catch (err) {
+      fail(err)
+    }
+  }
+
+  const resetStudy = async () => {
+    if (!studyBank) return
+    const ok = await confirmDialog({
+      title: t('studySettings.resetConfirmTitle', { name: studyBank.name }),
+      message: t('studySettings.resetConfirmMessage'),
+      confirmLabel: t('studySettings.reset'),
+      danger: true
+    })
+    if (!ok) return
+    try {
+      await window.api.banks.resetProgress(studyBank.id)
+      setStudyBank(null)
+      toast(t('studySettings.resetDone'))
     } catch (err) {
       fail(err)
     }
@@ -371,6 +410,7 @@ export default function ManagePage() {
             onExport={(bank) => void exportBank(bank.id, t)}
             onReorder={(ids) => void reorderBanks(ids)}
             onSetPriority={(bank) => void openPriorityDialog(bank)}
+            onStudySettings={setStudyBank}
             onDelete={(bank) => void deleteBank(bank)}
           />
 
@@ -434,6 +474,8 @@ export default function ManagePage() {
           )}
         </div>
       )}
+
+      <StudyDialog bank={studyBank} onSubmit={submitStudy} onReset={resetStudy} onClose={() => setStudyBank(null)} />
 
       <PriorityDialog
         bank={priorityBank?.bank ?? null}

@@ -1,3 +1,4 @@
+import { keepProgressByTitle } from './srs'
 import { randomUUID } from 'node:crypto'
 import { basename, extname } from 'node:path'
 import readXlsxFile from 'read-excel-file/node'
@@ -108,8 +109,11 @@ export function commitCandidate(
     const staged = assets.stageImages(candidate.images)
     try {
       db.transaction(() => {
+        // 题干相同的题目保留学习进度
+        const restore = keepProgressByTitle(db, target)
         db.run('DELETE FROM questions WHERE bank_id = ?', [target])
         insertQuestions(db, target, candidate.questions)
+        restore()
       })
     } catch (err) {
       assets.discardStaged(staged)

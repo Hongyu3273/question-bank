@@ -18,6 +18,16 @@ import {
 import { getAllSettings, isSettingKey, isValidSettingValue, setSetting } from '../db/repositories/settings'
 import type { AssetStore } from '../services/assets'
 import { nextQuestion, prevQuestion, reciteStatus, reshuffle, startRecite } from '../services/recite'
+import {
+  extend,
+  rate,
+  removeFromWrongBook,
+  resetBankProgress,
+  setStudyLimits,
+  studyState,
+  todaySummary,
+  undo
+} from '../services/srs'
 
 /** 界面传来的参数不可信,先确认类型 */
 function str(value: unknown): string {
@@ -41,6 +51,11 @@ export function registerIpc(assets: AssetStore): void {
   ipcMain.handle(IPC.banksSetPriority, (_e, bankId: unknown, priority: unknown, scope: unknown) =>
     setBankPriority(getDb(), str(bankId), priority, scope)
   )
+
+  ipcMain.handle(IPC.banksSetStudyLimits, (_e, bankIds: unknown, limits: unknown) =>
+    setStudyLimits(getDb(), bankIds, limits)
+  )
+  ipcMain.handle(IPC.banksResetProgress, (_e, bankId: unknown) => resetBankProgress(getDb(), bankId))
 
   // 题目
   ipcMain.handle(IPC.questionsList, (_e, bankId: unknown) => listQuestions(getDb(), str(bankId)))
@@ -70,6 +85,16 @@ export function registerIpc(assets: AssetStore): void {
   ipcMain.handle(IPC.recitePrev, () => prevQuestion(getDb()))
   ipcMain.handle(IPC.reciteReshuffle, () => reshuffle(getDb()))
   ipcMain.handle(IPC.reciteStatus, () => reciteStatus(getDb()))
+
+  // 记忆曲线
+  ipcMain.handle(IPC.studyState, (_e, bankIds: unknown, priorities: unknown) => studyState(getDb(), bankIds, priorities))
+  ipcMain.handle(IPC.studySummary, (_e, bankIds: unknown, priorities: unknown) =>
+    todaySummary(getDb(), bankIds, priorities)
+  )
+  ipcMain.handle(IPC.studyRate, (_e, questionId: unknown, grade: unknown) => rate(getDb(), questionId, grade))
+  ipcMain.handle(IPC.studyUndo, () => undo(getDb()))
+  ipcMain.handle(IPC.studyExtend, (_e, kind: unknown, count: unknown) => extend(getDb(), kind, count))
+  ipcMain.handle(IPC.studyRemoveWrong, (_e, questionId: unknown) => removeFromWrongBook(getDb(), questionId))
 
   // 设置
   ipcMain.handle(IPC.settingsGetAll, () => getAllSettings(getDb()))

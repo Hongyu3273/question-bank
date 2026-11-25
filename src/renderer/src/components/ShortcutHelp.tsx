@@ -19,7 +19,9 @@ const GROUPS: { title: string; items: [string[], string][] }[] = [
     title: 'recite',
     items: [
       [['Space'], 'toggleAnswer'],
-      [['←', '→'], 'switchQuestion']
+      [['1', '2', '3'], 'rate'],
+      [['Ctrl', 'Z'], 'undoRate'],
+      [['←', '→'], 'switchQuestionShuffle']
     ]
   },
   {

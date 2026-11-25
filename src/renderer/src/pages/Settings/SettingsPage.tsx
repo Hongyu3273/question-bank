@@ -146,6 +146,32 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        <section className={styles.section} aria-labelledby="settings-study">
+          <h2 id="settings-study" className={styles.sectionTitle}>
+            {t('settingsStudy.title')}
+          </h2>
+          <div className={styles.item}>
+            <div className={styles.itemText}>
+              <label htmlFor="day-start" className={styles.itemLabel}>
+                {t('settingsStudy.dayStart')}
+              </label>
+              <div className={styles.itemDesc}>{t('settingsStudy.dayStartDesc')}</div>
+            </div>
+            <select
+              id="day-start"
+              className={`input ${styles.select}`}
+              value={settings.dayStartHour}
+              onChange={(e) => void update('dayStartHour', Number(e.target.value))}
+            >
+              {Array.from({ length: 24 }, (_, h) => (
+                <option key={h} value={h}>
+                  {t('settingsStudy.hour', { hour: String(h).padStart(2, '0') })}
+                </option>
+              ))}
+            </select>
+          </div>
+        </section>
+
         <section className={styles.section} aria-labelledby="settings-data">
           <h2 id="settings-data" className={styles.sectionTitle}>
             {t('data.title')}

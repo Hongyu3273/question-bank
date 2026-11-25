@@ -91,3 +91,8 @@
 .warning {
   color: var(--warning-text);
 }
+
+.select {
+  width: 120px;
+  flex-shrink: 0;
+}

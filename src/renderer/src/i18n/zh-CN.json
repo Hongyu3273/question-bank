@@ -30,7 +30,7 @@
     "modes": "选择模式",
     "readDesc": "按顺序展示所选题库的全部题目和答案,支持目录跳转和关键词搜索。",
     "readAction": "开始阅读 →",
-    "reciteDesc": "所选题库合并后随机洗牌,每次一题,答案默认隐藏。",
+    "reciteDesc": "按记忆曲线安排每天要背的题:看完答案自评,不会的很快再出现,记住的间隔越来越长。",
     "reciteAction": "开始背题 →",
     "examDesc": "限时作答、自动判分。正在开发中。",
     "examAction": "暂未开放",
@@ -47,7 +47,9 @@
     "selectNone": "全不选",
     "priorityFilter": "优先级",
     "allPriorities": "全部",
-    "noFilteredQuestions": "所选题库中没有符合优先级筛选的题目"
+    "noFilteredQuestions": "所选题库中没有符合优先级筛选的题目",
+    "startToday": "开始今日任务",
+    "todayDone": "今日任务已完成"
   },
   "settings": {
     "title": "设置",
@@ -319,7 +321,10 @@
     "save": "保存题目",
     "reorder": "移动题目或题库位置",
     "doubleClick": "双击题目",
-    "doubleClickFocus": "放大查看这道题"
+    "doubleClickFocus": "放大查看这道题",
+    "rate": "自评:不会 / 模糊 / 记住(显示答案后)",
+    "undoRate": "撤销上一次自评",
+    "switchQuestionShuffle": "切换题目(全部刷一遍)"
   },
   "guide": {
     "button": "格式说明",
@@ -327,5 +332,74 @@
     "copy": "复制全文",
     "copied": "已复制",
     "close": "关闭"
+  },
+  "study": {
+    "mode": "背题方式",
+    "modeToday": "今日任务",
+    "modeTodayHint": "按记忆曲线安排:到期的复习题 + 每日新题",
+    "modeShuffle": "全部刷一遍",
+    "modeShuffleHint": "所选题库洗牌后逐题过一遍,适合考前冲刺;自评同样计入记忆曲线",
+    "todayLabel": "今日任务",
+    "countNew": "新题 {{count}}",
+    "countReview": "复习 {{count}}",
+    "countLearning": "重学 {{count}}",
+    "countDone": "已完成 {{count}}",
+    "newHint": "今天还要学的新题",
+    "reviewHint": "今天到期需要复习的题",
+    "learningHint": "今天答了\"不会\"、还要再过一遍的题",
+    "rateLabel": "自评",
+    "grade1": "不会",
+    "grade2": "模糊",
+    "grade3": "记住",
+    "minutes": "{{count}} 分钟",
+    "hours": "{{count}} 小时",
+    "days": "{{count}} 天",
+    "months": "{{count}} 个月",
+    "years": "{{count}} 年",
+    "newCard": "新题",
+    "reviewCard": "复习",
+    "inWrongBook": "错题本",
+    "undo": "撤销",
+    "undoHint": "撤销上一次自评(Ctrl+Z)",
+    "undoLast": "撤销上一次自评",
+    "undone": "已撤销上一次自评",
+    "nothingToUndo": "今天没有可以撤销的自评",
+    "skip": "跳过",
+    "skipHint": "不自评,直接看下一题",
+    "doneTitle": "今日任务完成",
+    "doneDesc": "今天共自评 {{count}} 次。之后到期的题会自动出现在今日任务里。",
+    "moreNew": "再学 {{count}} 道新题",
+    "ahead": "提前复习明天的 {{count}} 道",
+    "practiceWrongBook": "刷错题本({{count}})"
+  },
+  "wrongBook": {
+    "name": "错题本",
+    "hint": "自评\"不会\"的题会自动加入;在不同的两天都答\"记住\"后自动移出",
+    "remove": "移出错题本",
+    "removed": "已移出错题本",
+    "exclusive": "错题本单独练习,不和其他题库一起勾选"
+  },
+  "studySettings": {
+    "menu": "学习设置",
+    "title": "学习设置 · {{name}}",
+    "newPerDay": "每日新题数",
+    "newPerDayHint": "每天最多学几道没学过的题",
+    "reviewPerDay": "每日复习上限",
+    "reviewPerDayHint": "每天最多复习几道到期的题;超出的顺延到之后几天",
+    "applyAll": "应用到所有题库",
+    "saved": "已保存学习设置",
+    "savedAll": "已应用到所有题库",
+    "reset": "重置学习进度",
+    "resetHint": "清除这个题库所有题目的复习记录,题目重新算作新题,错题本中的这些题也会移出。",
+    "resetConfirmTitle": "重置「{{name}}」的学习进度?",
+    "resetConfirmMessage": "这个题库所有题目的复习记录都会被清除,重新算作新题。此操作无法撤销。",
+    "resetDone": "已重置学习进度",
+    "invalid": "请输入 0 到 {{max}} 之间的整数"
+  },
+  "settingsStudy": {
+    "title": "背题",
+    "dayStart": "每天从几点开始",
+    "dayStartDesc": "这个时间之前学习仍算前一天,今日任务在这个时间刷新",
+    "hour": "{{hour}}:00"
   }
 }

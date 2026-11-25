@@ -9,7 +9,9 @@ const api: Api = {
     rename: (id, name) => ipcRenderer.invoke(IPC.banksRename, id, name),
     delete: (id) => ipcRenderer.invoke(IPC.banksDelete, id),
     reorder: (ids) => ipcRenderer.invoke(IPC.banksReorder, ids),
-    setPriority: (bankId, priority, scope) => ipcRenderer.invoke(IPC.banksSetPriority, bankId, priority, scope)
+    setPriority: (bankId, priority, scope) => ipcRenderer.invoke(IPC.banksSetPriority, bankId, priority, scope),
+    setStudyLimits: (bankIds, limits) => ipcRenderer.invoke(IPC.banksSetStudyLimits, bankIds, limits),
+    resetProgress: (bankId) => ipcRenderer.invoke(IPC.banksResetProgress, bankId)
   },
   questions: {
     list: (bankId) => ipcRenderer.invoke(IPC.questionsList, bankId),
@@ -30,6 +32,14 @@ const api: Api = {
     prev: () => ipcRenderer.invoke(IPC.recitePrev),
     reshuffle: () => ipcRenderer.invoke(IPC.reciteReshuffle),
     status: () => ipcRenderer.invoke(IPC.reciteStatus)
+  },
+  study: {
+    state: (bankIds, priorities) => ipcRenderer.invoke(IPC.studyState, bankIds, priorities),
+    summary: (bankIds, priorities) => ipcRenderer.invoke(IPC.studySummary, bankIds, priorities),
+    rate: (questionId, grade) => ipcRenderer.invoke(IPC.studyRate, questionId, grade),
+    undo: () => ipcRenderer.invoke(IPC.studyUndo),
+    extend: (kind, count) => ipcRenderer.invoke(IPC.studyExtend, kind, count),
+    removeFromWrongBook: (questionId) => ipcRenderer.invoke(IPC.studyRemoveWrong, questionId)
   },
   io: {
     import: () => ipcRenderer.invoke(IPC.ioImport),

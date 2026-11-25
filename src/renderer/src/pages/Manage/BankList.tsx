@@ -4,6 +4,7 @@ import type { BankSummary } from '@shared/types'
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  CalendarIcon,
   DownloadIcon,
   FlagIcon,
   MoreIcon,
@@ -25,6 +26,7 @@ interface Props {
   onDelete: (bank: BankSummary) => void
   onReorder: (ids: string[]) => void
   onSetPriority: (bank: BankSummary) => void
+  onStudySettings: (bank: BankSummary) => void
 }
 
 /** 左侧题库列表:类似备忘录的文件夹栏。更多操作在"⋯"按钮和右键菜单里 */
@@ -37,7 +39,8 @@ export default function BankList({
   onExport,
   onDelete,
   onReorder,
-  onSetPriority
+  onSetPriority,
+  onStudySettings
 }: Props) {
   const { t } = useTranslation()
   const [menu, setMenu] = useState<{ bank: BankSummary; anchor: MenuAnchor } | null>(null)
@@ -127,6 +130,11 @@ export default function BankList({
             ? [
                 { label: t('manage.renameBank'), icon: <PencilIcon size={15} />, onSelect: () => onRename(menu.bank) },
                 { label: t('manage.setPriority'), icon: <FlagIcon size={15} />, onSelect: () => onSetPriority(menu.bank) },
+                {
+                  label: t('studySettings.menu'),
+                  icon: <CalendarIcon size={15} />,
+                  onSelect: () => onStudySettings(menu.bank)
+                },
                 { label: t('manage.exportBank'), icon: <DownloadIcon size={15} />, onSelect: () => onExport(menu.bank) },
                 {
                   label: t('manage.moveUp'),

@@ -238,3 +238,10 @@ export const CopyIcon = (p: IconProps) => (
     <path d="M5 15V6a2 2 0 0 1 2-2h9" />
   </Svg>
 )
+
+export const CalendarIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="4" y="5" width="16" height="15" rx="2" />
+    <path d="M4 10h16M9 3v4M15 3v4" />
+  </Svg>
+)

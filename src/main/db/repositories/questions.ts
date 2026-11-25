@@ -9,10 +9,12 @@ import {
   type Question,
   type QuestionInput,
   type QuestionSummary,
-  type ReadBank
+  type ReadBank,
+  WRONG_BOOK_ID
 } from '../../../shared/types'
 import type { Db } from '../database'
 import { getBank, touchBank } from './banks'
+import { selectionWhere } from './selection'
 
 const SELECT_QUESTION = `
   SELECT id, bank_id AS bankId, title, answer_md AS answerMd, sort_order AS sortOrder,
@@ -109,7 +111,21 @@ export function listQuestionsForBanks(db: Db, bankIds: unknown): ReadBank[] {
     `${SELECT_QUESTION} WHERE bank_id IN (${marks}) ORDER BY sort_order`,
     bankIds
   )
-  return banks.map((b) => ({ ...b, questions: questions.filter((q) => q.bankId === b.id) }))
+  const result = banks.map((b) => ({ ...b, questions: questions.filter((q) => q.bankId === b.id) }))
+  // 错题本:按加入时间排列,已在其他勾选题库中出现的题目不重复列出
+  if (bankIds.includes(WRONG_BOOK_ID)) {
+    const shown = new Set(questions.map((q) => q.id))
+    const wrong = db
+      .all<Question>(
+        `SELECT q.id, q.bank_id AS bankId, q.title, q.answer_md AS answerMd, q.sort_order AS sortOrder,
+                q.created_at AS createdAt, q.updated_at AS updatedAt
+           FROM questions q JOIN review_cards c ON c.question_id = q.id
+          WHERE c.in_wrong_book = 1 ORDER BY c.wrong_added_at`
+      )
+      .filter((q) => !shown.has(q.id))
+    result.push({ id: WRONG_BOOK_ID, name: '', questions: wrong })
+  }
+  return result
 }
 
 /** 批量追加题目(导入用);在调用方的事务中执行 */
@@ -135,10 +151,10 @@ export function insertQuestions(db: Db, bankId: string, items: QuestionInput[]):
 export function priorityStats(db: Db, bankIds: unknown): PriorityStats {
   if (!Array.isArray(bankIds) || !bankIds.every((x) => typeof x === 'string')) throw new AppError('INVALID_ARGUMENT')
   if (bankIds.length === 0) return { total: 0, counts: [], unlabeled: 0 }
-  const marks = bankIds.map(() => '?').join(', ')
+  const where = selectionWhere(bankIds as string[])
   const rows = db.all<{ head: string }>(
-    `SELECT substr(answer_md, 1, 1000) AS head FROM questions WHERE bank_id IN (${marks})`,
-    bankIds
+    `SELECT substr(q.answer_md, 1, 1000) AS head FROM questions q WHERE ${where.sql}`,
+    where.params
   )
   const counts = new Map<string, number>()
   let unlabeled = 0

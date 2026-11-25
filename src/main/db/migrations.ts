@@ -47,6 +47,46 @@ const migrations: Migration[] = [
   // v2:背题会话记录优先级筛选条件(JSON 数组,空数组表示全部)
   (db) => {
     db.exec(`ALTER TABLE recite_session ADD COLUMN filter TEXT NOT NULL DEFAULT '[]'`)
+  },
+  // v3:记忆曲线(FSRS)。每道题一张复习卡片,每次自评一条记录;题库增加每日新题数和复习上限
+  (db) => {
+    db.exec(`
+      ALTER TABLE banks ADD COLUMN new_per_day INTEGER NOT NULL DEFAULT 10;
+      ALTER TABLE banks ADD COLUMN review_per_day INTEGER NOT NULL DEFAULT 100;
+
+      CREATE TABLE review_cards (
+        question_id       TEXT PRIMARY KEY REFERENCES questions(id) ON DELETE CASCADE,
+        state             INTEGER NOT NULL,
+        due               INTEGER NOT NULL,
+        stability         REAL NOT NULL,
+        difficulty        REAL NOT NULL,
+        scheduled_days    INTEGER NOT NULL,
+        learning_steps    INTEGER NOT NULL,
+        reps              INTEGER NOT NULL,
+        lapses            INTEGER NOT NULL,
+        last_review       INTEGER,
+        in_wrong_book     INTEGER NOT NULL DEFAULT 0,
+        wrong_streak      INTEGER NOT NULL DEFAULT 0,
+        wrong_streak_day  TEXT,
+        wrong_added_at    INTEGER
+      );
+      CREATE INDEX idx_review_cards_due ON review_cards(due);
+      CREATE INDEX idx_review_cards_wrong ON review_cards(in_wrong_book);
+
+      CREATE TABLE review_logs (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        question_id     TEXT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+        bank_id         TEXT NOT NULL,
+        grade           INTEGER NOT NULL,
+        reviewed_at     INTEGER NOT NULL,
+        day             TEXT NOT NULL,
+        was_new         INTEGER NOT NULL,
+        counted_review  INTEGER NOT NULL,
+        ahead           INTEGER NOT NULL DEFAULT 0,
+        prev_card       TEXT
+      );
+      CREATE INDEX idx_review_logs_day ON review_logs(day, bank_id);
+    `)
   }
 ]
 

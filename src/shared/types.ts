@@ -1,5 +1,6 @@
 // 主进程与界面共用的数据类型
 
+export type ReciteMode = 'today' | 'shuffle'
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type FontSize = 's' | 'm' | 'l'
 export type Language = 'zh-CN' | 'en'
@@ -17,6 +18,10 @@ export interface Settings {
   priorityFilter: string[]
   /** 是否显示英文题干 */
   showEnglish: boolean
+  /** 背题方式:今日任务(记忆曲线)或全部刷一遍(洗牌) */
+  reciteMode: ReciteMode
+  /** 每天从几点开始算新的一天(0–23),默认凌晨 4 点 */
+  dayStartHour: number
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -26,13 +31,19 @@ export const DEFAULT_SETTINGS: Settings = {
   selectedBankIds: [],
   readPosition: null,
   priorityFilter: [],
-  showEnglish: true
+  showEnglish: true,
+  reciteMode: 'today',
+  dayStartHour: 4
 }
 
 export interface BankSummary {
   id: string
   name: string
   questionCount: number
+  /** 每日新题数 */
+  newPerDay: number
+  /** 每日复习上限 */
+  reviewPerDay: number
   sortOrder: number
   createdAt: number
   updatedAt: number
@@ -93,6 +104,10 @@ export interface ReciteState {
   round: number
   /** 刚刚完成一轮并重新洗牌 */
   roundCompleted: boolean
+  /** 三个自评按钮对应的下次复习间隔 */
+  previews: GradePreview[]
+  /** 这道题在错题本中 */
+  inWrongBook: boolean
 }
 
 /** 首页显示的背题进度 */
@@ -149,3 +164,70 @@ export const LIMITS = {
   answer: 200_000,
   imageBytes: 10 * 1024 * 1024
 } as const
+
+// ---------- 记忆曲线 ----------
+
+/** 错题本在题库勾选中使用的特殊 id */
+export const WRONG_BOOK_ID = '__wrongbook__'
+
+/** 自评:1 不会,2 模糊,3 记住 */
+export type Grade = 1 | 2 | 3
+export const GRADES: readonly Grade[] = [1, 2, 3]
+
+/** 选择某个自评后,距离下次复习的时间 */
+export interface GradePreview {
+  grade: Grade
+  intervalMs: number
+}
+
+/** 今日任务的剩余数量 */
+export interface TodayCounts {
+  /** 还要学的新题 */
+  newLeft: number
+  /** 还要复习的到期题 */
+  reviewLeft: number
+  /** 今天答错、还要再过一遍的题 */
+  learningLeft: number
+  /** 今天已经自评的次数 */
+  doneToday: number
+}
+
+/** 今日任务中的一道题 */
+export interface StudyCard {
+  question: Question
+  bankName: string
+  /** 第一次学 */
+  isNew: boolean
+  inWrongBook: boolean
+  previews: GradePreview[]
+}
+
+/** 今日任务的状态 */
+export type StudyState =
+  | { status: 'card'; card: StudyCard; counts: TodayCounts; canUndo: boolean }
+  | {
+      status: 'done'
+      counts: TodayCounts
+      canUndo: boolean
+      /** 还没学过的新题数量(可以"再学几道") */
+      moreNew: number
+      /** 明天到期、可以提前复习的数量 */
+      ahead: number
+      /** 错题本中的题目数量 */
+      wrongBook: number
+    }
+  | { status: 'empty' }
+
+/** 首页显示的今日任务概况 */
+export interface TodaySummary {
+  counts: TodayCounts
+  wrongBook: number
+}
+
+/** 题库的学习设置 */
+export interface StudyLimits {
+  newPerDay: number
+  reviewPerDay: number
+}
+
+export const STUDY_LIMITS = { newPerDay: 999, reviewPerDay: 9999 } as const

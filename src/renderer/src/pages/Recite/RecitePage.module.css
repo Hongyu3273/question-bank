@@ -197,10 +197,212 @@
 /* ---------- 底部 ---------- */
 
 .footer {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   gap: 16px;
   padding: 12px var(--page-padding-x) 24px;
+}
+
+.footer > :first-child {
+  justify-self: end;
+}
+
+.footer > :last-child {
+  justify-self: start;
+}
+
+.footerSpacer {
+  display: block;
+}
+
+.revealButton {
+  min-width: 220px;
+  min-height: 48px;
+}
+
+/* ---------- 自评按钮 ---------- */
+
+.grades {
+  display: flex;
+  gap: 10px;
+}
+
+.grade {
+  min-width: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 18px;
+  border: 1px solid;
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.grade:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.gradeLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.gradeInterval {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.gradeAgain {
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  color: var(--danger);
+}
+
+.gradeAgain:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+}
+
+.gradeHard {
+  border-color: color-mix(in srgb, var(--warning-text) 45%, transparent);
+  color: var(--warning-text);
+}
+
+.gradeHard:hover:not(:disabled) {
+  background: var(--warning-soft);
+}
+
+.gradeGood {
+  border-color: color-mix(in srgb, var(--success-text) 45%, transparent);
+  color: var(--success-text);
+}
+
+.gradeGood:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--success-text) 10%, var(--surface));
+}
+
+.grade .kbd {
+  color: inherit;
+  border-color: currentColor;
+  opacity: 0.6;
+}
+
+/* ---------- 方式切换和今日数量 ---------- */
+
+.modeSwitch {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--hover);
+}
+
+.modeSwitch button {
+  padding: 5px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.modeSwitch .modeOn {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.counts {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.countNew {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.countReview {
+  color: var(--success-text);
+  font-weight: 600;
+}
+
+.countLearning {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.countDone {
+  color: var(--text-muted);
+}
+
+/* 题目上方的标签 */
+.newTag,
+.reviewTag,
+.wrongTag {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.newTag {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.reviewTag {
+  background: color-mix(in srgb, var(--success-text) 12%, transparent);
+  color: var(--success-text);
+}
+
+.wrongTag {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+/* ---------- 今日任务完成 ---------- */
+
+.doneIcon {
+  background: color-mix(in srgb, var(--success-text) 14%, transparent);
+  color: var(--success-text);
+}
+
+.doneActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.undoLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.undoLink:hover {
+  color: var(--text);
 }
 
 .arrowRight {

@@ -3,6 +3,8 @@ import type { Question, ReciteState, ReciteStatus } from '../../shared/types'
 import { priorityKey } from '../../shared/meta'
 import type { Db } from '../db/database'
 import { getQuestion } from '../db/repositories/questions'
+import { selectionWhere } from '../db/repositories/selection'
+import { gradePreviews, isInWrongBook } from './srs'
 
 interface SessionRow {
   filter: string
@@ -63,15 +65,15 @@ function writeSession(db: Db, s: Session): void {
 /** 所选题库当前的题目 id;有优先级筛选时只取这些优先级的题目 */
 function questionIds(db: Db, bankIds: string[], priorities: string[]): string[] {
   if (bankIds.length === 0) return []
-  const marks = bankIds.map(() => '?').join(', ')
+  const where = selectionWhere(bankIds)
   if (priorities.length === 0) {
-    return db.all<{ id: string }>(`SELECT id FROM questions WHERE bank_id IN (${marks})`, bankIds).map((r) => r.id)
+    return db.all<{ id: string }>(`SELECT q.id FROM questions q WHERE ${where.sql}`, where.params).map((r) => r.id)
   }
   const wanted = new Set(priorities)
   return db
     .all<{ id: string; head: string }>(
-      `SELECT id, substr(answer_md, 1, 1000) AS head FROM questions WHERE bank_id IN (${marks})`,
-      bankIds
+      `SELECT q.id, substr(q.answer_md, 1, 1000) AS head FROM questions q WHERE ${where.sql}`,
+      where.params
     )
     .filter((r) => wanted.has(priorityKey(r.head)))
     .map((r) => r.id)
@@ -113,7 +115,9 @@ function resolve(db: Db, s: Session, random: Random, roundCompleted = false): Re
       index: s.position + 1,
       total: s.queue.length,
       round: s.round,
-      roundCompleted
+      roundCompleted,
+      previews: gradePreviews(db, question.id),
+      inWrongBook: isInWrongBook(db, question.id)
     }
   }
 }
