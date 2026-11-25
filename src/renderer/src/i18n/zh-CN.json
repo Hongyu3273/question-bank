@@ -318,5 +318,12 @@
     "switchQuestion": "切换题目",
     "save": "保存题目",
     "reorder": "移动题目或题库位置"
+  },
+  "guide": {
+    "button": "格式说明",
+    "title": "导入格式说明",
+    "copy": "复制全文",
+    "copied": "已复制",
+    "close": "关闭"
   }
 }

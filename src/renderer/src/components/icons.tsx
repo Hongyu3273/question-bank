@@ -224,3 +224,17 @@ export const FlagIcon = (p: IconProps) => (
     <path d="M5 21V4M5 4h11l-2 4 2 4H5" />
   </Svg>
 )
+
+export const InfoIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v6M12 7.5v.01" />
+  </Svg>
+)
+
+export const CopyIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+  </Svg>
+)

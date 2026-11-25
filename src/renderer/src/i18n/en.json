@@ -321,5 +321,12 @@
     "switchQuestion": "Switch questions",
     "save": "Save question",
     "reorder": "Move question or bank"
+  },
+  "guide": {
+    "button": "Format guide",
+    "title": "Import format guide",
+    "copy": "Copy all",
+    "copied": "Copied",
+    "close": "Close"
   }
 }

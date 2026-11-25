@@ -3,6 +3,7 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LIMITS, type BankSummary, type PriorityScope, type QuestionInput, type QuestionSummary } from '@shared/types'
 import { ArrowLeftIcon, ChevronRightIcon, FolderIcon, PencilIcon, PlusIcon, UploadIcon } from '../../components/icons'
+import ImportGuide from '../../components/ImportGuide'
 import NameDialog from '../../components/NameDialog'
 import PageHeader from '../../components/PageHeader'
 import { exportBank, saveTemplate, startImport } from '../../lib/dataActions'
@@ -327,6 +328,7 @@ export default function ManagePage() {
         }
         actions={
           <>
+            <ImportGuide />
             <button type="button" className="btn" onClick={() => void startImport(t)}>
               <UploadIcon size={16} />
               {t('data.import')}
@@ -470,6 +472,8 @@ function TemplateLinks() {
       <button type="button" onClick={() => void saveTemplate('excel', t)}>
         Excel
       </button>
+      ·
+      <ImportGuide compact />
     </p>
   )
 }

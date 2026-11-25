@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { NO_PRIORITY } from '@shared/meta'
 import type { BankSummary, PriorityStats, ReciteStatus } from '@shared/types'
 import { BookIcon, CheckIcon, ExamIcon, FolderIcon, ShuffleIcon, UploadIcon } from '../../components/icons'
+import ImportGuide from '../../components/ImportGuide'
 import PageHeader from '../../components/PageHeader'
 import PriorityFilter from '../../components/PriorityFilter'
 import { startImport } from '../../lib/dataActions'
@@ -128,6 +129,7 @@ export default function HomePage() {
                   {t('home.emptyAction')}
                 </Link>
               </div>
+              <ImportGuide compact />
             </div>
           )}
 

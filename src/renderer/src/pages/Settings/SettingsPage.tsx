@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { FontSize, Language, Settings, ThemeMode } from '@shared/types'
 import { DownloadIcon, FolderIcon, UploadIcon } from '../../components/icons'
+import ImportGuide from '../../components/ImportGuide'
 import PageHeader from '../../components/PageHeader'
 import { saveTemplate } from '../../lib/dataActions'
 import { errorMessage } from '../../lib/errors'
@@ -180,6 +181,7 @@ export default function SettingsPage() {
             <button type="button" className="btn" onClick={() => void saveTemplate('excel', t)}>
               Excel
             </button>
+            <ImportGuide />
           </div>
         </section>
 
