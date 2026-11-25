@@ -112,7 +112,6 @@
     "questionNumber": "第 {{number}} 题",
     "viewMode": "视图",
     "view_edit": "编辑",
-    "view_split": "分栏",
     "view_preview": "预览",
     "moreActions": "更多操作",
     "answerPlaceholder": "在这里写答案,支持 Markdown。可直接粘贴截图。",

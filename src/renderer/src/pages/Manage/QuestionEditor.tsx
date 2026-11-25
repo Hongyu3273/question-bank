@@ -21,17 +21,17 @@ import Menu, { anchorBelow, type MenuAnchor } from '../../components/Menu'
 import { formatRelative } from '../../lib/time'
 import styles from './ManagePage.module.css'
 
-type ViewMode = 'edit' | 'split' | 'preview'
+type ViewMode = 'edit' | 'preview'
 const VIEW_KEY = 'qb.editorView'
 
 function loadViewMode(): ViewMode {
   try {
     const v = localStorage.getItem(VIEW_KEY)
-    if (v === 'edit' || v === 'split' || v === 'preview') return v
+    if (v === 'edit' || v === 'preview') return v
   } catch {
     // 读取失败时使用默认值
   }
-  return 'split'
+  return 'edit'
 }
 
 interface Props {
@@ -54,7 +54,7 @@ interface Props {
 
 const IMAGE_ACCEPT = 'image/png,image/jpeg,image/gif,image/webp'
 
-/** 右侧编辑区:大标题题干、格式工具栏、编辑/分栏/预览三种视图、底部保存状态 */
+/** 右侧编辑区:大标题题干、格式工具栏、编辑/预览切换、底部保存状态 */
 export default function QuestionEditor({
   bankId,
   bankName,
@@ -164,7 +164,7 @@ export default function QuestionEditor({
           <span>{number ? t('manage.questionNumber', { number }) : t('manage.untitled')}</span>
         </div>
         <div className={styles.segmented} role="radiogroup" aria-label={t('manage.viewMode')}>
-          {(['edit', 'split', 'preview'] as const).map((mode) => (
+          {(['edit', 'preview'] as const).map((mode) => (
             <button
               key={mode}
               type="button"
@@ -208,7 +208,7 @@ export default function QuestionEditor({
         }}
       />
 
-      {view !== 'preview' && (
+      {view === 'edit' && (
         <div className={styles.formatBar} role="toolbar" aria-label={t('manage.toolbar')}>
           {tools.map((group, gi) => (
             <div key={gi} className={styles.formatGroup}>
@@ -240,8 +240,8 @@ export default function QuestionEditor({
         </div>
       )}
 
-      <div className={`${styles.workArea} ${styles[`view_${view}`]}`}>
-        {view !== 'preview' && (
+      <div className={styles.workArea}>
+        {view === 'edit' ? (
           <div className={styles.editorPane}>
             <MarkdownEditor
               ref={editorRef}
@@ -252,8 +252,7 @@ export default function QuestionEditor({
               placeholder={t('manage.answerPlaceholder')}
             />
           </div>
-        )}
-        {view !== 'edit' && (
+        ) : (
           <div className={styles.previewPane} aria-label={t('manage.preview')}>
             {preview.trim() ? (
               <MarkdownView markdown={preview} bankId={bankId} />

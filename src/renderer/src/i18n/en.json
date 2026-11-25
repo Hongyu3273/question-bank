@@ -112,7 +112,6 @@
     "questionNumber": "Question {{number}}",
     "viewMode": "View",
     "view_edit": "Edit",
-    "view_split": "Split",
     "view_preview": "Preview",
     "moreActions": "More actions",
     "answerPlaceholder": "Write the answer here in Markdown. You can paste screenshots directly.",
