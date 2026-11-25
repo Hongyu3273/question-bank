@@ -137,7 +137,8 @@ button {
 }
 
 /* 看题模式的搜索高亮(CSS Custom Highlight API) */
-::highlight(qb-search) {
+::highlight(qb-search),
+::highlight(qb-search-focus) {
   background-color: var(--highlight);
   color: inherit;
 }

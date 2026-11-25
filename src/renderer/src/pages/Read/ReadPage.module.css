@@ -387,13 +387,46 @@
   opacity: 0.6;
 }
 
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -6px -12px 0 0;
+}
+
 .cardNumber {
   font-size: 0.75rem;
   color: var(--text-muted);
 }
 
+/* 放大按钮:悬停卡片时更明显 */
+.expand {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-muted);
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.card:hover .expand,
+.expand:focus-visible {
+  opacity: 1;
+}
+
+.expand:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+
 .cardTitle {
-  margin: 6px 0 0;
+  cursor: zoom-in;
+  margin: 2px 0 0;
   font-size: 1.0625rem;
   font-weight: 600;
   line-height: 1.55;

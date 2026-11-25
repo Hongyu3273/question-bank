@@ -180,3 +180,15 @@ export const UploadIcon = (p: IconProps) => (
     <path d="M12 15V3M7 8l5-5 5 5M4 17v3h16v-3" />
   </Svg>
 )
+
+export const ExpandIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+  </Svg>
+)
+
+export const CloseIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 6l12 12M18 6 6 18" />
+  </Svg>
+)

@@ -182,7 +182,11 @@
     "showToc": "显示目录",
     "hideToc": "收起目录",
     "resizeToc": "调整目录宽度",
-    "resizeTocHint": "拖动调整宽度,双击收起或展开"
+    "resizeTocHint": "拖动调整宽度,双击收起或展开",
+    "expand": "放大查看",
+    "closeFocus": "关闭(Esc)",
+    "focusPosition": "共 {{total}} 题中的第 {{index}} 题",
+    "focusHint": "← → 切换题目 · Esc 关闭"
   },
   "recite": {
     "changeBanks": "更换题库",

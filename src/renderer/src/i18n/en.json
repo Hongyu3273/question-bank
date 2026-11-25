@@ -182,7 +182,11 @@
     "showToc": "Show contents",
     "hideToc": "Hide contents",
     "resizeToc": "Resize contents",
-    "resizeTocHint": "Drag to resize, double-click to hide or show"
+    "resizeTocHint": "Drag to resize, double-click to hide or show",
+    "expand": "Focus view",
+    "closeFocus": "Close (Esc)",
+    "focusPosition": "{{index}} of {{total}}",
+    "focusHint": "← → to switch · Esc to close"
   },
   "recite": {
     "changeBanks": "Change banks",

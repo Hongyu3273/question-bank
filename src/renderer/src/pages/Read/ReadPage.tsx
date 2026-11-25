@@ -2,13 +2,14 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Question, ReadBank } from '@shared/types'
-import { BookIcon, ChevronRightIcon, PanelLeftIcon, SearchIcon } from '../../components/icons'
+import { BookIcon, ChevronRightIcon, ExpandIcon, PanelLeftIcon, SearchIcon } from '../../components/icons'
 import MarkdownView from '../../components/MarkdownView'
 import { useResizablePanel } from '../../hooks/useResizablePanel'
 import { useSearchHighlight } from '../../hooks/useSearchHighlight'
 import { errorMessage } from '../../lib/errors'
 import { useSettingsStore } from '../../stores/settings'
 import { useToastStore } from '../../stores/toast'
+import FocusView from './FocusView'
 import styles from './ReadPage.module.css'
 
 const NO_IDS: string[] = []
@@ -23,6 +24,8 @@ interface CardProps {
   matched: boolean
   noAnswer: string
   numberLabel: string
+  expandLabel: string
+  onExpand: (id: string) => void
 }
 
 /** 一道题。答案在接近可视区域时才渲染(题目多时保持流畅) */
@@ -32,15 +35,28 @@ const QuestionCard = memo(function QuestionCard({
   active,
   matched,
   noAnswer,
-  numberLabel
+  numberLabel,
+  expandLabel,
+  onExpand
 }: CardProps) {
   const cls = [styles.card, active && styles.cardActive, matched && styles.cardMatched].filter(Boolean).join(' ')
   return (
     <article id={`q-${q.id}`} data-question={q.id} className={cls} aria-labelledby={`title-${q.id}`}>
-      <div className={styles.cardNumber} data-search-skip>
-        {numberLabel}
+      <div className={styles.cardTop}>
+        <span className={styles.cardNumber} data-search-skip>
+          {numberLabel}
+        </span>
+        <button
+          type="button"
+          className={styles.expand}
+          aria-label={expandLabel}
+          title={expandLabel}
+          onClick={() => onExpand(q.id)}
+        >
+          <ExpandIcon size={16} />
+        </button>
       </div>
-      <h3 id={`title-${q.id}`} className={styles.cardTitle}>
+      <h3 id={`title-${q.id}`} className={styles.cardTitle} onClick={() => onExpand(q.id)}>
         {q.title}
       </h3>
       <div className={styles.answer}>
@@ -70,6 +86,8 @@ export default function ReadPage() {
   const [input, setInput] = useState('')
   const [query, setQuery] = useState('')
   const [matchIndex, setMatchIndex] = useState(0)
+  /** 放大查看的题目 */
+  const [focusId, setFocusId] = useState<string | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const tocRef = useRef<HTMLElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -102,6 +120,38 @@ export default function ReadPage() {
   }, [selectedIds, toast, t])
 
   const all = useMemo(() => banks?.flatMap((b) => b.questions) ?? [], [banks])
+
+  /** 每道题的位置信息:全局序号、所属题库名、题库内题号 */
+  const positions = useMemo(() => {
+    const map = new Map<string, { index: number; bankName: string; number: number }>()
+    let index = 0
+    for (const bank of banks ?? []) {
+      bank.questions.forEach((q, i) => map.set(q.id, { index: ++index, bankName: bank.name, number: i + 1 }))
+    }
+    return map
+  }, [banks])
+
+  const openFocus = useCallback((id: string) => {
+    setFocusId(id)
+    setActiveId(id)
+  }, [])
+
+  /** 放大视图中切换题目;同时更新阅读位置 */
+  const stepFocus = (delta: number) => {
+    if (!focusId) return
+    const i = (positions.get(focusId)?.index ?? 1) - 1 + delta
+    const next = all[i]
+    if (next) {
+      setFocusId(next.id)
+      setActiveId(next.id)
+    }
+  }
+
+  /** 关闭放大视图,列表停在最后查看的题目 */
+  const closeFocus = () => {
+    if (focusId) goTo(focusId, false)
+    setFocusId(null)
+  }
 
   // 输入停顿后再搜索
   useEffect(() => {
@@ -221,6 +271,7 @@ export default function ReadPage() {
   // Ctrl+F 聚焦搜索框
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (focusId) return
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
         e.preventDefault()
         searchRef.current?.focus()
@@ -229,7 +280,7 @@ export default function ReadPage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [focusId])
 
   const toggleBank = (id: string) =>
     setCollapsed((prev) => {
@@ -417,6 +468,8 @@ export default function ReadPage() {
                     active={q.id === activeId}
                     matched={q.id === currentMatch}
                     noAnswer={t('read.noAnswer')}
+                    expandLabel={t('read.expand')}
+                    onExpand={openFocus}
                   />
                 ))}
               </section>
@@ -427,6 +480,20 @@ export default function ReadPage() {
           </div>
         </div>
       </div>
+
+      {focusId && positions.has(focusId) && (
+        <FocusView
+          question={all[positions.get(focusId)!.index - 1]}
+          bankName={positions.get(focusId)!.bankName}
+          number={positions.get(focusId)!.number}
+          index={positions.get(focusId)!.index}
+          total={all.length}
+          query={query}
+          onPrev={() => stepFocus(-1)}
+          onNext={() => stepFocus(1)}
+          onClose={closeFocus}
+        />
+      )}
     </div>
   )
 }
