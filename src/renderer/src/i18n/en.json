@@ -170,6 +170,10 @@
     "noSelectionDesc": "Select the banks to read on the Home page first.",
     "goSelect": "Select banks",
     "noQuestionsTitle": "The selected banks have no questions",
-    "noQuestionsDesc": "Add questions in Banks, then come back to read."
+    "noQuestionsDesc": "Add questions in Banks, then come back to read.",
+    "showToc": "Show contents",
+    "hideToc": "Hide contents",
+    "resizeToc": "Resize contents",
+    "resizeTocHint": "Drag to resize, double-click to hide or show"
   }
 }

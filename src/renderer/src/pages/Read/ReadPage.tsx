@@ -2,8 +2,9 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { ReadBank } from '@shared/types'
-import { BookIcon, ChevronRightIcon, SearchIcon } from '../../components/icons'
+import { BookIcon, ChevronRightIcon, PanelLeftIcon, SearchIcon } from '../../components/icons'
 import MarkdownView from '../../components/MarkdownView'
+import { useResizablePanel } from '../../hooks/useResizablePanel'
 import { useSearchHighlight } from '../../hooks/useSearchHighlight'
 import { errorMessage } from '../../lib/errors'
 import { useSettingsStore } from '../../stores/settings'
@@ -28,6 +29,13 @@ export default function ReadPage() {
   const tocRef = useRef<HTMLElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const restored = useRef(false)
+  const toc = useResizablePanel({
+    storageKey: 'qb.read.toc',
+    defaultWidth: 260,
+    minWidth: 180,
+    maxWidth: 480,
+    collapseBelow: 120
+  })
 
   // 读取所选题库的全部题目
   useEffect(() => {
@@ -102,7 +110,7 @@ export default function ReadPage() {
   // 目录跟随当前题目
   useEffect(() => {
     tocRef.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' })
-  }, [activeId])
+  }, [activeId, toc.collapsed])
 
   // Ctrl+F 聚焦搜索框
   useEffect(() => {
@@ -147,6 +155,16 @@ export default function ReadPage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
+        <button
+          type="button"
+          className={toc.collapsed ? styles.iconButtonPlain : `${styles.iconButtonPlain} ${styles.iconButtonOn}`}
+          aria-label={toc.collapsed ? t('read.showToc') : t('read.hideToc')}
+          aria-pressed={!toc.collapsed}
+          title={toc.collapsed ? t('read.showToc') : t('read.hideToc')}
+          onClick={() => toc.setCollapsed(!toc.collapsed)}
+        >
+          <PanelLeftIcon size={18} />
+        </button>
         <div className={styles.heading}>
           <h1 className={styles.title}>{t('nav.read')}</h1>
           <span className={styles.subtitle}>{t('read.summary', { banks: banks.length, count: total })}</span>
@@ -209,47 +227,67 @@ export default function ReadPage() {
         </div>
       </header>
 
-      <div className={styles.body}>
-        <nav ref={tocRef} className={styles.toc} aria-label={t('read.toc')}>
-          <div className={styles.tocLabel}>{t('read.toc')}</div>
-          {banks.map((bank) => {
-            const isCollapsed = collapsed.has(bank.id)
-            return (
-              <div key={bank.id} className={styles.tocBank}>
-                <button
-                  type="button"
-                  className={styles.tocBankButton}
-                  aria-expanded={!isCollapsed}
-                  onClick={() => toggleBank(bank.id)}
-                >
-                  <span className={isCollapsed ? styles.chevron : `${styles.chevron} ${styles.chevronOpen}`}>
-                    <ChevronRightIcon size={14} />
-                  </span>
-                  <span className={styles.tocBankName}>{bank.name}</span>
-                  <span className={styles.tocCount}>{bank.questions.length}</span>
-                </button>
-                {!isCollapsed && (
-                  <ol className={styles.tocList}>
-                    {bank.questions.map((q, i) => (
-                      <li key={q.id}>
-                        <button
-                          type="button"
-                          className={q.id === activeId ? `${styles.tocItem} ${styles.tocItemActive}` : styles.tocItem}
-                          aria-current={q.id === activeId ? 'true' : undefined}
-                          onClick={() => jumpTo(q.id)}
-                          title={q.title}
-                        >
-                          <span className={styles.tocNumber}>{i + 1}</span>
-                          <span className={styles.tocTitle}>{q.title}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </div>
-            )
-          })}
-        </nav>
+      <div className={toc.dragging ? `${styles.body} ${styles.resizing}` : styles.body}>
+        {!toc.collapsed && (
+          <nav ref={tocRef} className={styles.toc} style={{ width: toc.width }} aria-label={t('read.toc')}>
+            <div className={styles.tocHeader}>
+              <span className={styles.tocLabel}>{t('read.toc')}</span>
+              <button
+                type="button"
+                className={styles.iconButtonPlain}
+                aria-label={t('read.hideToc')}
+                title={t('read.hideToc')}
+                onClick={() => toc.setCollapsed(true)}
+              >
+                <ChevronRightIcon size={16} />
+              </button>
+            </div>
+            {banks.map((bank) => {
+              const isCollapsed = collapsed.has(bank.id)
+              return (
+                <div key={bank.id} className={styles.tocBank}>
+                  <button
+                    type="button"
+                    className={styles.tocBankButton}
+                    aria-expanded={!isCollapsed}
+                    onClick={() => toggleBank(bank.id)}
+                  >
+                    <span className={isCollapsed ? styles.chevron : `${styles.chevron} ${styles.chevronOpen}`}>
+                      <ChevronRightIcon size={14} />
+                    </span>
+                    <span className={styles.tocBankName}>{bank.name}</span>
+                    <span className={styles.tocCount}>{bank.questions.length}</span>
+                  </button>
+                  {!isCollapsed && (
+                    <ol className={styles.tocList}>
+                      {bank.questions.map((q, i) => (
+                        <li key={q.id}>
+                          <button
+                            type="button"
+                            className={q.id === activeId ? `${styles.tocItem} ${styles.tocItemActive}` : styles.tocItem}
+                            aria-current={q.id === activeId ? 'true' : undefined}
+                            onClick={() => jumpTo(q.id)}
+                            title={q.title}
+                          >
+                            <span className={styles.tocNumber}>{i + 1}</span>
+                            <span className={styles.tocTitle}>{q.title}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </div>
+              )
+            })}
+          </nav>
+        )}
+
+        <div
+          className={toc.collapsed ? `${styles.resizer} ${styles.resizerCollapsed}` : styles.resizer}
+          aria-label={t('read.resizeToc')}
+          title={t('read.resizeTocHint')}
+          {...toc.separatorProps}
+        />
 
         <div ref={listRef} className={styles.list}>
           <div className={styles.listInner}>

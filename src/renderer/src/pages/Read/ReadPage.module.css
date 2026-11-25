@@ -128,14 +128,24 @@
 
 /* 目录 */
 .toc {
-  flex: 0 0 260px;
+  flex: 0 0 auto;
   overflow-y: auto;
-  padding: 14px 10px 24px;
-  border-right: 1px solid var(--border);
+  padding: 10px 10px 24px;
+}
+
+.tocHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 6px 8px;
+}
+
+/* 收起目录按钮:箭头朝左 */
+.tocHeader .iconButtonPlain :global(svg) {
+  transform: rotate(180deg);
 }
 
 .tocLabel {
-  padding: 0 8px 8px;
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -245,6 +255,63 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 目录与阅读区之间的分隔条:拖动调整宽度,双击或回车折叠 */
+.resizer {
+  position: relative;
+  flex: 0 0 1px;
+  background: var(--border);
+  cursor: col-resize;
+  touch-action: none;
+}
+
+/* 扩大可拖动范围 */
+.resizer::before {
+  content: '';
+  position: absolute;
+  inset: 0 -4px;
+}
+
+.resizer:hover,
+.resizer:focus-visible,
+.resizing .resizer {
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+  outline: none;
+}
+
+.resizerCollapsed {
+  flex-basis: 1px;
+}
+
+/* 拖动时禁止选中文字 */
+.resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.iconButtonPlain {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.iconButtonPlain:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.iconButtonOn {
+  color: var(--accent);
 }
 
 /* 阅读区 */
@@ -368,10 +435,6 @@
 }
 
 @media (max-width: 1100px) {
-  .toc {
-    flex-basis: 210px;
-  }
-
   .listInner {
     padding: 20px 24px 48px;
   }
