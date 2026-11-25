@@ -1,0 +1,59 @@
+{
+  "app": {
+    "name": "Question Bank"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "home": "Home",
+    "read": "Read",
+    "recite": "Recite",
+    "exam": "Exam",
+    "manage": "Banks",
+    "settings": "Settings"
+  },
+  "common": {
+    "comingSoon": "Coming soon",
+    "notAvailable": "This feature is not available yet",
+    "questionCount": "{{count}} questions"
+  },
+  "home": {
+    "title": "Start reviewing",
+    "subtitle": "Select the question banks to review, then choose a mode.",
+    "selectedSummary": "{{banks}} banks selected · {{questions}} questions",
+    "modes": "Modes",
+    "readDesc": "Read every question and answer in order, with a table of contents and keyword search.",
+    "readAction": "Start reading →",
+    "reciteDesc": "Questions are shuffled and shown one at a time, with the answer hidden.",
+    "reciteAction": "Start reciting →",
+    "examDesc": "Timed answers and automatic scoring. In development.",
+    "examAction": "Not available yet",
+    "banks": "Question banks",
+    "selectAll": "Select all",
+    "manageBanks": "Manage banks",
+    "emptyTitle": "No question banks yet",
+    "emptyDesc": "Create a bank in Banks, or import a Markdown / Excel file.",
+    "emptyAction": "Go to Banks",
+    "needSelection": "Select at least one question bank first"
+  },
+  "placeholder": {
+    "inProgress": "In development",
+    "read": "Read mode arrives in M3: table of contents, all questions, keyword search and reading position.",
+    "recite": "Recite mode arrives in M4: shuffling, show/hide answers, keyboard shortcuts and saved progress.",
+    "manage": "Bank management arrives in M2: create, edit and delete banks and questions, Markdown editor with preview, image pasting."
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance & language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "fontSize": "Font size",
+    "fontSmall": "Small",
+    "fontMedium": "Medium",
+    "fontLarge": "Large",
+    "language": "Language",
+    "about": "About",
+    "version": "Version {{version}}"
+  }
+}

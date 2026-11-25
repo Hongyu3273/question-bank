@@ -1,0 +1,59 @@
+{
+  "app": {
+    "name": "知识题库"
+  },
+  "nav": {
+    "label": "主导航",
+    "home": "首页",
+    "read": "看题模式",
+    "recite": "背题模式",
+    "exam": "考试模式",
+    "manage": "题库管理",
+    "settings": "设置"
+  },
+  "common": {
+    "comingSoon": "即将开放",
+    "notAvailable": "功能未开放",
+    "questionCount": "{{count}} 题"
+  },
+  "home": {
+    "title": "开始复习",
+    "subtitle": "先勾选要复习的题库,再选择一种模式。",
+    "selectedSummary": "已选 {{banks}} 个题库 · 共 {{questions}} 题",
+    "modes": "模式",
+    "readDesc": "按顺序展示所选题库的全部题目和答案,支持目录跳转和关键词搜索。",
+    "readAction": "开始阅读 →",
+    "reciteDesc": "所选题库合并后随机洗牌,每次一题,答案默认隐藏。",
+    "reciteAction": "开始背题 →",
+    "examDesc": "限时作答、自动判分。正在开发中。",
+    "examAction": "暂未开放",
+    "banks": "选择题库",
+    "selectAll": "全选",
+    "manageBanks": "管理题库",
+    "emptyTitle": "还没有题库",
+    "emptyDesc": "到题库管理中新建题库,或导入 Markdown / Excel 文件。",
+    "emptyAction": "前往题库管理",
+    "needSelection": "请先勾选至少一个题库"
+  },
+  "placeholder": {
+    "inProgress": "开发中",
+    "read": "看题模式将在 M3 阶段实现:目录、全部题目、关键词搜索和阅读位置记忆。",
+    "recite": "背题模式将在 M4 阶段实现:随机洗牌、显示/隐藏答案、快捷键和进度保存。",
+    "manage": "题库管理将在 M2 阶段实现:题库和题目的增删改、Markdown 编辑与预览、图片粘贴。"
+  },
+  "settings": {
+    "title": "设置",
+    "appearance": "外观与语言",
+    "theme": "主题",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "themeSystem": "跟随系统",
+    "fontSize": "字号",
+    "fontSmall": "小",
+    "fontMedium": "中",
+    "fontLarge": "大",
+    "language": "界面语言",
+    "about": "关于",
+    "version": "版本 {{version}}"
+  }
+}

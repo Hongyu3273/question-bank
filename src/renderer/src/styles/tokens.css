@@ -1,0 +1,70 @@
+/* 设计 token,与 UI 效果图一致。组件里只使用变量,不写死颜色。 */
+
+:root {
+  --bg: #f6f6f4;
+  --surface: #ffffff;
+  --surface-muted: #fafaf8;
+  --hover: #f1f1ee;
+  --border: #e6e6e3;
+  --border-strong: #dcdcd8;
+  --divider: #efefec;
+  --text: #1c1c1e;
+  --text-secondary: #3a3a3f;
+  --text-muted: #66666b;
+  --accent: #2f5bd3;
+  --accent-hover: #1f45aa;
+  --accent-soft: #ebf0fc;
+  --on-accent: #ffffff;
+  --danger: #c42b1c;
+  --warning-text: #8a4b00;
+  --warning-soft: #fff1dc;
+  --success-text: #1f7a3a;
+  --code-bg: #1e1f24;
+  --code-text: #e6e6e6;
+  --highlight: #ffe58a;
+  --toast-bg: #1c1c1e;
+  --toast-text: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.18);
+
+  --radius-card: 14px;
+  --radius-control: 10px;
+  --radius-sm: 8px;
+
+  /* 字号设置通过 --font-scale 缩放:小 0.9 / 中 1 / 大 1.15 */
+  --font-scale: 1;
+  --font-sans: Inter, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #141416;
+  --surface: #1e1f23;
+  --surface-muted: #1a1b1e;
+  --hover: #2a2b30;
+  --border: #2e2f34;
+  --border-strong: #3a3b41;
+  --divider: #2a2b30;
+  --text: #ececee;
+  --text-secondary: #c9c9ce;
+  --text-muted: #a0a0a8;
+  --accent: #7c9bf0;
+  --accent-hover: #a3b9f5;
+  --accent-soft: #23293a;
+  --on-accent: #10131c;
+  --danger: #f07a6e;
+  --warning-text: #f2c27a;
+  --warning-soft: #3a2d16;
+  --success-text: #7fd39a;
+  --code-bg: #111214;
+  --code-text: #e6e6e6;
+  --highlight: #6b5a1a;
+  --toast-bg: #ececee;
+  --toast-text: #1c1c1e;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
