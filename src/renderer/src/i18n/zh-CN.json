@@ -317,7 +317,9 @@
     "toggleAnswer": "显示 / 隐藏答案",
     "switchQuestion": "切换题目",
     "save": "保存题目",
-    "reorder": "移动题目或题库位置"
+    "reorder": "移动题目或题库位置",
+    "doubleClick": "双击题目",
+    "doubleClickFocus": "放大查看这道题"
   },
   "guide": {
     "button": "格式说明",

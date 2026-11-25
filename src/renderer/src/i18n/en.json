@@ -320,7 +320,9 @@
     "toggleAnswer": "Show / hide answer",
     "switchQuestion": "Switch questions",
     "save": "Save question",
-    "reorder": "Move question or bank"
+    "reorder": "Move question or bank",
+    "doubleClick": "Double-click",
+    "doubleClickFocus": "Open the question enlarged"
   },
   "guide": {
     "button": "Format guide",

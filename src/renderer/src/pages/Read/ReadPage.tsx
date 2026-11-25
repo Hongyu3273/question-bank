@@ -25,7 +25,6 @@ const estimateHeight = (q: Question) => Math.min(900, 48 + Math.ceil(q.answerMd.
 interface CardProps {
   question: Question
   rendered: boolean
-  active: boolean
   matched: boolean
   noAnswer: string
   numberLabel: string
@@ -35,11 +34,14 @@ interface CardProps {
   onExpand: (id: string) => void
 }
 
-/** 一道题。答案在接近可视区域时才渲染(题目多时保持流畅) */
+/** 链接、按钮等可点击元素上的双击不打开放大视图 */
+const isInteractive = (target: EventTarget) =>
+  target instanceof Element && target.closest('a, button, input, textarea, summary') !== null
+
+/** 一道题。鼠标悬停高亮,双击打开放大视图。答案在接近可视区域时才渲染(题目多时保持流畅) */
 const QuestionCard = memo(function QuestionCard({
   question: q,
   rendered,
-  active,
   matched,
   noAnswer,
   numberLabel,
@@ -49,9 +51,23 @@ const QuestionCard = memo(function QuestionCard({
   onExpand
 }: CardProps) {
   const { meta, body } = useMemo(() => extractMeta(q.answerMd), [q.answerMd])
-  const cls = [styles.card, active && styles.cardActive, matched && styles.cardMatched].filter(Boolean).join(' ')
+  const cls = [styles.card, matched && styles.cardMatched].filter(Boolean).join(' ')
   return (
-    <article id={`q-${q.id}`} data-question={q.id} className={cls} aria-labelledby={`title-${q.id}`}>
+    <article
+      id={`q-${q.id}`}
+      data-question={q.id}
+      className={cls}
+      aria-labelledby={`title-${q.id}`}
+      onMouseDown={(e) => {
+        // 双击时不选中文字(拖动选择、三击选段落不受影响)
+        if (e.detail === 2 && !isInteractive(e.target)) e.preventDefault()
+      }}
+      onDoubleClick={(e) => {
+        if (isInteractive(e.target)) return
+        window.getSelection()?.removeAllRanges()
+        onExpand(q.id)
+      }}
+    >
       <div className={styles.cardTop}>
         <span className={styles.cardNumber} data-search-skip>
           {numberLabel}
@@ -552,7 +568,6 @@ export default function ReadPage() {
                     question={q}
                     numberLabel={t('manage.questionNumber', { number: i + 1 })}
                     rendered={rendered.has(q.id)}
-                    active={q.id === activeId}
                     matched={q.id === currentMatch}
                     noAnswer={t('read.noAnswer')}
                     expandLabel={t('read.expand')}

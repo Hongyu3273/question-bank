@@ -356,10 +356,13 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   scroll-margin-top: 56px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-.cardActive {
+/* 鼠标所在的题目高亮;不在任何题目上时都不高亮 */
+.card:hover {
   border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 当前搜索结果所在的题目 */
